@@ -1,0 +1,5 @@
+
+enum ProgressionType {
+  chords,
+  romanNumerals,
+}
