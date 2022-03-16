@@ -7,12 +7,14 @@ import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/modals/substitution.dart';
+import 'package:thoery_test/modals/substitution_match.dart';
 import 'package:thoery_test/state/progression_bank.dart';
 import 'package:thoery_test/state/substitution_handler.dart';
 import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/modals/progression_type.dart';
 
 part 'substitution_handler_event.dart';
+
 part 'substitution_handler_state.dart';
 
 class SubstitutionHandlerBloc
@@ -55,8 +57,15 @@ class SubstitutionHandlerBloc
   ChordProgression getOriginalSubChords(PitchScale scale, int index) {
     assert(index >= 0 && index < _originalSubs!.length);
     if (_originalSubs![index] == null) {
-      _originalSubs![index] =
-          _substitutions![index].originalSubstitution.inScale(scale);
+      ScaleDegreeProgression originalSub =
+          _substitutions![index].originalSubstitution;
+      SubstitutionMatch match = _substitutions![index].match!;
+      if (match.type == SubstitutionMatchType.tonicization) {
+        // TODO: Optimize.
+        originalSub = originalSub.tonicizedFor(
+            _substitutions![index].substitutedBase[match.baseIndex]!);
+      }
+      _originalSubs![index] = originalSub.inScale(scale);
     }
     return _originalSubs![index]!;
   }

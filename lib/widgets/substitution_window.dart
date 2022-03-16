@@ -4,9 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/substitution.dart';
+import 'package:thoery_test/modals/substitution_match.dart';
+import 'package:thoery_test/modals/weights/weight.dart';
 import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
 import 'package:weizmann_theory_app_test/widgets/TButton.dart';
 import 'package:weizmann_theory_app_test/widgets/TSelector.dart';
+import 'package:weizmann_theory_app_test/widgets/general_dialog_page.dart';
 import 'package:weizmann_theory_app_test/widgets/progression_view.dart';
 import 'package:weizmann_theory_app_test/widgets/view_type_selector.dart';
 import '../Constants.dart';
@@ -290,16 +293,57 @@ class SubstitutionView extends StatelessWidget {
     Substitution substitution = bloc.substitutions![index];
     PitchScale scale =
         BlocProvider.of<ProgressionHandlerBloc>(context).currentlyActiveScale;
-    int? from = substitution.match?.baseIndex;
-    int? to = from == null ? null : from + 1;
+    SubstitutionMatch match = bloc.substitutions![index].match!;
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.max,
       children: [
-        const Text(
-          'From "My Other Song":',
-          style: TextStyle(fontSize: Constants.measurePatternFontSize),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              'From "My Other Song" (${match.type.name})',
+              style:
+                  const TextStyle(fontSize: Constants.measurePatternFontSize),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 4.0),
+              child: GestureDetector(
+                child: const Icon(Icons.notes_rounded,
+                    size: Constants.measurePatternFontSize * 1.2),
+                onTap: () {
+                  showGeneralDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    barrierLabel: 'Details',
+                    pageBuilder: (context, _, __) => GeneralDialogPage(
+                      title: 'Details',
+                      child: Expanded(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: substitution.score.details.length,
+                          itemBuilder: (context, index) {
+                            MapEntry<String, Score> detail = substitution
+                                .score.details.entries
+                                .elementAt(index);
+                            return ExpansionTile(
+                              title:
+                                  Text('${detail.key}: ${detail.value.score}'),
+                              expandedAlignment: Alignment.topLeft,
+                              childrenPadding:
+                                  const EdgeInsets.only(left: 22.0),
+                              children: [Text(detail.value.details, style: const TextStyle(fontSize: 15),)],
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
         Row(
           children: [
@@ -308,9 +352,9 @@ class SubstitutionView extends StatelessWidget {
           ],
         ),
         HorizontalProgressionView(
-          fromChord: from,
-          toChord: to,
-          startAt: from,
+          fromChord: substitution.firstChangedIndex,
+          toChord: substitution.lastChangedIndex,
+          startAt: substitution.firstChangedIndex,
           progression: bloc.getSubstitutedBase(scale, index),
         ),
       ],
