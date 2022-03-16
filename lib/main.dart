@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/chord_progression.dart';
+import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:tonic/tonic.dart';
@@ -99,12 +100,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final ChordProgression _base = ChordProgression.empty();
-  late ChordProgression _subProg;
-  final Scale CMajor = Scale(
-      pattern: ScalePattern.findByName("Diatonic Major"),
-      tonic: PitchClass.parse('C'));
-
   int bassAdd = 24;
   int noteAdd = 48;
   int maxMelody = 81;
@@ -114,9 +109,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    BlocProvider.of<ProgressionHandlerBloc>(context).add(
-        OverrideProgression(ScaleDegreeProgression.fromChords(CMajor, _base)));
-    _subProg = _base;
+    BlocProvider.of<ProgressionHandlerBloc>(context)
+        .add(OverrideProgression(ScaleDegreeProgression.empty(inMinor: false)));
     for (int i = 0; i < maxPlayers; i++) {
       players.add(Player(id: i, commandlineArguments: ['--no-video']));
     }

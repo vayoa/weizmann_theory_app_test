@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/extensions/scale_extension.dart';
 import 'package:thoery_test/modals/chord_progression.dart';
+import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_chord.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
@@ -20,7 +21,7 @@ part 'progression_handler_state.dart';
 class ProgressionHandlerBloc
     extends Bloc<ProgressionHandlerEvent, ProgressionHandlerState> {
   late final SubstitutionHandlerBloc _substitutionHandlerBloc;
-  List<Scale>? scales;
+  List<PitchScale>? scales;
   int currentScale = 0;
   ChordProgression currentChords = ChordProgression.empty();
   ScaleDegreeProgression currentProgression =
@@ -186,7 +187,7 @@ class ProgressionHandlerBloc
     return _progressionMeasures!;
   }
 
-  Scale get currentlyActiveScale => scales![currentScale];
+  PitchScale get currentlyActiveScale => scales![currentScale];
 
   SubstitutionHandlerBloc get substitutionHandlerBloc =>
       _substitutionHandlerBloc;

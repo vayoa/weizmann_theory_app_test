@@ -32,7 +32,7 @@ class ReharmonizeSubs extends SubstitutionHandlerEvent {
 
 class SurpriseMeSubs extends SubstitutionHandlerEvent {
   final ChordProgression progression;
-  final Scale scale;
+  final PitchScale scale;
 
   @override
   List<Object?> get props => [progression, scale];

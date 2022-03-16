@@ -30,7 +30,7 @@ class TypeChanged extends ProgressionHandlerState {
 }
 
 class RecalculatedScales extends ProgressionHandlerState {
-  final List<Scale> scales;
+  final List<PitchScale> scales;
 
   @override
   List<Object?> get props => [...super.props, scales];
@@ -41,7 +41,7 @@ class RecalculatedScales extends ProgressionHandlerState {
 }
 
 class ScaleChanged extends ProgressionHandlerState {
-  final Scale scale;
+  final PitchScale scale;
 
   @override
   List<Object?> get props => [...super.props, scale];

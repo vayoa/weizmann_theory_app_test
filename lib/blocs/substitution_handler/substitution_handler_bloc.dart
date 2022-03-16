@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/extensions/scale_extension.dart';
 import 'package:thoery_test/modals/chord_progression.dart';
+import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/modals/substitution.dart';
@@ -26,7 +27,7 @@ class SubstitutionHandlerBloc
 
   List<Substitution>? get substitutions => _substitutions;
 
-  Progression getSubstitutedBase(Scale scale, int index) {
+  Progression getSubstitutedBase(PitchScale scale, int index) {
     if (type == ProgressionType.romanNumerals) {
       return _substitutions![index].substitutedBase;
     } else {
@@ -34,7 +35,7 @@ class SubstitutionHandlerBloc
     }
   }
 
-  Progression getOriginalSubstitution(Scale scale, int index) {
+  Progression getOriginalSubstitution(PitchScale scale, int index) {
     if (type == ProgressionType.romanNumerals) {
       return _substitutions![index].originalSubstitution;
     } else {
@@ -42,7 +43,7 @@ class SubstitutionHandlerBloc
     }
   }
 
-  ChordProgression getChordProgression(Scale scale, int index) {
+  ChordProgression getChordProgression(PitchScale scale, int index) {
     assert(index >= 0 && index < _chordProgressions!.length);
     if (_chordProgressions![index] == null) {
       _chordProgressions![index] =
@@ -51,7 +52,7 @@ class SubstitutionHandlerBloc
     return _chordProgressions![index]!;
   }
 
-  ChordProgression getOriginalSubChords(Scale scale, int index) {
+  ChordProgression getOriginalSubChords(PitchScale scale, int index) {
     assert(index >= 0 && index < _originalSubs!.length);
     if (_originalSubs![index] == null) {
       _originalSubs![index] =

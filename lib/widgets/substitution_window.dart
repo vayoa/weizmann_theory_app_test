@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/substitution.dart';
 import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
@@ -287,7 +288,7 @@ class SubstitutionView extends StatelessWidget {
     SubstitutionHandlerBloc bloc =
         BlocProvider.of<SubstitutionHandlerBloc>(context);
     Substitution substitution = bloc.substitutions![index];
-    Scale scale =
+    PitchScale scale =
         BlocProvider.of<ProgressionHandlerBloc>(context).currentlyActiveScale;
     int? from = substitution.match?.baseIndex;
     int? to = from == null ? null : from + 1;

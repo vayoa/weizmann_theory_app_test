@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/widgets/TButton.dart';
 import 'package:weizmann_theory_app_test/widgets/TDropdownButton.dart';
@@ -54,15 +55,16 @@ class _ScaleChooserState extends State<ScaleChooser> {
               }),
             );
           }
-          return TDropdownButton<Scale>(
+          return TDropdownButton<PitchScale>(
             value: bloc.scales![bloc.currentScale],
             items: bloc.scales!,
-            onChanged: (Scale? scale) {
+            onChanged: (PitchScale? scale) {
               if (scale != null) {
+                // TODO: Optimize this...
                 bloc.add(ChangeScale(bloc.scales!.indexOf(scale)));
               }
             },
-            valToString: (Scale scale) => scale.getCommonName(),
+            valToString: (PitchScale scale) => scale.getCommonName,
           );
         });
   }
