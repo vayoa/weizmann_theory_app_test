@@ -2,7 +2,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
-import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/substitution.dart';
 import 'package:thoery_test/modals/substitution_match.dart';
 import 'package:thoery_test/modals/weights/weight.dart';
@@ -12,9 +11,9 @@ import 'package:weizmann_theory_app_test/widgets/TSelector.dart';
 import 'package:weizmann_theory_app_test/widgets/general_dialog_page.dart';
 import 'package:weizmann_theory_app_test/widgets/progression_view.dart';
 import 'package:weizmann_theory_app_test/widgets/view_type_selector.dart';
+
 import '../Constants.dart';
 import '../blocs/progression_handler_bloc.dart';
-import 'package:tonic/tonic.dart';
 
 class SubstitutionWindow extends StatefulWidget {
   const SubstitutionWindow({
