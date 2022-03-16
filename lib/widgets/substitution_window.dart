@@ -333,7 +333,12 @@ class SubstitutionView extends StatelessWidget {
                               expandedAlignment: Alignment.topLeft,
                               childrenPadding:
                                   const EdgeInsets.only(left: 22.0),
-                              children: [Text(detail.value.details, style: const TextStyle(fontSize: 15),)],
+                              children: [
+                                Text(
+                                  detail.value.details,
+                                  style: const TextStyle(fontSize: 15),
+                                )
+                              ],
                             );
                           },
                         ),
