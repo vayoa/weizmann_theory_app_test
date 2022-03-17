@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/chord_progression.dart';
-import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:tonic/tonic.dart';
@@ -304,6 +303,7 @@ class _MyHomePageState extends State<MyHomePage> {
     List<Pitch> pitches = walk(chord);
     for (int i = 0; i < maxPlayers; i++) {
       try {
+        players[i].stop();
         players[i].open(Media.asset(pitchFileName(pitches[i])));
         players[i].play();
       } catch (e) {
@@ -339,7 +339,7 @@ class _MyHomePageState extends State<MyHomePage> {
     List<Pitch> pitches = [
       Pitch.fromMidiNumber(prev.first.midiNumber + bassAdd)
     ];
-    for (int i = 0; i < prev.length; i++) {
+    for (int i = prev.length == 3 ? 0 : 1; i < prev.length; i++) {
       int note = prev[i].midiNumber;
       int diff = noteAdd ~/ 12;
       if (note + noteAdd > maxMelody) {
@@ -352,7 +352,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String pitchFileName(Pitch pitch) =>
       r'C:\Users\ew0nd\StudioProjects\weizmann_theory_app_test\assets\piano-mp3\'
-      '${fileAcceptable(pitch)}.mp3';
+      '${fileAcceptable(pitch).toString().replaceFirst('♭', 'b')}.mp3';
 
   Pitch fileAcceptable(Pitch pitch) {
     if (pitch.accidentalSemitones > 0) {
