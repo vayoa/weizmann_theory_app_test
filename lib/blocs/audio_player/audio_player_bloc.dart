@@ -64,30 +64,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     });
   }
 
-  Future<void> _playPlaylist(List<Progression<Chord>> progressions) async {
-    List<List<Media>> media = [[], [], [], []];
-    for (Progression<Chord> prog in progressions) {
-      for (int i = 0; i < prog.length; i++) {
-        if (prog[i] != null) {
-          List<Pitch> pitches = _walk(
-            prog[i]!,
-            i == prog.length - 1 ? null : prog[i + 1],
-          );
-          for (int j = 0; j < pitches.length; j++) {
-            media[j]
-                .add(Media.asset(pitchFileName(fileAcceptable(pitches[j]))));
-          }
-        }
-      }
-    }
-    for (int i = 0; i < maxPlayers; i++) {
-      _players[i].open(Playlist(medias: media[i]), autoStart: false);
-    }
-    for (int i = 0; i < maxPlayers; i++) {
-      _players[i].play();
-    }
-  }
-
+  // TODO: Load the first chord before the rest.
   Future<void> _play({
     bool arpeggio = false,
     int mult = 6000,
