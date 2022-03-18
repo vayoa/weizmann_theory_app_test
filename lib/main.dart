@@ -103,22 +103,55 @@ class _MyHomePageState extends State<MyHomePage> {
   int noteAdd = 48;
   int maxMelody = 81;
   List<Player> players = [];
-  static const int maxPlayers = 4;
+  static const int maxPlayers = 95;
   bool _playing = false;
 
   @override
   void initState() {
     BlocProvider.of<ProgressionHandlerBloc>(context)
         .add(OverrideProgression(ScaleDegreeProgression.empty(inMinor: false)));
-    for (int i = 0; i < maxPlayers; i++) {
-      players.add(Player(id: i, commandlineArguments: ['--no-video']));
+    List<Pitch> initial = initials();
+    int maxIter = maxPlayers ~/ 12;
+    for (int i = 0; i < maxIter; i++) {
+      for (int j = 0; j < initial.length; j++) {
+        players.add(Player(
+            id: (i * maxIter) + j, commandlineArguments: ['--no-video']));
+        players.last.open(
+            Media.asset(pitchFileName(fileAcceptable(initial[j]))),
+            autoStart: false);
+        // We add an octave later since initials() gives us the pitches in
+        // octave 0.
+        initial[j] += Interval.P8;
+      }
     }
     super.initState();
   }
 
-  void load(String asset) async {
-    ByteData byte = await rootBundle.load(asset);
+  List<Pitch> initials() {
+    Pitch current = Pitch.parse('C0');
+    List<Pitch> results = [current];
+    for (int i = 0; i < 11; i++) {
+      Pitch next;
+      if (current.accidentalSemitones < 0) {
+        next = current + Interval.A1;
+      } else {
+        next = current + Interval.m2;
+      }
+      results.add(next);
+      current = next;
+    }
+    return results;
   }
+
+  @override
+  void dispose() {
+    for (Player player in players) {
+      player.dispose();
+    }
+    super.dispose();
+  }
+
+  void load(String asset) async => await rootBundle.load(asset);
 
   @override
   Widget build(BuildContext context) {
@@ -301,11 +334,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void playChord(Chord chord) async {
     List<Pitch> pitches = walk(chord);
-    for (int i = 0; i < maxPlayers; i++) {
+    for (int i = 0; i < pitches.length; i++) {
       try {
-        players[i].stop();
-        players[i].open(Media.asset(pitchFileName(pitches[i])));
-        players[i].play();
+        int note = pitches[i].midiNumber;
+        Player player = players[note];
+        player.seek(Duration.zero);
+        player.play();
       } catch (e) {
         print('Faild to play ${pitches[i]} from $chord');
         rethrow;
@@ -321,10 +355,10 @@ class _MyHomePageState extends State<MyHomePage> {
     int times = duration.inMilliseconds ~/ noteLength.inMilliseconds;
     List<Pitch> pitches = walk(chord);
     for (int i = 0; i < times; i++) {
-      // _flutterMidi.playMidiNote(midi: pitches[i % pitches.length].midiNumber);
       try {
-        players[i].open(Media.asset(pitchFileName(pitches[i % maxPlayers])));
-        players[i].play();
+        Player player = players[pitches[i % times].midiNumber];
+        player.seek(Duration.zero);
+        player.play();
         await Future.delayed(noteLength);
       } catch (e) {
         print('Faild to play ${pitches[i]} from $chord');
@@ -350,6 +384,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return pitches;
   }
 
+  // TODO: Find a way to put an absolute path here.
   String pitchFileName(Pitch pitch) =>
       r'C:\Users\ew0nd\StudioProjects\weizmann_theory_app_test\assets\piano-mp3\'
       '${fileAcceptable(pitch).toString().replaceFirst('♭', 'b')}.mp3';
