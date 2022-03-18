@@ -1,9 +1,7 @@
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart' hide Interval;
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
-import 'package:thoery_test/modals/chord_progression.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:tonic/tonic.dart';
@@ -18,6 +16,7 @@ import 'package:weizmann_theory_app_test/widgets/substitution_window.dart';
 import 'package:weizmann_theory_app_test/widgets/view_type_selector.dart';
 
 import 'Constants.dart';
+import 'blocs/audio_player/audio_player_bloc.dart';
 
 void main() {
   DartVLC.initialize();
@@ -82,6 +81,7 @@ class _MyAppState extends State<MyApp> {
             create: (context) => ProgressionHandlerBloc(
                 BlocProvider.of<SubstitutionHandlerBloc>(context)),
           ),
+          BlocProvider(create: (_) => AudioPlayerBloc()),
         ],
         child: const MyHomePage(title: 'Flutter Demo Home Page'),
       ),
@@ -99,25 +99,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int bassAdd = 24;
-  int noteAdd = 48;
-  int maxMelody = 81;
-  List<Player> players = [];
-  static const int maxPlayers = 4;
-  bool _playing = false;
-
   @override
   void initState() {
     BlocProvider.of<ProgressionHandlerBloc>(context)
         .add(OverrideProgression(ScaleDegreeProgression.empty(inMinor: false)));
-    for (int i = 0; i < maxPlayers; i++) {
-      players.add(Player(id: i, commandlineArguments: ['--no-video']));
-    }
     super.initState();
-  }
-
-  void load(String asset) async {
-    ByteData byte = await rootBundle.load(asset);
   }
 
   @override
@@ -161,17 +147,28 @@ class _MyHomePageState extends State<MyHomePage> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            IconButton(
-                              icon: const Icon(Icons.play_arrow_rounded),
-                              iconSize: 36,
-                              padding: EdgeInsets.zero,
-                              onPressed: () {
-                                play(
-                                  progression:
-                                      BlocProvider.of<ProgressionHandlerBloc>(
-                                              context)
-                                          .currentChords,
-                                  mult: 2000,
+                            BlocBuilder<AudioPlayerBloc, AudioPlayerState>(
+                              builder: (context, state) {
+                                return IconButton(
+                                  icon: state is Playing
+                                      ? const Icon(Icons.pause_rounded)
+                                      : const Icon(Icons.play_arrow_rounded),
+                                  iconSize: 36,
+                                  padding: EdgeInsets.zero,
+                                  onPressed: () {
+                                    AudioPlayerBloc bloc =
+                                        BlocProvider.of<AudioPlayerBloc>(
+                                            context);
+                                    if (state is Playing) {
+                                      bloc.add(Pause());
+                                    } else {
+                                      bloc.add(Play(
+                                        BlocProvider.of<ProgressionHandlerBloc>(
+                                                context)
+                                            .chordMeasures,
+                                      ));
+                                    }
+                                  },
                                 );
                               },
                             ),
@@ -268,98 +265,5 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
-  }
-
-  void play({
-    required ChordProgression progression,
-    bool arpeggio = false,
-    int mult = 4000,
-  }) async {
-    // TODO(CRITICAL): Instead of splitting like this make an algorithm!!
-    List<Progression> progressions = progression.splitToMeasures();
-    for (Progression prog in progressions) {
-      for (int i = 0; i < prog.length; i++) {
-        if (prog[i] != null) {
-          Duration duration =
-              Duration(milliseconds: (prog.durations[i] * mult).toInt());
-          print(prog[i]);
-          if (arpeggio) {
-            playChordArpeggio(
-                chord: prog[i]!,
-                duration: duration,
-                noteLength:
-                    Duration(milliseconds: ((0.125 / 2) * mult).toInt()));
-          } else {
-            playChord(prog[i]!);
-          }
-          // 2 seconds...
-          await Future.delayed(duration);
-        }
-      }
-    }
-  }
-
-  void playChord(Chord chord) async {
-    List<Pitch> pitches = walk(chord);
-    for (int i = 0; i < maxPlayers; i++) {
-      try {
-        players[i].stop();
-        players[i].open(Media.asset(pitchFileName(pitches[i])));
-        players[i].play();
-      } catch (e) {
-        print('Faild to play ${pitches[i]} from $chord');
-        rethrow;
-      }
-    }
-  }
-
-  void playChordArpeggio({
-    required Chord chord,
-    required Duration duration,
-    required Duration noteLength,
-  }) async {
-    int times = duration.inMilliseconds ~/ noteLength.inMilliseconds;
-    List<Pitch> pitches = walk(chord);
-    for (int i = 0; i < times; i++) {
-      // _flutterMidi.playMidiNote(midi: pitches[i % pitches.length].midiNumber);
-      try {
-        players[i].open(Media.asset(pitchFileName(pitches[i % maxPlayers])));
-        players[i].play();
-        await Future.delayed(noteLength);
-      } catch (e) {
-        print('Faild to play ${pitches[i]} from $chord');
-        rethrow;
-      }
-    }
-  }
-
-  // TODO: Actually implement this...
-  List<Pitch> walk(Chord chord, [Chord? next]) {
-    List<Pitch> prev = chord.pitches;
-    List<Pitch> pitches = [
-      Pitch.fromMidiNumber(prev.first.midiNumber + bassAdd)
-    ];
-    for (int i = prev.length == 3 ? 0 : 1; i < prev.length; i++) {
-      int note = prev[i].midiNumber;
-      int diff = noteAdd ~/ 12;
-      if (note + noteAdd > maxMelody) {
-        diff = ((note + noteAdd - maxMelody) / 12).floor();
-      }
-      pitches.add(Pitch.fromMidiNumber(note + (diff * 12)));
-    }
-    return pitches;
-  }
-
-  String pitchFileName(Pitch pitch) =>
-      r'C:\Users\ew0nd\StudioProjects\weizmann_theory_app_test\assets\piano-mp3\'
-      '${fileAcceptable(pitch).toString().replaceFirst('♭', 'b')}.mp3';
-
-  Pitch fileAcceptable(Pitch pitch) {
-    if (pitch.accidentalSemitones > 0) {
-      return Pitch.parse(
-          (pitch.pitchClass + Interval.m2).toPitch().toString()[0] +
-              'b${pitch.octave - 1}');
-    }
-    return pitch;
   }
 }
