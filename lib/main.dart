@@ -162,11 +162,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                     if (state is Playing) {
                                       bloc.add(Pause());
                                     } else {
-                                      bloc.add(Play(
-                                        BlocProvider.of<ProgressionHandlerBloc>(
-                                                context)
-                                            .chordMeasures,
-                                      ));
+                                      List<Progression<Chord>> chords =
+                                          BlocProvider.of<
+                                                      ProgressionHandlerBloc>(
+                                                  context)
+                                              .chordMeasures;
+                                      print(chords);
+                                      bloc.add(Play(chords));
                                     }
                                   },
                                 );

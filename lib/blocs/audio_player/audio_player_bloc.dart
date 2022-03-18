@@ -7,7 +7,6 @@ import 'package:thoery_test/modals/progression.dart';
 import 'package:tonic/tonic.dart';
 
 part 'audio_player_event.dart';
-
 part 'audio_player_state.dart';
 
 class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
@@ -18,7 +17,12 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   static const int maxMelody = 81;
   bool _playing = false;
   List<Progression<Chord>>? _currentMeasures;
-  int _currentMeasure = 0, _currentChord = 0;
+
+  // Current measure.
+  int _cM = 0;
+
+  // Current chord in the current measure.
+  int _cC = 0;
 
   AudioPlayerBloc() : super(Idle()) {
     for (int i = 0; i < maxPlayers; i++) {
@@ -28,8 +32,8 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
       _playing = true;
       if (_currentMeasures == null) {
         _currentMeasures = event.measures;
-        _currentMeasure = 0;
-        _currentChord = 0;
+        _cM = 0;
+        _cC = 0;
       }
       emit(Playing());
       await _play();
@@ -53,8 +57,9 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     });
     on<Reset>((event, emit) {
       _playing = false;
-      _currentMeasure = 0;
-      _currentChord = 0;
+      _currentMeasures = null;
+      _cM = 0;
+      _cC = 0;
       emit(Idle());
     });
   }
@@ -88,26 +93,22 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     int mult = 6000,
   }) async {
     if (_currentMeasures != null) {
-      for (int m = _currentMeasure; m < _currentMeasures!.length; m++) {
-        _currentMeasure = m;
-        Progression<Chord> prog = _currentMeasures![m];
-        for (int c = _currentChord;
-            c < _currentMeasures![_currentMeasure].length;
-            c++) {
+      for (_cM; _cM < _currentMeasures!.length; _cM++) {
+        Progression<Chord> prog = _currentMeasures![_cM];
+        for (_cC; _cC < _currentMeasures![_cM].length; _cC++) {
           if (_playing) {
-            _currentChord = c;
             Duration duration =
-                Duration(milliseconds: (prog.durations[c] * mult).toInt());
-            if (prog[c] != null) {
-              print(prog[c]);
+                Duration(milliseconds: (prog.durations[_cC] * mult).toInt());
+            if (prog[_cC] != null) {
+              print(prog[_cC]);
               if (arpeggio) {
                 _playChordArpeggio(
-                    chord: prog[c]!,
+                    chord: prog[_cC]!,
                     duration: duration,
                     noteLength:
                         Duration(milliseconds: ((0.125 / 2) * mult).toInt()));
               } else {
-                _playChord(prog[c]!);
+                _playChord(prog[_cC]!);
               }
             }
             await Future.delayed(duration);
@@ -115,6 +116,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
             return;
           }
         }
+        _cC = 0;
       }
     }
   }
