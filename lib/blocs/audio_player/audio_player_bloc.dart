@@ -12,8 +12,10 @@ part 'audio_player_state.dart';
 class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   static const maxPlayers = 4;
   final List<Player> _players = [];
-  static const int bassAdd = 24;
-  static const int noteAdd = 48;
+  static const int defaultBassOctave = 2;
+  static const int defaultBassOctaves = defaultBassOctave * 12;
+  static const int defaultNoteOctave = 4;
+  static const int defaultNoteOctaves = defaultNoteOctave * 12;
   static const int maxMelody = 81;
   bool _playing = false;
   List<Progression<Chord>>? _currentMeasures;
@@ -70,6 +72,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     int mult = 6000,
   }) async {
     if (_currentMeasures != null) {
+      List<Pitch>? prevPitches;
       for (_cM; _cM < _currentMeasures!.length; _cM++) {
         Progression<Chord> prog = _currentMeasures![_cM];
         for (_cC; _cC < _currentMeasures![_cM].length; _cC++) {
@@ -83,9 +86,9 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
                     chord: prog[_cC]!,
                     duration: duration,
                     noteLength:
-                        Duration(milliseconds: ((0.125 / 2) * mult).toInt()));
+                    Duration(milliseconds: ((0.125 / 2) * mult).toInt()));
               } else {
-                _playChord(prog[_cC]!);
+                prevPitches = _playChord(prog[_cC]!, prevPitches);
               }
             }
             await Future.delayed(duration);
@@ -98,8 +101,8 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     }
   }
 
-  void _playChord(Chord chord) async {
-    List<Pitch> pitches = _walk(chord);
+  List<Pitch> _playChord(Chord chord, [List<Pitch>? prev]) {
+    List<Pitch> pitches = _walk(chord, prev);
     for (int i = 0; i < maxPlayers; i++) {
       try {
         _players[i].open(Media.asset(pitchFileName(pitches[i])));
@@ -108,6 +111,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
         rethrow;
       }
     }
+    return pitches;
   }
 
   void _playChordArpeggio({
@@ -130,20 +134,63 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   }
 
   // TODO: Actually implement this...
-  List<Pitch> _walk(Chord chord, [Chord? next]) {
-    List<Pitch> prev = chord.pitches;
+  List<Pitch> _walk(Chord chord, [List<Pitch>? previous]) {
+    List<Pitch> cPitches = chord.pitches;
     List<Pitch> pitches = [
-      Pitch.fromMidiNumber(prev.first.midiNumber + bassAdd)
+      /* TODO: Since the chord could be in any pitch find a consistent way of
+                calculating it's pitch. */
+      Pitch.fromMidiNumber(cPitches.first.midiNumber + defaultBassOctaves)
     ];
-    for (int i = prev.length == 3 ? 0 : 1; i < prev.length; i++) {
-      int note = prev[i].midiNumber;
-      int diff = noteAdd ~/ 12;
-      if (note + noteAdd > maxMelody) {
-        diff = ((note + noteAdd - maxMelody) / 12).floor();
+    previous?.removeAt(0);
+    for (int i = cPitches.length == 3 ? 0 : 1; i < cPitches.length; i++) {
+      int note = cPitches[i].midiNumber;
+      // in default we add noteAdd octaves...
+      int add = defaultNoteOctaves;
+      if (previous != null) {
+        int closest = searchClosestPitch(previous, cPitches[i]);
+        int octaveDiff =
+            ((previous[closest].midiNumber ~/ 12) - (note ~/ 12)).abs();
+        add = 12 * octaveDiff;
+        // TODO: Find a better way other then removing...
+        previous.removeAt(closest);
       }
-      pitches.add(Pitch.fromMidiNumber(note + (diff * 12)));
+      note = note + add;
+      if (note > maxMelody) {
+        int octaveDiff = (note / 12).ceil();
+        int maxOctave = maxMelody ~/ 12;
+        note -= 12 * (octaveDiff - maxOctave);
+      }
+      pitches.add(Pitch.fromMidiNumber(note));
     }
+    print(pitches);
     return pitches;
+  }
+
+  // TODO: Took it from stack overflow...
+  static int searchClosestPitch(List<Pitch> values, Pitch value) {
+    int valueM = value.midiNumber % 12;
+    if (valueM < values[0].midiNumber % 12) {
+      return 0;
+    }
+    if (valueM > values[values.length - 1].midiNumber % 12) {
+      return values.length - 1;
+    }
+    int low = 0, high = values.length - 1;
+    while (low <= high) {
+      int mid = (high + low) ~/ 2;
+      int midM = values[mid].midiNumber % 12;
+      if (valueM < midM) {
+        high = mid - 1;
+      } else if (valueM > midM) {
+        low = mid + 1;
+      } else {
+        return mid;
+      }
+    }
+    return ((values[low].midiNumber % 12) - valueM) <
+            (valueM - (values[high].midiNumber % 12))
+        ? low
+        : high;
   }
 
   String pitchFileName(Pitch pitch) =>
