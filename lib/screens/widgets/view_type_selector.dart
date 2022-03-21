@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../modals/progression_type.dart';
-import 'TSelector.dart';
+import '../../modals/progression_type.dart';
+import '../../widgets/TSelector.dart';
 
 class ViewTypeSelector extends StatelessWidget {
   const ViewTypeSelector(

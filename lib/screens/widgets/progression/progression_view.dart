@@ -2,11 +2,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/modals/progression.dart';
-import 'package:weizmann_theory_app_test/widgets/measure_view.dart';
+import 'package:weizmann_theory_app_test/screens/widgets/progression/measure_view.dart';
 
-import '../Constants.dart';
-import '../blocs/progression_handler_bloc.dart';
-import '../utilities.dart';
+import '../../../Constants.dart';
+import '../../../blocs/progression_handler_bloc.dart';
+import '../../../utilities.dart';
 
 class ProgressionView<T> extends StatefulWidget {
   const ProgressionView({

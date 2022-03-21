@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:thoery_test/modals/progression.dart';
-import 'package:thoery_test/modals/scale_degree_chord.dart';
 import 'package:weizmann_theory_app_test/Constants.dart';
-import 'package:weizmann_theory_app_test/widgets/progression_value_view.dart';
-import '../utilities.dart';
-import 'TButton.dart';
+
+import '../../../utilities.dart';
+import '../../../widgets/TButton.dart';
+import 'progression_value_view.dart';
 
 class Measure extends StatelessWidget {
   const Measure({

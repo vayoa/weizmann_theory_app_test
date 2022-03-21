@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:thoery_test/modals/scale_degree_chord.dart';
+import 'package:weizmann_theory_app_test/Constants.dart';
 import 'package:weizmann_theory_app_test/utilities.dart';
-
-import '../Constants.dart';
 
 class ProgressionValueView<T> extends StatelessWidget {
   const ProgressionValueView({

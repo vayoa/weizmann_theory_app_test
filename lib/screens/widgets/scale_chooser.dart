@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
-import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/widgets/TButton.dart';
 import 'package:weizmann_theory_app_test/widgets/TDropdownButton.dart';
-import 'package:thoery_test/extensions/scale_extension.dart';
 
-import '../blocs/progression_handler_bloc.dart';
+import '../../blocs/progression_handler_bloc.dart';
 
 class ScaleChooser extends StatefulWidget {
   const ScaleChooser({Key? key}) : super(key: key);
