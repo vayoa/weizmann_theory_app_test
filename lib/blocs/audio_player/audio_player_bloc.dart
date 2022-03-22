@@ -23,8 +23,12 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   // Current measure.
   int _cM = 0;
 
+  int get currentMeasure => _cM;
+
   // Current chord in the current measure.
   int _cC = 0;
+
+  int get currentChord => _cC;
 
   AudioPlayerBloc() : super(Idle()) {
     for (int i = 0; i < maxPlayers; i++) {
@@ -38,7 +42,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
         _cC = 0;
       }
       emit(Playing());
-      await _play();
+      await _play(emit: emit);
       if (_playing) {
         add(const Reset());
       }
@@ -68,14 +72,19 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
 
   // TODO: Load the first chord before the rest.
   Future<void> _play({
+    required Emitter<AudioPlayerState> emit,
     bool arpeggio = false,
     int mult = 6000,
   }) async {
     if (_currentMeasures != null) {
       List<Pitch>? prevPitches;
-      for (_cM; _cM < _currentMeasures!.length; _cM++) {
+      for (_cM;
+          _currentMeasures != null && _cM < _currentMeasures!.length;
+          _cM++) {
         Progression<Chord> prog = _currentMeasures![_cM];
-        for (_cC; _cC < _currentMeasures![_cM].length; _cC++) {
+        for (_cC;
+            _currentMeasures != null && _cC < _currentMeasures![_cM].length;
+            _cC++) {
           if (_playing) {
             Duration duration =
                 Duration(milliseconds: (prog.durations[_cC] * mult).toInt());
@@ -86,7 +95,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
                     chord: prog[_cC]!,
                     duration: duration,
                     noteLength:
-                    Duration(milliseconds: ((0.125 / 2) * mult).toInt()));
+                        Duration(milliseconds: ((0.125 / 2) * mult).toInt()));
               } else {
                 prevPitches = _playChord(prog[_cC]!, prevPitches);
               }

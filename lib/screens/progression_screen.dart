@@ -60,84 +60,99 @@ class ProgressionScreen extends StatelessWidget {
                           children: [
                             BlocBuilder<AudioPlayerBloc, AudioPlayerState>(
                               builder: (context, state) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: TIconButton(
-                                    iconData: state is Playing
-                                        ? Icons.pause_rounded
-                                        : Icons.play_arrow_rounded,
-                                    size: 36,
-                                    crop: true,
-                                    // TODO: Find a better place for this.
-                                    disabled:
-                                        BlocProvider.of<ProgressionHandlerBloc>(
-                                                context,
-                                                listen: true)
-                                            .currentProgression
-                                            .isEmpty,
-                                    onPressed: () {
-                                      AudioPlayerBloc bloc =
-                                          BlocProvider.of<AudioPlayerBloc>(
-                                              context);
-                                      if (state is Playing) {
-                                        bloc.add(Pause());
-                                      } else {
-                                        List<Progression<Chord>> chords =
-                                            BlocProvider.of<
-                                                        ProgressionHandlerBloc>(
+                                return IgnorePointer(
+                                  // TODO: Find a better place for this.
+                                  ignoring:
+                                      BlocProvider.of<ProgressionHandlerBloc>(
+                                              context,
+                                              listen: true)
+                                          .currentProgression
+                                          .isEmpty,
+                                  child: Row(
+                                    children: [
+                                      TIconButton(
+                                        iconData: state is Playing
+                                            ? Icons.pause_rounded
+                                            : Icons.play_arrow_rounded,
+                                        size: 32,
+                                        crop: true,
+                                        onPressed: () {
+                                          AudioPlayerBloc bloc =
+                                              BlocProvider.of<AudioPlayerBloc>(
+                                                  context);
+                                          if (state is Playing) {
+                                            bloc.add(Pause());
+                                          } else {
+                                            List<Progression<Chord>> chords =
+                                                BlocProvider.of<
+                                                            ProgressionHandlerBloc>(
+                                                        context)
+                                                    .chordMeasures;
+                                            print(chords);
+                                            bloc.add(Play(chords));
+                                          }
+                                        },
+                                      ),
+                                      TIconButton(
+                                        iconData: Icons.stop_rounded,
+                                        size: 32,
+                                        onPressed: () =>
+                                            BlocProvider.of<AudioPlayerBloc>(
                                                     context)
-                                                .chordMeasures;
-                                        print(chords);
-                                        bloc.add(Play(chords));
-                                      }
-                                    },
+                                                .add(const Reset()),
+                                      ),
+                                    ],
                                   ),
                                 );
                               },
                             ),
                             const Text(
                               " 00 / 34s  BPM: 120, 4/4",
-                              style: TextStyle(fontSize: 18),
+                              style: TextStyle(fontSize: 16),
                             ),
                           ],
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            ViewTypeSelector(
-                              tight: true,
-                              onPressed: (newType) =>
+                        SizedBox(
+                          height: 25,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ViewTypeSelector(
+                                tight: true,
+                                onPressed: (newType) =>
+                                    BlocProvider.of<ProgressionHandlerBloc>(
+                                            context)
+                                        .add(SwitchType(newType)),
+                              ),
+                              Row(
+                                children: const [
+                                  Text(
+                                    'Scale: ',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                  ScaleChooser(),
+                                ],
+                              ),
+                              TButton(
+                                label: 'Reharmonize!',
+                                iconData: Icons.bubble_chart_rounded,
+                                onPressed: () {
                                   BlocProvider.of<ProgressionHandlerBloc>(
                                           context)
-                                      .add(SwitchType(newType)),
-                            ),
-                            Row(
-                              children: const [
-                                Text(
-                                  'Scale: ',
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                                ScaleChooser(),
-                              ],
-                            ),
-                            TButton(
-                              label: 'Reharmonize!',
-                              iconData: Icons.bubble_chart_rounded,
-                              onPressed: () {
-                                BlocProvider.of<ProgressionHandlerBloc>(context)
-                                    .add(Reharmonize());
-                              },
-                            ),
-                            const ReharmonizeRange(),
-                            TButton(
-                              label: 'Surprise Me',
-                              iconData: Icons.lightbulb,
-                              onPressed: () =>
-                                  BlocProvider.of<ProgressionHandlerBloc>(
-                                          context)
-                                      .add(SurpriseMe()),
-                            ),
-                          ],
+                                      .add(Reharmonize());
+                                },
+                              ),
+                              const ReharmonizeRange(),
+                              TButton(
+                                label: 'Surprise Me',
+                                iconData: Icons.lightbulb,
+                                onPressed: () =>
+                                    BlocProvider.of<ProgressionHandlerBloc>(
+                                            context)
+                                        .add(SurpriseMe()),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

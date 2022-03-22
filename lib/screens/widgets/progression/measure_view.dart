@@ -123,12 +123,12 @@ class MeasureView<T> extends StatelessWidget {
     }
     if (!measure.full && last) {
       widgets.add(const SizedBox(
-        height: Constants.measureHeight,
+        height: Constants.measureHeight - (Constants.measureFontSize * 0.8),
         child: VerticalDivider(thickness: 4),
       ));
       widgets.add(Spacer(
           flex: (measure.timeSignature.decimal - measure.duration) ~/
-              measure.minDuration));
+              measure.timeSignature.step));
     }
     return widgets;
   }
@@ -224,7 +224,7 @@ class _EditedMeasureState<T> extends State<EditedMeasure<T>> {
                   RegExp(r"[\w\d, /+°øØ#b♯♭𝄪𝄫]"))
             ],
             decoration: InputDecoration(hintText: initial),
-            style: const TextStyle(fontSize: Constants.measureFontSize),
+            style: Constants.valueTextStyle,
             onSubmitted: (input) => _submit(),
           ),
         ),

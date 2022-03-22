@@ -19,11 +19,11 @@ class ProgressionValueView<T> extends StatelessWidget {
         children: [
           TextSpan(
             text: cut[1],
-            style: const TextStyle(fontSize: Constants.measurePatternFontSize),
+            style: Constants.valuePatternTextStyle,
           )
         ],
       ),
-      style: const TextStyle(fontSize: Constants.measureFontSize),
+      style: Constants.valueTextStyle,
     );
   }
 }

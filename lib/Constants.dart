@@ -11,6 +11,7 @@ abstract class Constants {
       Color.fromARGB(100, 206, 206, 206);
   static const Color selectedColor = Color.fromARGB(255, 187, 187, 187);
   static const Color measureColor = Color.fromARGB(255, 171, 171, 171);
+  static const Color playedValueColor = Colors.blue;
   static const double measureWidth = 315;
   static const double measureHeight = 66;
   static const double measureSpacing = measureHeight / 2;
@@ -20,4 +21,8 @@ abstract class Constants {
   static const double minButtonWidth = 54;
   static const double minButtonHeight = 29;
   static const double borderRadius = 10;
+  static const TextStyle valueTextStyle =
+      TextStyle(fontSize: Constants.measureFontSize);
+  static const TextStyle valuePatternTextStyle =
+      TextStyle(fontSize: Constants.measurePatternFontSize);
 }
