@@ -65,7 +65,9 @@ class _ScaleChooserState extends State<ScaleChooser> {
                             isDense: true,
                           ),
                           onSubmitted: (newTonic) {
-                            newTonic = newTonic[0].toUpperCase() + newTonic[1];
+                            String prev = newTonic;
+                            newTonic = newTonic[0].toUpperCase();
+                            if (prev.length > 1) newTonic += prev[1];
                             if (newTonic != currentTonicName) {
                               bloc.add(ChangeScale(PitchScale.common(
                                   tonic: Pitch.parse(newTonic), minor: minor)));
