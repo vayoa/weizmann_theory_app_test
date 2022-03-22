@@ -54,6 +54,15 @@ class _MyAppState extends State<MyApp> {
             ),
           ),
         ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            primary: Colors.black,
+            backgroundColor: Constants.buttonBackgroundColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Constants.borderRadius),
+            ),
+          ),
+        ),
         toggleButtonsTheme: ToggleButtonsThemeData(
           constraints: const BoxConstraints(
             minHeight: Constants.minButtonHeight,

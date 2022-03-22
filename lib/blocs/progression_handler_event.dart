@@ -30,12 +30,12 @@ class SwitchType extends ProgressionHandlerEvent {
 class CalculateScale extends ProgressionHandlerEvent {}
 
 class ChangeScale extends ProgressionHandlerEvent {
-  final int index;
+  final PitchScale newScale;
 
   @override
-  List<Object?> get props => [index];
+  List<Object?> get props => [newScale];
 
-  const ChangeScale(this.index);
+  const ChangeScale(this.newScale);
 }
 
 class ChangeRange extends ProgressionHandlerEvent {

@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
-import 'package:thoery_test/extensions/scale_extension.dart';
 import 'package:thoery_test/modals/chord_progression.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/progression.dart';
@@ -15,14 +14,12 @@ import 'package:weizmann_theory_app_test/utilities.dart';
 import '../modals/progression_type.dart';
 
 part 'progression_handler_event.dart';
-
 part 'progression_handler_state.dart';
 
 class ProgressionHandlerBloc
     extends Bloc<ProgressionHandlerEvent, ProgressionHandlerState> {
   late final SubstitutionHandlerBloc _substitutionHandlerBloc;
-  List<PitchScale>? scales;
-  int currentScale = 0;
+  PitchScale? _currentScale;
   ChordProgression currentChords = ChordProgression.empty();
   ScaleDegreeProgression currentProgression =
       ScaleDegreeProgression.empty(inMinor: false);
@@ -37,18 +34,18 @@ class ProgressionHandlerBloc
       : super(ProgressionHandlerInitial()) {
     on<OverrideProgression>((event, emit) {
       // TODO: Add an OverrideChords event...
-      if (scales == null || scales!.isEmpty) _calculateScales();
+      if (_currentScale == null) _calculateScales();
       _chordMeasures = null;
       _progressionMeasures = null;
       if (!event.newProgression.isEmpty) {
         if (event.newProgression[0] is Chord) {
           currentChords = ChordProgression.fromProgression(
               event.newProgression as Progression<Chord>);
-          currentProgression = ScaleDegreeProgression.fromChords(
-              scales![currentScale], currentChords);
+          currentProgression =
+              ScaleDegreeProgression.fromChords(_currentScale!, currentChords);
         } else {
           currentProgression = event.newProgression as ScaleDegreeProgression;
-          currentChords = currentProgression.inScale(scales![currentScale]);
+          currentChords = currentProgression.inScale(_currentScale!);
         }
       }
       _substitutionHandlerBloc.add(ClearSubstitutions());
@@ -67,22 +64,21 @@ class ProgressionHandlerBloc
     on<CalculateScale>((event, emit) {
       _calculateScales();
       return emit(RecalculatedScales(
-          progression: currentlyViewedProgression, scales: scales!));
+          progression: currentlyViewedProgression, scale: _currentScale!));
     });
     on<ChangeScale>((event, emit) {
-      if (scales == null || scales!.isEmpty) {
+      if (_currentScale == null) {
         _calculateScales();
         emit(RecalculatedScales(
-            progression: currentlyViewedProgression, scales: scales!));
+            progression: currentlyViewedProgression, scale: _currentScale!));
       }
-      currentScale = event.index;
-      currentProgression = ScaleDegreeProgression.fromChords(
-          scales![currentScale], currentChords);
+      _currentScale = event.newScale;
+      currentProgression =
+          ScaleDegreeProgression.fromChords(_currentScale!, currentChords);
       _progressionMeasures = null;
       emit(ProgressionChanged(currentlyViewedProgression));
       return emit(ScaleChanged(
-          progression: currentlyViewedProgression,
-          scale: scales![currentScale]));
+          progression: currentlyViewedProgression, scale: _currentScale!));
     });
     on<ChangeRange>((event, emit) {
       int newFromChord = fromChord, newToChord = toChord;
@@ -109,7 +105,7 @@ class ProgressionHandlerBloc
           progression = ScaleDegreeProgression.fromProgression(
               _parseInputs<ScaleDegreeChord>(
                   event.inputs, (input) => ScaleDegreeChord.parse(input)),
-              inMinor: scales![currentScale].isMinor);
+              inMinor: _currentScale!.isMinor);
         }
         add(SetMeasure(newMeasure: progression, index: event.measureIndex));
       } on Exception catch (e) {
@@ -122,7 +118,7 @@ class ProgressionHandlerBloc
         add(
           OverrideProgression(
             ScaleDegreeProgression.fromChords(
-              scales![currentScale],
+              _currentScale!,
               currentChords.replaceMeasure(
                 event.index,
                 event.newMeasure as Progression<Chord>,
@@ -154,8 +150,8 @@ class ProgressionHandlerBloc
       )),
     );
     on<SurpriseMe>(
-      (event, emit) => _substitutionHandlerBloc.add(SurpriseMeSubs(
-          progression: currentChords, scale: currentlyActiveScale)),
+          (event, emit) => _substitutionHandlerBloc.add(
+          SurpriseMeSubs(progression: currentChords, scale: currentScale!)),
     );
     on<ApplySubstitution>(
       (event, emit) =>
@@ -187,13 +183,13 @@ class ProgressionHandlerBloc
     return _progressionMeasures!;
   }
 
-  PitchScale get currentlyActiveScale => scales![currentScale];
+  PitchScale? get currentScale => _currentScale;
 
   SubstitutionHandlerBloc get substitutionHandlerBloc =>
       _substitutionHandlerBloc;
 
   void _calculateScales() {
-    scales = currentChords.krumhanslSchmucklerScales;
+    _currentScale = currentChords.krumhanslSchmucklerScales.first;
   }
 
   // TODO: Optimize this.
