@@ -4,6 +4,7 @@ import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/BankProgressionButton.dart';
+import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression_title.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/reharmonize_bar.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_window.dart';
 
@@ -46,11 +47,7 @@ class ProgressionScreen extends StatelessWidget {
                         ),
                         Row(
                           children: [
-                            const Text(
-                              "My Song's Title",
-                              style: TextStyle(
-                                  fontSize: 24, fontWeight: FontWeight.bold),
-                            ),
+                            ProgressionTitle(),
                             BankProgressionButton(
                               onToggle: (active) {},
                             ),
