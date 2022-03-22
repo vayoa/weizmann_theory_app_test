@@ -34,14 +34,8 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
         TextStyle style = TextStyle(fontSize: widget.textSize);
         ProgressionHandlerBloc bloc =
             BlocProvider.of<ProgressionHandlerBloc>(context);
-        double height = widget.textSize * 1.5;
-        return ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: height,
-            maxHeight: height,
-            maxWidth: widget.textSize * 4.8,
-            minWidth: widget.textSize * 3.8,
-          ),
+        return SizedBox(
+          width: widget.textSize * 3.8,
           child: TextField(
             controller: controller,
             inputFormatters: [FilteringTextInputFormatter.allow(validInput)],
@@ -50,8 +44,13 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
             decoration: InputDecoration(
               hintText: '${bloc.fromChord} - ${bloc.toChord}',
               hintStyle: style,
+              border: const UnderlineInputBorder(
+                  borderRadius: BorderRadius.horizontal(
+                      right: Radius.circular(Constants.borderRadius)),
+                  borderSide: BorderSide.none),
               fillColor: Constants.rangeSelectTransparentColor,
               filled: true,
+              isDense: true,
             ),
             style: style,
             textAlign: TextAlign.center,

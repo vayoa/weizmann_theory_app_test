@@ -11,6 +11,7 @@ class TButton extends StatelessWidget {
     this.size = 14,
     this.iconSize,
     this.tight = false,
+    this.borderRadius,
   }) : super(key: key);
 
   final String label;
@@ -19,6 +20,7 @@ class TButton extends StatelessWidget {
   final double size;
   final double? iconSize;
   final bool tight;
+  final BorderRadius? borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +31,11 @@ class TButton extends StatelessWidget {
             : null,
         padding: tight ? const EdgeInsets.all(5.0) : null,
         shape: tight
-            ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0))
-            : null,
+            ? RoundedRectangleBorder(
+                borderRadius: borderRadius ?? BorderRadius.circular(5.0))
+            : (borderRadius == null
+                ? null
+                : RoundedRectangleBorder(borderRadius: borderRadius!)),
       ),
       label: Text(label, style: TextStyle(fontSize: size)),
       icon: tight

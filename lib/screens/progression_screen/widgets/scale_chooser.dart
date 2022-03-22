@@ -80,9 +80,9 @@ class _ScaleChooserState extends State<ScaleChooser> {
                           padding: EdgeInsets.zero,
                           backgroundColor: Constants.buttonBackgroundColor,
                           side: BorderSide.none,
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(Constants.borderRadius),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.horizontal(
+                                right: Radius.circular(Constants.borderRadius)),
                           ),
                         ),
                         onPressed: () =>

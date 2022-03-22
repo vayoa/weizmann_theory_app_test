@@ -4,6 +4,7 @@ import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/BankProgressionButton.dart';
+import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/reharmonize_bar.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_window.dart';
 
 import '../../blocs/audio_player/audio_player_bloc.dart';
@@ -11,7 +12,6 @@ import '../../blocs/progression_handler_bloc.dart';
 import '../../widgets/TButton.dart';
 import '../../widgets/t_icon_button.dart';
 import 'widgets/progression/selectable_progression_view.dart';
-import 'widgets/reharmonize_range.dart';
 import 'widgets/scale_chooser.dart';
 import 'widgets/view_type_selector.dart';
 
@@ -114,7 +114,7 @@ class ProgressionScreen extends StatelessWidget {
                         ),
                         ConstrainedBox(
                           constraints: const BoxConstraints(
-                              minHeight: 24, maxHeight: 24, maxWidth: 600),
+                              minHeight: 24, maxHeight: 24, maxWidth: 585),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -126,16 +126,7 @@ class ProgressionScreen extends StatelessWidget {
                                         .add(SwitchType(newType)),
                               ),
                               const ScaleChooser(),
-                              TButton(
-                                label: 'Reharmonize!',
-                                iconData: Icons.bubble_chart_rounded,
-                                onPressed: () {
-                                  BlocProvider.of<ProgressionHandlerBloc>(
-                                          context)
-                                      .add(Reharmonize());
-                                },
-                              ),
-                              const ReharmonizeRange(),
+                              const ReharmonizeBar(),
                               TButton(
                                 label: 'Surprise Me',
                                 iconData: Icons.lightbulb,
