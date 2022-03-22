@@ -32,6 +32,12 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
   int editedMeasure = -1;
   int hoveredMeasure = -1;
 
+  int _getIndexFromPosition(Offset localPosition) =>
+      (localPosition.dx ~/ Constants.measureWidth) +
+      (widget.measuresInLine *
+          (localPosition.dy ~/
+              (Constants.measureHeight + Constants.measureSpacing)));
+
   @override
   Widget build(BuildContext context) {
     ProgressionHandlerBloc bloc =
@@ -44,13 +50,18 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
       width: widget.measuresInLine * Constants.measureWidth,
       child: Listener(
         onPointerHover: (event) {
-          int index = (event.localPosition.dx ~/ Constants.measureWidth) +
-              (widget.measuresInLine *
-                  (event.localPosition.dy ~/
-                      (Constants.measureHeight + Constants.measureSpacing)));
+          int index = _getIndexFromPosition(event.localPosition);
           if (index != hoveredMeasure) {
             setState(() {
               hoveredMeasure = index;
+            });
+          }
+        },
+        onPointerDown: (event) {
+          if (event.buttons == kSecondaryButton) {
+            int index = _getIndexFromPosition(event.localPosition);
+            setState(() {
+              editedMeasure = index;
             });
           }
         },

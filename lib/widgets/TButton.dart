@@ -16,7 +16,7 @@ class TButton extends StatelessWidget {
 
   final String label;
   final IconData iconData;
-  final Function()? onPressed;
+  final VoidCallback? onPressed;
   final double size;
   final double? iconSize;
   final bool tight;

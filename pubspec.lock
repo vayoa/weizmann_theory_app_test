@@ -336,7 +336,7 @@ packages:
     description:
       path: "."
       ref: "feat/durations-refactor"
-      resolved-ref: "72d2cf4c9537dacc3ed3d46d298082ce2d0666c2"
+      resolved-ref: "945eb69c2fc8cc059174b39647f33eff3daa97bf"
       url: "https://github.com/vayoa/theory_test.git"
     source: git
     version: "1.0.0+1"

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:weizmann_theory_app_test/constants.dart';
 import 'package:weizmann_theory_app_test/screens/library_screen/widgets/library_entry.dart';
+import 'package:weizmann_theory_app_test/screens/progression_screen/progression_screen.dart';
 import 'package:weizmann_theory_app_test/widgets/TButton.dart';
 
 import '../../widgets/general_dialog_page.dart';
@@ -44,6 +45,10 @@ class LibraryScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               return LibraryEntry(
                 title: "My Song's Title",
+                onOpen: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ProgressionScreen())),
                 onDelete: () => showGeneralDialog(
                   context: context,
                   barrierDismissible: true,
@@ -80,7 +85,6 @@ class LibraryScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                onOpen: () {},
               );
             }),
       ),

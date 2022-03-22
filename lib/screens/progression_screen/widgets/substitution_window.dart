@@ -4,13 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/substitution.dart';
 import 'package:thoery_test/modals/substitution_match.dart';
-import 'package:thoery_test/modals/weights/weight.dart';
 import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_view.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/view_type_selector.dart';
+import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/weights_view.dart';
 import 'package:weizmann_theory_app_test/widgets/TButton.dart';
 import 'package:weizmann_theory_app_test/widgets/TSelector.dart';
 import 'package:weizmann_theory_app_test/widgets/general_dialog_page.dart';
+import 'package:weizmann_theory_app_test/widgets/t_icon_button.dart';
 
 import '../../../blocs/progression_handler_bloc.dart';
 import '../../../constants.dart';
@@ -308,10 +309,10 @@ class SubstitutionView extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 4.0),
-              child: GestureDetector(
-                child: const Icon(Icons.notes_rounded,
-                    size: Constants.measurePatternFontSize * 1.2),
-                onTap: () {
+              child: TIconButton(
+                iconData: Icons.notes_rounded,
+                size: Constants.measurePatternFontSize * 1.2,
+                onPressed: () {
                   showGeneralDialog(
                     context: context,
                     barrierDismissible: true,
@@ -319,29 +320,7 @@ class SubstitutionView extends StatelessWidget {
                     pageBuilder: (context, _, __) => GeneralDialogPage(
                       title: 'Details',
                       child: Expanded(
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: substitution.score.details.length,
-                          itemBuilder: (context, index) {
-                            MapEntry<String, Score> detail = substitution
-                                .score.details.entries
-                                .elementAt(index);
-                            return ExpansionTile(
-                              title:
-                                  Text('${detail.key}: ${detail.value.score}'),
-                              expandedAlignment: Alignment.topLeft,
-                              childrenPadding:
-                                  const EdgeInsets.only(left: 22.0),
-                              children: [
-                                Text(
-                                  detail.value.details,
-                                  style: const TextStyle(fontSize: 15),
-                                )
-                              ],
-                            );
-                          },
-                        ),
-                      ),
+                          child: WeightsPreview(score: substitution.score)),
                     ),
                   );
                 },

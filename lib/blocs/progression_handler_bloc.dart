@@ -188,6 +188,8 @@ class ProgressionHandlerBloc
   SubstitutionHandlerBloc get substitutionHandlerBloc =>
       _substitutionHandlerBloc;
 
+  bool get progressionEmpty => currentlyViewedProgression.isEmpty;
+
   void _calculateScales() {
     _currentScale = currentChords.krumhanslSchmucklerScales.first;
   }

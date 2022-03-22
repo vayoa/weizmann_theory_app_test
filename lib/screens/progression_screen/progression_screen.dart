@@ -42,7 +42,7 @@ class ProgressionScreen extends StatelessWidget {
                           tight: true,
                           size: 12,
                           iconData: Icons.arrow_back_ios_rounded,
-                          onPressed: () {},
+                          onPressed: () => Navigator.pop(context),
                         ),
                         Row(
                           children: [
@@ -66,8 +66,7 @@ class ProgressionScreen extends StatelessWidget {
                                       BlocProvider.of<ProgressionHandlerBloc>(
                                               context,
                                               listen: true)
-                                          .currentProgression
-                                          .isEmpty,
+                                          .progressionEmpty,
                                   child: Row(
                                     children: [
                                       TIconButton(
@@ -81,7 +80,7 @@ class ProgressionScreen extends StatelessWidget {
                                               BlocProvider.of<AudioPlayerBloc>(
                                                   context);
                                           if (state is Playing) {
-                                            bloc.add(Pause());
+                                            bloc.add(const Pause());
                                           } else {
                                             List<Progression<Chord>> chords =
                                                 BlocProvider.of<
@@ -114,7 +113,7 @@ class ProgressionScreen extends StatelessWidget {
                         ),
                         ConstrainedBox(
                           constraints: const BoxConstraints(
-                              minHeight: 24, maxHeight: 24, maxWidth: 585),
+                              minHeight: 24, maxHeight: 24, maxWidth: 590),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
