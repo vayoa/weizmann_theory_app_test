@@ -4,7 +4,7 @@ import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:weizmann_theory_app_test/widgets/TButton.dart';
 import 'package:weizmann_theory_app_test/widgets/TDropdownButton.dart';
 
-import '../../blocs/progression_handler_bloc.dart';
+import '../../../blocs/progression_handler_bloc.dart';
 
 class ScaleChooser extends StatefulWidget {
   const ScaleChooser({Key? key}) : super(key: key);

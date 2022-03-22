@@ -3,16 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:tonic/tonic.dart';
+import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/BankProgressionButton.dart';
+import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_window.dart';
 
-import '../blocs/audio_player/audio_player_bloc.dart';
-import '../blocs/progression_handler_bloc.dart';
-import '../widgets/TButton.dart';
-import '../widgets/t_icon_button.dart';
-import 'widgets/BankProgressionButton.dart';
+import '../../blocs/audio_player/audio_player_bloc.dart';
+import '../../blocs/progression_handler_bloc.dart';
+import '../../widgets/TButton.dart';
+import '../../widgets/t_icon_button.dart';
 import 'widgets/progression/selectable_progression_view.dart';
 import 'widgets/reharmonize_range.dart';
 import 'widgets/scale_chooser.dart';
-import 'widgets/substitution_window.dart';
 import 'widgets/view_type_selector.dart';
 
 class ProgressionScreen extends StatelessWidget {
@@ -112,8 +112,9 @@ class ProgressionScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        SizedBox(
-                          height: 25,
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(
+                              minHeight: 24, maxHeight: 24, maxWidth: 600),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -124,15 +125,7 @@ class ProgressionScreen extends StatelessWidget {
                                             context)
                                         .add(SwitchType(newType)),
                               ),
-                              Row(
-                                children: const [
-                                  Text(
-                                    'Scale: ',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                  ScaleChooser(),
-                                ],
-                              ),
+                              const ScaleChooser(),
                               TButton(
                                 label: 'Reharmonize!',
                                 iconData: Icons.bubble_chart_rounded,

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../Constants.dart';
-import '../../blocs/progression_handler_bloc.dart';
+import '../../../blocs/progression_handler_bloc.dart';
+import '../../../constants.dart';
 
 class ReharmonizeRange extends StatefulWidget {
   const ReharmonizeRange({Key? key, this.textSize = 14}) : super(key: key);

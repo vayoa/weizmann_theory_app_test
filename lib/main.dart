@@ -4,10 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:weizmann_theory_app_test/blocs/progression_handler_bloc.dart';
 import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen.dart';
+import 'package:weizmann_theory_app_test/screens/progression_screen/progression_screen.dart';
 
-import 'Constants.dart';
 import 'blocs/audio_player/audio_player_bloc.dart';
+import 'constants.dart';
 
 void main() {
   DartVLC.initialize();

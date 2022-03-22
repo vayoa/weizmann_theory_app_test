@@ -25,4 +25,7 @@ abstract class Constants {
       TextStyle(fontSize: Constants.measureFontSize);
   static const TextStyle valuePatternTextStyle =
       TextStyle(fontSize: Constants.measurePatternFontSize);
+  static const double libraryEntryWidth = 340;
+  static const double libraryEntryHeight = 40;
+  static const Color libraryEntryColor = Color.fromARGB(255, 163, 163, 163);
 }

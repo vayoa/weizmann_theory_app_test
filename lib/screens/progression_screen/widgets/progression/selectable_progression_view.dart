@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:thoery_test/modals/progression.dart';
-import 'package:weizmann_theory_app_test/screens/widgets/progression/progression_view.dart';
+import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_view.dart';
 
-import '../../../Constants.dart';
+import '../../../../constants.dart';
 
 class SelectableProgressionView<T> extends StatelessWidget {
   const SelectableProgressionView({

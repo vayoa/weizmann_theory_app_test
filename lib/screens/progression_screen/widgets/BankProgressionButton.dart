@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../Constants.dart';
+import '../../../constants.dart';
 
 class BankProgressionButton extends StatefulWidget {
   const BankProgressionButton({
@@ -62,15 +62,16 @@ class _BankProgressionButtonState extends State<BankProgressionButton> {
                 duration: const Duration(milliseconds: 200),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const VerticalDivider(),
+                    const VerticalDivider(thickness: 0.5, width: 8),
                     SizedBox(
-                      height: 24,
-                      width: 240,
+                      height: 18,
+                      width: 210,
                       child: Stack(
                         children: [
                           AnimatedPositioned(
-                            right: hovering ? 0.0 : 30.0,
+                            left: hovering ? 0.0 : -20.0,
                             duration: const Duration(milliseconds: 200),
                             child: Text(
                               widget.canBank
@@ -79,6 +80,7 @@ class _BankProgressionButtonState extends State<BankProgressionButton> {
                                       : 'Use for other substitutions'
                                   : 'Progression is longer than 2 - 8 chords',
                               style: TextStyle(
+                                fontSize: 12.0,
                                 color: widget.canBank
                                     ? active
                                         ? Colors.black

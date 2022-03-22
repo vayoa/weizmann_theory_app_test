@@ -2,11 +2,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/modals/progression.dart';
-import 'package:weizmann_theory_app_test/screens/widgets/progression/measure_view.dart';
+import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/measure_view.dart';
 
-import '../../../Constants.dart';
-import '../../../blocs/progression_handler_bloc.dart';
-import '../../../utilities.dart';
+import '../../../../blocs/progression_handler_bloc.dart';
+import '../../../../constants.dart';
+import '../../../../utilities.dart';
 
 class ProgressionView<T> extends StatefulWidget {
   const ProgressionView({
@@ -71,7 +71,9 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
               int? fromChord =
                   shouldPaint ? (index == startMeasure ? startIndex : 0) : null;
               int? toChord = shouldPaint
-                  ? (index == endMeasure ? endIndex : widget.measures[index].length)
+                  ? (index == endMeasure
+                      ? endIndex
+                      : widget.measures[index].length)
                   : null;
               if (index == editedMeasure) {
                 return EditedMeasure(

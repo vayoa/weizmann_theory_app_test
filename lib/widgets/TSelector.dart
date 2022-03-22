@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../Constants.dart';
+
+import '../constants.dart';
 
 class TSelector extends StatefulWidget {
   const TSelector({
