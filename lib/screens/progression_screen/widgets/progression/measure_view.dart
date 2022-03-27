@@ -109,16 +109,23 @@ class MeasureView<T> extends StatelessWidget {
   List<Widget> buildList() {
     List<Widget> widgets = [];
     for (int i = 0; i < measure.length; i++) {
-      _addProgressionValueView(
-        widgets: widgets,
-        value: measure[i],
-        duration: measure.durations[i],
-        minDuration: measure.minDuration,
-        index: i,
-        paint: fromChord != null &&
-            toChord != null &&
-            i >= fromChord! &&
-            i <= toChord!,
+      final bool paint = fromChord != null &&
+          toChord != null &&
+          i >= fromChord! &&
+          i <= toChord!;
+      widgets.add(
+        Flexible(
+          flex: measure.durations[i] ~/ measure.timeSignature.step,
+          child: Material(
+            // TODO: Do it without the material widget.
+            color: paint ? Constants.rangeSelectColor : Colors.transparent,
+            // TODO: Find a way without a row...
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [ProgressionValueView(value: measure[i])],
+            ),
+          ),
+        ),
       );
     }
     if (!measure.full && last) {
@@ -131,30 +138,6 @@ class MeasureView<T> extends StatelessWidget {
               measure.timeSignature.step));
     }
     return widgets;
-  }
-
-  _addProgressionValueView({
-    required List<Widget> widgets,
-    required T? value,
-    required double duration,
-    required double minDuration,
-    required int index,
-    required bool paint,
-  }) {
-    widgets.add(
-      Flexible(
-        flex: duration ~/ minDuration,
-        child: Material(
-          // TODO: Do it without the material widget.
-          color: paint ? Constants.rangeSelectColor : Colors.transparent,
-          // TODO: Find a way without a row...
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [ProgressionValueView(value: value)],
-          ),
-        ),
-      ),
-    );
   }
 }
 

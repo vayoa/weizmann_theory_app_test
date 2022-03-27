@@ -335,8 +335,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "feat/durations-refactor"
-      resolved-ref: "945eb69c2fc8cc059174b39647f33eff3daa97bf"
+      ref: HEAD
+      resolved-ref: cc0e7796acd893e15ad008e66d5c5c6abdd157d8
       url: "https://github.com/vayoa/theory_test.git"
     source: git
     version: "1.0.0+1"
