@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:dart_vlc/dart_vlc.dart';
@@ -16,7 +17,9 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   static const int defaultBassOctaves = defaultBassOctave * 12;
   static const int defaultNoteOctave = 4;
   static const int defaultNoteOctaves = defaultNoteOctave * 12;
-  static const int maxMelody = 81;
+  static const int maxMelody = 71; // B4.
+  static const int maxBass = 62; // D4.
+  static const int minBass = 40; // E2.
   bool _playing = false;
   List<Progression<Chord>>? _currentMeasures;
 
@@ -148,58 +151,68 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     List<Pitch> pitches = [
       /* TODO: Since the chord could be in any pitch find a consistent way of
                 calculating it's pitch. */
-      Pitch.fromMidiNumber(cPitches.first.midiNumber + defaultBassOctaves)
+      Pitch.fromMidiNumber(calcNote(cPitches.first.midiNumber, minBass + 12))
     ];
     previous?.removeAt(0);
+    int found = -1;
+    // First search for equal pitch classes...
+    if (previous != null) {
+      for (int i = cPitches.length == 3 ? 0 : 1;
+          found == -1 && i < cPitches.length;
+          i++) {
+        for (int j = 0; found == -1 && j < previous.length; j++) {
+          if (cPitches[i].midiNumber % 12 == previous[j].midiNumber % 12) {
+            found = i;
+            pitches.add(Pitch.fromMidiNumber(
+                calcNote(cPitches[i].midiNumber, previous[j].midiNumber)));
+            previous.removeAt(j);
+          }
+        }
+      }
+    }
     for (int i = cPitches.length == 3 ? 0 : 1; i < cPitches.length; i++) {
-      int note = cPitches[i].midiNumber;
-      // in default we add noteAdd octaves...
-      int add = defaultNoteOctaves;
-      if (previous != null) {
-        int closest = searchClosestPitch(previous, cPitches[i]);
-        int octaveDiff =
-            ((previous[closest].midiNumber ~/ 12) - (note ~/ 12)).abs();
-        add = 12 * octaveDiff;
-        // TODO: Find a better way other then removing...
-        previous.removeAt(closest);
+      if (i != found) {
+        int note = cPitches[i].midiNumber;
+        if (previous != null) {
+          int closest = fixedClosest(previous, cPitches[i]);
+          note = calcNote(note, previous[closest].midiNumber);
+          // TODO: Find a better way other then removing...
+          previous.removeAt(closest);
+        } else {
+          note = calcNote(note, maxMelody - 12);
+        }
+        pitches.add(Pitch.fromMidiNumber(note));
       }
-      note = note + add;
-      if (note > maxMelody) {
-        int octaveDiff = (note / 12).ceil();
-        int maxOctave = maxMelody ~/ 12;
-        note -= 12 * (octaveDiff - maxOctave);
-      }
-      pitches.add(Pitch.fromMidiNumber(note));
     }
     print(pitches);
     return pitches;
   }
 
-  // TODO: Took it from stack overflow...
-  static int searchClosestPitch(List<Pitch> values, Pitch value) {
-    int valueM = value.midiNumber % 12;
-    if (valueM < values[0].midiNumber % 12) {
-      return 0;
+  static int calcNote(int note, int prev) {
+    note += ((prev - note) / 12).abs().round() * 12;
+    if (note > maxMelody) {
+      int octaveDiff = (note / 12).ceil();
+      int maxOctave = maxMelody ~/ 12;
+      note -= 12 * (octaveDiff - maxOctave);
     }
-    if (valueM > values[values.length - 1].midiNumber % 12) {
-      return values.length - 1;
-    }
-    int low = 0, high = values.length - 1;
-    while (low <= high) {
-      int mid = (high + low) ~/ 2;
-      int midM = values[mid].midiNumber % 12;
-      if (valueM < midM) {
-        high = mid - 1;
-      } else if (valueM > midM) {
-        low = mid + 1;
-      } else {
-        return mid;
+    return note;
+  }
+
+  // TODO: Make binsearch...
+  static int fixedClosest(List<Pitch> values, Pitch value) {
+    int minI = 0;
+    int minDiff = 12;
+    int vAbsolute = value.midiNumber % 12;
+    for (int i = 0; i < values.length; i++) {
+      int pAbsolute = values[i].midiNumber % 12;
+      int currentMinDiff = min((pAbsolute + 12 - vAbsolute).abs(),
+          (pAbsolute.abs() - vAbsolute).abs());
+      if (currentMinDiff < minDiff) {
+        minDiff = currentMinDiff;
+        minI = i;
       }
     }
-    return ((values[low].midiNumber % 12) - valueM) <
-            (valueM - (values[high].midiNumber % 12))
-        ? low
-        : high;
+    return minI;
   }
 
   String pitchFileName(Pitch pitch) =>
