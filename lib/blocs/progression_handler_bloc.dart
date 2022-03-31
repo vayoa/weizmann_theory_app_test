@@ -110,6 +110,7 @@ class ProgressionHandlerBloc
         }
         add(SetMeasure(newMeasure: progression, index: event.measureIndex));
       } on Exception catch (e) {
+        print('hey');
         return emit(InvalidInputReceived(
             progression: currentlyViewedProgression, exception: e));
       }
@@ -235,11 +236,18 @@ class ProgressionHandlerBloc
           } else {
             newValues.add(parse.call(value));
           }
-          currentlyViewedProgression.assertDurationValid(
-              value: newValues.last,
-              duration:
-                  (durations.isEmpty ? duration : duration - durations.last) %
-                      currentProgression.timeSignature.decimal);
+          double dur = duration % currentProgression.timeSignature.decimal;
+          double overallDur = 0.0;
+          if (durations.isNotEmpty) {
+            dur = (duration - durations.last) %
+                currentProgression.timeSignature.decimal;
+            overallDur = dur;
+          }
+          currentlyViewedProgression.checkValidDuration(
+            value: newValues.last,
+            duration: dur,
+            overallDuration: overallDur,
+          );
           durations.add(duration);
         }
       }
