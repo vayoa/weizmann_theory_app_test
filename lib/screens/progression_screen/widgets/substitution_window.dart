@@ -293,7 +293,7 @@ class SubstitutionView extends StatelessWidget {
     Substitution substitution = bloc.substitutions![index];
     PitchScale scale =
         BlocProvider.of<ProgressionHandlerBloc>(context).currentScale!;
-    SubstitutionMatch match = bloc.substitutions![index].match!;
+    SubstitutionMatch match = bloc.substitutions![index].match;
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,

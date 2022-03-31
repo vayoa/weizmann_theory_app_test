@@ -335,8 +335,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: HEAD
-      resolved-ref: cc0e7796acd893e15ad008e66d5c5c6abdd157d8
+      ref: "feat/absolute-durations"
+      resolved-ref: e0e350797326310606990443c1a6c001f99a09e4
       url: "https://github.com/vayoa/theory_test.git"
     source: git
     version: "1.0.0+1"
@@ -367,7 +367,7 @@ packages:
       name: win32
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.4.2"
+    version: "2.5.1"
   xdg_directories:
     dependency: transitive
     description:

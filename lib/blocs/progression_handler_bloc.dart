@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
+import 'package:thoery_test/modals/absolute_durations.dart';
 import 'package:thoery_test/modals/chord_progression.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/progression.dart';
@@ -213,41 +214,41 @@ class ProgressionHandlerBloc
     if (inputs.length == 1 && inputs[0].isEmpty) {
       return Progression.empty();
     }
-    List<String> unique = [];
     List<double> durations = [];
     final double step = currentProgression.timeSignature.step;
-    int count = -1;
     double duration = 0.0;
     List<T?> newValues = [];
+    bool hasNull = false;
     for (int i = 0; i < inputs.length; i++) {
-      if (unique.isNotEmpty &&
-          Progression.adjacentValuesEqual(inputs[i], unique[count])) {
-        durations[count] += step;
-      } else {
-        String value = inputs[i];
-        if (value == '/' || value == '//') {
-          value = 'null';
-        }
-        unique.add(value);
-        if (value == 'null') {
-          newValues.add(null);
-        } else {
-          newValues.add(parse.call(value));
-        }
-        if (durations.isNotEmpty) {
+      if (inputs.isEmpty || inputs[i].isNotEmpty) {
+        duration += step;
+        if (i >= inputs.length - 1 ||
+            inputs.isEmpty ||
+            inputs[i] != inputs[i + 1]) {
+          String value = inputs[i];
+          if (value == '/' || value == '//') {
+            hasNull = true;
+            value = 'null';
+          }
+          if (value == 'null') {
+            newValues.add(null);
+          } else {
+            newValues.add(parse.call(value));
+          }
           currentlyViewedProgression.assertDurationValid(
-              value: newValues[count], duration: durations[count]);
+              value: newValues.last,
+              duration:
+                  (durations.isEmpty ? duration : duration - durations.last) %
+                      currentProgression.timeSignature.decimal);
+          durations.add(duration);
         }
-        durations.add(step);
-        count++;
       }
-      duration += step;
     }
     return Progression.raw(
       values: newValues,
-      durations: durations,
+      durations: AbsoluteDurations(durations),
       timeSignature: currentlyViewedProgression.timeSignature,
-      duration: duration,
+      hasNull: hasNull,
     );
   }
 }

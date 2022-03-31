@@ -40,6 +40,7 @@ dependencies:
   thoery_test:
     git:
       url: https://github.com/vayoa/theory_test.git
+      ref: feat/absolute-durations
   menu_button: ^1.4.2+1
   fluent_ui: ^3.9.0
   equatable: ^2.0.3

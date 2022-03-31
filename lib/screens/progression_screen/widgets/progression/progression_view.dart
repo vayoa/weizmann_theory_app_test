@@ -205,9 +205,9 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
           dragDevices: {PointerDeviceKind.mouse},
           platform: TargetPlatform.windows,
         ),
-        // TODO: Figure out how to show the scrollbar
         child: Scrollbar(
           scrollbarOrientation: ScrollbarOrientation.bottom,
+          controller: _controller,
           interactive: true,
           child: ListView.builder(
               controller: _controller,

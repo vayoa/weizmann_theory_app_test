@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
+import 'package:thoery_test/modals/exceptions.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/BankProgressionButton.dart';
@@ -8,6 +10,7 @@ import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/prog
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/reharmonize_bar.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_window.dart';
 
+import '../../Constants.dart';
 import '../../blocs/audio_player/audio_player_bloc.dart';
 import '../../blocs/progression_handler_bloc.dart';
 import '../../widgets/TButton.dart';
@@ -47,7 +50,7 @@ class ProgressionScreen extends StatelessWidget {
                         ),
                         Row(
                           children: [
-                            ProgressionTitle(),
+                            const ProgressionTitle(),
                             BankProgressionButton(
                               onToggle: (active) {},
                             ),
@@ -103,9 +106,40 @@ class ProgressionScreen extends StatelessWidget {
                               },
                             ),
                             const Text(
-                              " 00 / 34s  BPM: 120, 4/4",
+                              " 00 / 34s  BPM: ",
                               style: TextStyle(fontSize: 16),
                             ),
+                            IntrinsicWidth(
+                              child: TextField(
+                                inputFormatters: [
+                                  LengthLimitingTextInputFormatter(3),
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'[\d]')),
+                                ],
+                                decoration: const InputDecoration(
+                                  hintText: '120',
+                                  isDense: true,
+                                  border: InputBorder.none,
+                                  focusedBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color:
+                                              Constants.buttonUnfocusedColor)),
+                                ),
+                              ),
+                            ),
+                            const Text(
+                              ', ',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            TextButton(
+                              child: const Text('4/4'),
+                              style: TextButton.styleFrom(
+                                primary: Colors.black,
+                                padding: EdgeInsets.zero,
+                                backgroundColor: Colors.transparent,
+                              ),
+                              onPressed: () {},
+                            )
                           ],
                         ),
                         ConstrainedBox(
