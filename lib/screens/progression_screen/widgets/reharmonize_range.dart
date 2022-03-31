@@ -16,7 +16,7 @@ class ReharmonizeRange extends StatefulWidget {
 
 class _ReharmonizeRangeState extends State<ReharmonizeRange> {
   final RegExp validInput = RegExp(r"[0-9 -]"),
-      validSubmit = RegExp(r"^[0-9]+ ?- ?[0-9]+");
+      validSubmit = RegExp(r"^[1-9]{1}[\d]+ ?- ?[1-9]{1}[\d]+");
   late TextStyle style;
 
   TextEditingController controller = TextEditingController();
@@ -74,7 +74,7 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
                 List<String> values = input.split('-');
                 int from = int.parse(values[0].trim());
                 int to = int.parse(values.last.trim());
-                bloc.add(ChangeRange(fromChord: from, toChord: to));
+                bloc.add(ChangeRange(fromChord: from - 1, toChord: to - 1));
               }
               controller.clear();
             },

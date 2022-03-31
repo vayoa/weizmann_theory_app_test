@@ -18,8 +18,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   static const int defaultNoteOctave = 4;
   static const int defaultNoteOctaves = defaultNoteOctave * 12;
   static const int maxMelody = 71; // B4.
-  static const int maxBass = 62; // D4.
-  static const int minBass = 40; // E2.
+  static const int minBass = 31; // G2.
   bool _playing = false;
   List<Progression<Chord>>? _currentMeasures;
 
@@ -145,14 +144,21 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     }
   }
 
+  Pitch getBase(Pitch pitch) {
+    int note = pitch.midiNumber % 12;
+    int minBassNote = minBass % 12;
+    if (note < minBassNote) {
+      return Pitch.fromMidiNumber(((12 - minBassNote) % 12) + minBass + note);
+    }
+    return Pitch.fromMidiNumber(minBass + note - minBassNote);
+  }
+
   // TODO: Actually implement this...
   List<Pitch> _walk(Chord chord, [List<Pitch>? previous]) {
     List<Pitch> cPitches = chord.pitches;
-    List<Pitch> pitches = [
-      /* TODO: Since the chord could be in any pitch find a consistent way of
-                calculating it's pitch. */
-      Pitch.fromMidiNumber(calcNote(cPitches.first.midiNumber, minBass + 12))
-    ];
+    /* TODO: Since the chord could be in any pitch find a consistent way of
+             calculating it's pitch. */
+    List<Pitch> pitches = [getBase(cPitches[0])];
     previous?.removeAt(0);
     int found = -1;
     // First search for equal pitch classes...
