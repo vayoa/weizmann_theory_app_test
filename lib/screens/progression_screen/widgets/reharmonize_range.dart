@@ -17,8 +17,21 @@ class ReharmonizeRange extends StatefulWidget {
 class _ReharmonizeRangeState extends State<ReharmonizeRange> {
   final RegExp validInput = RegExp(r"[0-9 -]"),
       validSubmit = RegExp(r"^[0-9]+ ?- ?[0-9]+");
+  late TextStyle style;
 
   TextEditingController controller = TextEditingController();
+
+  @override
+  void initState() {
+    style = TextStyle(fontSize: widget.textSize - 2);
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant ReharmonizeRange oldWidget) {
+    style = TextStyle(fontSize: widget.textSize - 2);
+    super.didUpdateWidget(oldWidget);
+  }
 
   @override
   void dispose() {
@@ -31,7 +44,6 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
     return BlocBuilder<ProgressionHandlerBloc, ProgressionHandlerState>(
       buildWhen: (_, state) => state is RangeChanged,
       builder: (context, state) {
-        TextStyle style = TextStyle(fontSize: widget.textSize);
         ProgressionHandlerBloc bloc =
             BlocProvider.of<ProgressionHandlerBloc>(context);
         return SizedBox(
@@ -42,7 +54,7 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
             enableInteractiveSelection: false,
             enableSuggestions: false,
             decoration: InputDecoration(
-              hintText: '${bloc.fromChord} - ${bloc.toChord}',
+              hintText: '${bloc.fromChord + 1} - ${bloc.toChord + 1}',
               hintStyle: style,
               border: const UnderlineInputBorder(
                   borderRadius: BorderRadius.horizontal(
@@ -51,6 +63,7 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
               fillColor: Constants.rangeSelectTransparentColor,
               filled: true,
               isDense: true,
+              contentPadding: const EdgeInsets.symmetric(vertical: 8),
             ),
             style: style,
             textAlign: TextAlign.center,

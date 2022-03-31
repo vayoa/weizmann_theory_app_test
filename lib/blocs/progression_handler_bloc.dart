@@ -151,7 +151,7 @@ class ProgressionHandlerBloc
       )),
     );
     on<SurpriseMe>(
-          (event, emit) => _substitutionHandlerBloc.add(
+      (event, emit) => _substitutionHandlerBloc.add(
           SurpriseMeSubs(progression: currentChords, scale: currentScale!)),
     );
     on<ApplySubstitution>(

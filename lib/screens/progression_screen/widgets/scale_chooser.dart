@@ -27,7 +27,7 @@ class _ScaleChooserState extends State<ScaleChooser> {
               BlocProvider.of<ProgressionHandlerBloc>(context);
           if (bloc.currentScale == null) {
             return TButton(
-              label: 'Calculate Scale',
+              label: 'Guess Scale',
               iconData: Icons.piano_rounded,
               onPressed: () => setState(() {
                 bloc.add(CalculateScale());
@@ -61,7 +61,6 @@ class _ScaleChooserState extends State<ScaleChooser> {
                             contentPadding: EdgeInsets.zero,
                             border: InputBorder.none,
                             hintText: currentTonicName,
-                            hintStyle: const TextStyle(fontSize: 15.0),
                             isDense: true,
                           ),
                           onSubmitted: (newTonic) {

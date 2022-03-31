@@ -1,17 +1,17 @@
+import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_chord.dart';
 import 'package:thoery_test/modals/tonicized_scale_degree_chord.dart';
-import 'package:tonic/tonic.dart';
-import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:tonic/tonic.dart';
 
 abstract class Utilities {
   static String progressionValueToString<T>(T value) => value == null
       ? '//'
-      : (value is Chord ? value.getCommonName() : value.toString());
+      : (value is Chord ? value.commonName : value.toString());
 
-  static String abbr(ChordPattern pattern) =>
-      pattern.abbr == 'min7' ? 'm7' : pattern.abbr;
+  static String abbr(ChordPattern pattern) => pattern.abbr == 'min7'
+      ? 'm7'
+      : (pattern.abbr == 'maj7' ? '∆7' : pattern.abbr);
 
   static List<String> cutProgressionValue<T>(T value) {
     assert(value == null || value is Chord || value is ScaleDegreeChord);
