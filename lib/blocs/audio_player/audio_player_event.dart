@@ -35,3 +35,12 @@ class Reset extends AudioPlayerEvent {
 
   const Reset();
 }
+
+class ChangeBPM extends AudioPlayerEvent {
+  final int newBPM;
+
+  @override
+  List<Object?> get props => [newBPM];
+
+  const ChangeBPM(this.newBPM);
+}
