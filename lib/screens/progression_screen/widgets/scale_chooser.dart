@@ -99,13 +99,9 @@ class _ScaleChooserState extends State<ScaleChooser> {
                           },
                         ),
                       ),
-                      OutlinedButton(
+                      TextButton(
                         child: Text(minor ? 'Minor' : 'Major'),
-                        style: OutlinedButton.styleFrom(
-                          primary: Colors.black,
-                          padding: EdgeInsets.zero,
-                          backgroundColor: Constants.buttonBackgroundColor,
-                          side: BorderSide.none,
+                        style: TextButton.styleFrom(
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.horizontal(
                                 right: Radius.circular(Constants.borderRadius)),
