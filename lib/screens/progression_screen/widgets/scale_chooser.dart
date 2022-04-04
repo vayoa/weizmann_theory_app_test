@@ -78,7 +78,7 @@ class _ScaleChooserState extends State<ScaleChooser> {
                               fontSize: 14.0, color: Colors.blue),
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
-                                RegExp('[a-gA-G#b]')),
+                                RegExp('[a-gA-G#b♯♭]')),
                             LengthLimitingTextInputFormatter(2),
                           ],
                           decoration: InputDecoration(
