@@ -17,6 +17,27 @@ class ScaleChooser extends StatefulWidget {
 }
 
 class _ScaleChooserState extends State<ScaleChooser> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    _controller = TextEditingController();
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        _controller.text = '';
+      }
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProgressionHandlerBloc, ProgressionHandlerState>(
@@ -51,7 +72,10 @@ class _ScaleChooserState extends State<ScaleChooser> {
                     children: [
                       Flexible(
                         child: TextField(
-                          style: const TextStyle(fontSize: 14.0),
+                          controller: _controller,
+                          focusNode: _focusNode,
+                          style: const TextStyle(
+                              fontSize: 14.0, color: Colors.blue),
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
                                 RegExp('[a-gA-G#b]')),
@@ -60,8 +84,9 @@ class _ScaleChooserState extends State<ScaleChooser> {
                           decoration: InputDecoration(
                             contentPadding: EdgeInsets.zero,
                             border: InputBorder.none,
-                            hintText: currentTonicName,
                             isDense: true,
+                            hintText: currentTonicName,
+                            hintStyle: const TextStyle(fontSize: 14.0),
                           ),
                           onSubmitted: (newTonic) {
                             String prev = newTonic;

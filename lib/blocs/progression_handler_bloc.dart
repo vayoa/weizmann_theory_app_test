@@ -22,8 +22,7 @@ class ProgressionHandlerBloc
   late final SubstitutionHandlerBloc _substitutionHandlerBloc;
   PitchScale? _currentScale;
   ChordProgression currentChords = ChordProgression.empty();
-  ScaleDegreeProgression currentProgression =
-      ScaleDegreeProgression.empty(inMinor: false);
+  ScaleDegreeProgression currentProgression = ScaleDegreeProgression.empty();
   List<Progression<Chord>>? _chordMeasures;
   List<Progression<ScaleDegreeChord>>? _progressionMeasures;
   ProgressionType type = ProgressionType.chords;
@@ -105,8 +104,7 @@ class ProgressionHandlerBloc
         } else {
           progression = ScaleDegreeProgression.fromProgression(
               _parseInputs<ScaleDegreeChord>(
-                  event.inputs, (input) => ScaleDegreeChord.parse(input)),
-              inMinor: _currentScale!.isMinor);
+                  event.inputs, (input) => ScaleDegreeChord.parse(input)));
         }
         add(SetMeasure(newMeasure: progression, index: event.measureIndex));
       } on Exception catch (e) {
@@ -138,7 +136,6 @@ class ProgressionHandlerBloc
                 event.newMeasure as Progression<ScaleDegreeChord>,
                 measures: progressionMeasures,
               ),
-              inMinor: currentProgression.inMinor,
             ),
           ),
         );

@@ -102,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     BlocProvider.of<ProgressionHandlerBloc>(context)
-        .add(OverrideProgression(ScaleDegreeProgression.empty(inMinor: false)));
+        .add(OverrideProgression(ScaleDegreeProgression.empty()));
     super.initState();
   }
 
