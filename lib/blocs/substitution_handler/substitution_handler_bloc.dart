@@ -26,47 +26,6 @@ class SubstitutionHandlerBloc
 
   List<Substitution>? get substitutions => _substitutions;
 
-  Progression getSubstitutedBase(PitchScale scale, int index) {
-    if (type == ProgressionType.romanNumerals) {
-      return _substitutions![index].substitutedBase;
-    } else {
-      return getChordProgression(scale, index);
-    }
-  }
-
-  Progression getOriginalSubstitution(PitchScale scale, int index) {
-    if (type == ProgressionType.romanNumerals) {
-      return _substitutions![index].originalSubstitution;
-    } else {
-      return getOriginalSubChords(scale, index);
-    }
-  }
-
-  ChordProgression getChordProgression(PitchScale scale, int index) {
-    assert(index >= 0 && index < _chordProgressions!.length);
-    if (_chordProgressions![index] == null) {
-      _chordProgressions![index] =
-          _substitutions![index].substitutedBase.inScale(scale);
-    }
-    return _chordProgressions![index]!;
-  }
-
-  ChordProgression getOriginalSubChords(PitchScale scale, int index) {
-    assert(index >= 0 && index < _originalSubs!.length);
-    if (_originalSubs![index] == null) {
-      ScaleDegreeProgression originalSub =
-          _substitutions![index].originalSubstitution;
-      SubstitutionMatch match = _substitutions![index].match;
-      if (match.type == SubstitutionMatchType.tonicization) {
-        // TODO: Optimize.
-        originalSub = originalSub.tonicizedFor(
-            _substitutions![index].substitutedBase[match.baseIndex]!);
-      }
-      _originalSubs![index] = originalSub.inScale(scale);
-    }
-    return _originalSubs![index]!;
-  }
-
   SubstitutionHandlerBloc() : super(SubstitutionHandlerInitial()) {
     on<SwitchSubType>((event, emit) {
       type = event.progressionType;
@@ -113,5 +72,46 @@ class SubstitutionHandlerBloc
       _originalSubs = null;
       return emit(const ClearedSubstitutions());
     });
+  }
+
+  Progression getSubstitutedBase(PitchScale scale, int index) {
+    if (type == ProgressionType.romanNumerals) {
+      return _substitutions![index].substitutedBase;
+    } else {
+      return getChordProgression(scale, index);
+    }
+  }
+
+  Progression getOriginalSubstitution(PitchScale scale, int index) {
+    if (type == ProgressionType.romanNumerals) {
+      return _substitutions![index].originalSubstitution;
+    } else {
+      return getOriginalSubChords(scale, index);
+    }
+  }
+
+  ChordProgression getChordProgression(PitchScale scale, int index) {
+    assert(index >= 0 && index < _chordProgressions!.length);
+    if (_chordProgressions![index] == null) {
+      _chordProgressions![index] =
+          _substitutions![index].substitutedBase.inScale(scale);
+    }
+    return _chordProgressions![index]!;
+  }
+
+  ChordProgression getOriginalSubChords(PitchScale scale, int index) {
+    assert(index >= 0 && index < _originalSubs!.length);
+    if (_originalSubs![index] == null) {
+      ScaleDegreeProgression originalSub =
+          _substitutions![index].originalSubstitution;
+      SubstitutionMatch match = _substitutions![index].match;
+      if (match.type == SubstitutionMatchType.tonicization) {
+        // TODO: Optimize.
+        originalSub = originalSub.tonicizedFor(
+            _substitutions![index].substitutedBase[match.baseIndex]!);
+      }
+      _originalSubs![index] = originalSub.inScale(scale);
+    }
+    return _originalSubs![index]!;
   }
 }

@@ -116,6 +116,7 @@ class ProgressionScreen extends StatelessWidget {
                             TextButton(
                               child: const Text('4/4'),
                               style: TextButton.styleFrom(
+                                minimumSize: const Size(40, 36),
                                 primary: Colors.black,
                                 padding: EdgeInsets.zero,
                                 backgroundColor: Colors.transparent,
