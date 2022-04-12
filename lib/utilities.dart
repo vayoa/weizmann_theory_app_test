@@ -47,10 +47,8 @@ abstract class Utilities {
     double durationToStart = progression.durations.real(fromChord) -
         progression.durations[fromChord];
     int startMeasure = durationToStart ~/ decimal;
-    print('calculating');
     int startIndex =
         measures[startMeasure].getPlayingIndex(durationToStart % decimal);
-    print('done');
     // We divide decimal by 2 and subtract it here so that for instance 3.0
     // where the chord at toChord is with a duration of 1.0 (meaning the
     // duration to him was 2.0 and he starts at the first position of his
@@ -59,12 +57,8 @@ abstract class Utilities {
     double durationWithEnd = progression.durations.real(toChord) -
         (progression.timeSignature.step / 2);
     int endMeasure = durationWithEnd ~/ decimal;
-    print('calculating');
     int endIndex =
         measures[endMeasure].getPlayingIndex(durationWithEnd % decimal);
-    print('done');
-    var r = [startMeasure, startIndex, endMeasure, endIndex];
-    print(r);
-    return r;
+    return [startMeasure, startIndex, endMeasure, endIndex];
   }
 }

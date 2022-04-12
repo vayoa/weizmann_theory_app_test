@@ -142,7 +142,7 @@ class ProgressionHandlerBloc
       }
     });
     on<Reharmonize>(
-      (event, emit) => _substitutionHandlerBloc.add(ReharmonizeSubs(
+      (event, emit) => _substitutionHandlerBloc.add(SetupReharmonization(
         progression: currentProgression,
         fromChord: fromChord,
         toChord: toChord,

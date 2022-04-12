@@ -16,6 +16,30 @@ import 'package:weizmann_theory_app_test/widgets/t_icon_button.dart';
 import '../../../blocs/progression_handler_bloc.dart';
 import '../../../constants.dart';
 
+class SubstitutionWindowCover extends StatelessWidget {
+  const SubstitutionWindowCover({
+    Key? key,
+    required this.child,
+  }) : super(key: key);
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 350,
+      padding: const EdgeInsets.only(
+          top: 20.0, left: 20.0, right: 20.0, bottom: 10.0),
+      decoration: const BoxDecoration(
+        color: Constants.rangeSelectColor,
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(Constants.borderRadius * 3)),
+      ),
+      child: child,
+    );
+  }
+}
+
 class SubstitutionWindow extends StatefulWidget {
   const SubstitutionWindow({
     Key? key,
@@ -65,32 +89,26 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
         ProgressionHandlerBloc progressionBloc =
             BlocProvider.of<ProgressionHandlerBloc>(context);
         if (state is CalculatingSubstitutions) {
-          return Container(
-            height: 350,
-            padding: const EdgeInsets.only(
-                top: 20.0, left: 20.0, right: 20.0, bottom: 10.0),
-            decoration: const BoxDecoration(
-              color: Constants.rangeSelectColor,
-              borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(Constants.borderRadius * 3)),
-            ),
-            child: const CircularProgressIndicator(),
+          return const SubstitutionWindowCover(
+            child: CircularProgressIndicator(),
           );
-        }
-        if (subBloc.substitutions == null || subBloc.substitutions!.isEmpty) {
+        } else if (subBloc.inSetup) {
+          return const SubstitutionWindowCover(
+              child: Align(
+                  alignment: Alignment.topLeft,
+                  child: SubstitutionButtonBar(
+                    inSetup: true,
+                  )));
+        } else if (subBloc.substitutions == null ||
+            subBloc.substitutions!.isEmpty) {
           return const SizedBox();
         } else {
-          return Container(
-            height: 350,
-            padding: const EdgeInsets.all(20.0),
-            decoration: const BoxDecoration(
-              color: Constants.rangeSelectColor,
-              borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(Constants.borderRadius * 3)),
-            ),
+          return SubstitutionWindowCover(
             child: Column(
               children: [
-                const SubstitutionButtonBar(),
+                const SubstitutionButtonBar(
+                  inSetup: false,
+                ),
                 const Divider(),
                 SizedBox(
                   height: 200,
@@ -151,11 +169,35 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
   }
 }
 
-class SubstitutionButtonBar extends StatelessWidget {
-  const SubstitutionButtonBar({Key? key}) : super(key: key);
+class SubstitutionButtonBar extends StatefulWidget {
+  const SubstitutionButtonBar({
+    Key? key,
+    required this.inSetup,
+  }) : super(key: key);
+
+  final bool inSetup;
+
+  @override
+  State<SubstitutionButtonBar> createState() => _SubstitutionButtonBarState();
+}
+
+class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
+  late bool _keepHarmonicFunction;
+
+  @override
+  void initState() {
+    _keepHarmonicFunction =
+        BlocProvider.of<SubstitutionHandlerBloc>(context).keepHarmonicFunction;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    SubstitutionHandlerBloc bloc =
+        BlocProvider.of<SubstitutionHandlerBloc>(context);
+    bool _goDisabled = bloc.substitutions != null;
+    bool _showGo =
+        widget.inSetup || _keepHarmonicFunction == bloc.keepHarmonicFunction;
     return SizedBox(
       height: 25,
       child: Row(
@@ -168,6 +210,7 @@ class SubstitutionButtonBar extends StatelessWidget {
               children: [
                 ViewTypeSelector(
                   tight: true,
+                  enabled: !widget.inSetup,
                   onPressed: (newType) =>
                       BlocProvider.of<SubstitutionHandlerBloc>(context)
                           .add(SwitchSubType(newType)),
@@ -179,6 +222,7 @@ class SubstitutionButtonBar extends StatelessWidget {
                       child: Text('Sound:'),
                     ),
                     TSelector(
+                      tight: true,
                       values: const ['Classical', 'Both', 'Exotic'],
                       value: 'Classical',
                       onPressed: (index) => true,
@@ -192,17 +236,32 @@ class SubstitutionButtonBar extends StatelessWidget {
                       child: Text('Keep Harmonic Function:'),
                     ),
                     TSelector(
+                      tight: true,
                       values: const ['low', 'med', 'high'],
-                      value: 'low',
-                      onPressed: (index) => true,
+                      value: _keepHarmonicFunction ? 'high' : 'low',
+                      onPressed: (index) {
+                        if (index == 1) return false;
+                        int current = _keepHarmonicFunction ? 2 : 0;
+                        if (index != current) {
+                          setState(() {
+                            _keepHarmonicFunction = index == 2;
+                          });
+                        }
+                        return true;
+                      },
                     ),
                   ],
                 ),
                 TButton(
-                  label: 'Go!',
+                  label: _showGo ? 'Go!' : 'Refresh',
                   tight: true,
-                  iconData: Icons.arrow_right_alt_rounded,
-                  onPressed: () {},
+                  iconData: _showGo
+                      ? Icons.arrow_right_alt_rounded
+                      : Icons.refresh_rounded,
+                  onPressed: _showGo && _goDisabled
+                      ? null
+                      : () => bloc.add(ReharmonizeSubs(
+                          keepHarmonicFunction: _keepHarmonicFunction)),
                 ),
               ],
             ),
@@ -211,7 +270,10 @@ class SubstitutionButtonBar extends StatelessWidget {
             label: 'Cancel',
             tight: true,
             iconData: Icons.cancel_rounded,
-            onPressed: () {},
+            onPressed: () {
+              BlocProvider.of<SubstitutionHandlerBloc>(context)
+                  .add(ClearSubstitutions());
+            },
           ),
         ],
       ),

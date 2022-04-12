@@ -19,6 +19,15 @@ class SubstitutionHandlerBloc
   final ProgressionBank _bank = ProgressionBank();
   ProgressionType type = ProgressionType.chords;
   List<Substitution>? _substitutions;
+  bool _inSetup = false;
+
+  bool get inSetup => _inSetup;
+
+  ScaleDegreeProgression? _currentProgression;
+  int _fromChord = 0, _toChord = 0;
+  bool _keepHarmonicFunction = false;
+
+  bool get keepHarmonicFunction => _keepHarmonicFunction;
 
   // If we calculate a ChordProgression for a substitution we save it here.
   List<ChordProgression?>? _chordProgressions;
@@ -27,23 +36,39 @@ class SubstitutionHandlerBloc
   List<Substitution>? get substitutions => _substitutions;
 
   SubstitutionHandlerBloc() : super(SubstitutionHandlerInitial()) {
+    on<SetupReharmonization>((event, emit) {
+      _currentProgression = event.progression;
+      _fromChord = event.fromChord;
+      _toChord = event.toChord;
+      _inSetup = true;
+      emit(SetupPage());
+    });
     on<SwitchSubType>((event, emit) {
       type = event.progressionType;
       return emit(TypeChanged(type));
     });
     on<ReharmonizeSubs>((event, emit) {
-      if (_substitutions == null) {
-        emit(CalculatingSubstitutions(
-            fromChord: event.fromChord, toChord: event.toChord));
+      bool changedSettings = event.keepHarmonicFunction != null &&
+          event.keepHarmonicFunction != _keepHarmonicFunction;
+      if ((_substitutions == null && _currentProgression != null) ||
+          changedSettings) {
+        if (changedSettings) {
+          _keepHarmonicFunction = event.keepHarmonicFunction!;
+          emit(ChangedSubstitutionSettings());
+        }
+        emit(
+            CalculatingSubstitutions(fromChord: _fromChord, toChord: _toChord));
         _substitutions = SubstitutionHandler.getRatedSubstitutions(
-          event.progression,
+          _currentProgression!,
           bank: _bank,
-          start: event.fromChord,
-          end: event.toChord + 1,
+          keepHarmonicFunction: _keepHarmonicFunction,
+          start: _fromChord,
+          end: _toChord + 1,
         );
         _chordProgressions =
             List.generate(_substitutions!.length, (index) => null);
         _originalSubs = List.generate(_substitutions!.length, (index) => null);
+        _inSetup = false;
         return emit(CalculatedSubstitutions(substitutions!));
       }
     });
@@ -64,13 +89,22 @@ class SubstitutionHandlerBloc
       _chordProgressions =
           List.generate(_substitutions!.length, (index) => null);
       _originalSubs = List.generate(_substitutions!.length, (index) => null);
+      _inSetup = false;
       return emit(CalculatedSubstitutions(substitutions!));
     });
     on<ClearSubstitutions>((event, emit) {
       _substitutions = null;
+      _currentProgression = null;
+      _fromChord = 0;
+      _toChord = 0;
       _chordProgressions = null;
       _originalSubs = null;
+      _inSetup = false;
       return emit(const ClearedSubstitutions());
+    });
+    on<SetKeepHarmonicFunction>((event, emit) {
+      _keepHarmonicFunction = event.keepHarmonicFunction;
+      return emit(ChangedSubstitutionSettings());
     });
   }
 
