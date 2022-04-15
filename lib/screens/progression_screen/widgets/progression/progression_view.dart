@@ -46,6 +46,8 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
     int startIndex = bloc.startIndex;
     int endMeasure = bloc.endMeasure;
     int endIndex = bloc.endIndex;
+    double startDur = bloc.startDur;
+    double endDur = bloc.endDur;
     return SizedBox(
       width: widget.measuresInLine * Constants.measureWidth,
       child: Listener(
@@ -84,14 +86,14 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
               int? toChord = shouldPaint
                   ? (index == endMeasure
                       ? endIndex
-                      : widget.measures[index].length)
+                      : widget.measures[index].length - 1)
                   : null;
+              double paintStartDur = index == startMeasure ? startDur : 0.0;
+              double? paintEndDur = index == endMeasure ? endDur : null;
               if (index == editedMeasure) {
                 return EditedMeasure(
                   measure: widget.measures[index],
                   last: last,
-                  fromChord: fromChord,
-                  toChord: toChord,
                   onDone: (bool rebuild, List<String> values) {
                     setState(() {
                       if (rebuild) {
@@ -107,7 +109,9 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
                 measure: widget.measures[index],
                 last: last,
                 fromChord: fromChord,
+                startDur: paintStartDur,
                 toChord: toChord,
+                endDur: paintEndDur,
                 editable: index == hoveredMeasure,
                 onEdit: () {
                   setState(() {

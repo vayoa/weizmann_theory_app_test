@@ -15,8 +15,8 @@ class ReharmonizeRange extends StatefulWidget {
 }
 
 class _ReharmonizeRangeState extends State<ReharmonizeRange> {
-  final RegExp validInput = RegExp(r"[0-9 -]"),
-      validSubmit = RegExp(r"^ *[1-9]{1}[\d]* *- *[1-9]{1}[\d]*");
+  final RegExp validInput = RegExp(r"[\d -.]"),
+      validSubmit = RegExp(r"^ *[\d]*.{1}[\d]+ *-* *[\d]*.{1}[\d]+ *$");
   late TextStyle style;
 
   TextEditingController controller = TextEditingController();
@@ -54,7 +54,7 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
             enableInteractiveSelection: false,
             enableSuggestions: false,
             decoration: InputDecoration(
-              hintText: '${bloc.fromChord + 1} - ${bloc.toChord + 1}',
+              hintText: '${bloc.fromDur} - ${bloc.toDur}',
               hintStyle: style,
               border: const UnderlineInputBorder(
                   borderRadius: BorderRadius.horizontal(
@@ -72,9 +72,9 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
               input = input.trim();
               if (validSubmit.hasMatch(input)) {
                 List<String> values = input.split('-');
-                int from = int.parse(values[0].trim());
-                int to = int.parse(values.last.trim());
-                bloc.add(ChangeRange(fromChord: from - 1, toChord: to - 1));
+                double start = double.parse(values[0].trim());
+                double end = double.parse(values.last.trim());
+                bloc.add(ChangeRangeDuration(start: start, end: end));
               } else {
                 print('not valid');
               }

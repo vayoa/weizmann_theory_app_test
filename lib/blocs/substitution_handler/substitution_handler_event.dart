@@ -11,14 +11,19 @@ class SetupReharmonization extends SubstitutionHandlerEvent {
   final ScaleDegreeProgression progression;
   final int fromChord;
   final int toChord;
+  final double startDur;
+  final double endDur;
 
   @override
   List<Object?> get props => [progression, fromChord, toChord];
 
-  const SetupReharmonization(
-      {required this.progression,
-      required this.fromChord,
-      required this.toChord});
+  const SetupReharmonization({
+    required this.progression,
+    required this.fromChord,
+    required this.toChord,
+    this.startDur = 0.0,
+    required this.endDur,
+  });
 }
 
 class SwitchSubType extends SubstitutionHandlerEvent {

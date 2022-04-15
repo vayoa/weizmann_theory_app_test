@@ -14,7 +14,8 @@ class OverrideProgression extends ProgressionHandlerEvent {
   List<Object?> get props => [newProgression];
 
   OverrideProgression(this.newProgression)
-      : assert((newProgression.isEmpty || newProgression[0] is Chord ||
+      : assert((newProgression.isEmpty ||
+            newProgression[0] is Chord ||
             newProgression is ScaleDegreeProgression));
 }
 
@@ -47,6 +48,17 @@ class ChangeRange extends ProgressionHandlerEvent {
 
   const ChangeRange({this.fromChord, this.toChord})
       : assert(!(fromChord == null && toChord == null));
+}
+
+class ChangeRangeDuration extends ProgressionHandlerEvent {
+  final double start;
+  final double end;
+
+  @override
+  List<Object?> get props => [start, end];
+
+  const ChangeRangeDuration({required this.start, required this.end})
+      : assert(start < end);
 }
 
 class SetMeasure extends ProgressionHandlerEvent {

@@ -26,9 +26,23 @@ class ProgressionHandlerBloc
   List<Progression<Chord>>? _chordMeasures;
   List<Progression<ScaleDegreeChord>>? _progressionMeasures;
   ProgressionType type = ProgressionType.chords;
-  int fromChord = 0, toChord = 1;
+  int fromChord = 0, toChord = 0;
+  double startDur = 0.0;
+  double endDur = 0.0;
   int startMeasure = -1, startIndex = 0;
   int endMeasure = -1, endIndex = 0;
+
+  double get fromDur => currentlyViewedProgression.isEmpty
+      ? 0.0
+      : currentlyViewedProgression.durations.real(fromChord) -
+          currentlyViewedProgression.durations[fromChord] +
+          startDur;
+
+  double get toDur => currentlyViewedProgression.isEmpty
+      ? 0.0
+      : currentlyViewedProgression.durations.real(toChord) -
+          currentlyViewedProgression.durations[toChord] +
+          endDur;
 
   ProgressionHandlerBloc(this._substitutionHandlerBloc)
       : super(ProgressionHandlerInitial()) {
@@ -88,11 +102,35 @@ class ProgressionHandlerBloc
           newToChord - newFromChord > 0) {
         fromChord = newFromChord;
         toChord = newToChord;
+        startDur = 0.0;
+        endDur = currentlyViewedProgression.durations.real(toChord);
         _calculateRangePositions();
         return emit(RangeChanged(
             progression: currentlyViewedProgression,
             newToChord: toChord,
             newFromChord: fromChord));
+      }
+    });
+    on<ChangeRangeDuration>((event, emit) {
+      Progression prog = currentlyViewedProgression;
+      double realEnd = event.end - (prog.timeSignature.step / 2);
+      int newFromChord = prog.getPlayingIndex(event.start),
+          newToChord = prog.getPlayingIndex(realEnd);
+      if (newToChord >= newFromChord) {
+        fromChord = newFromChord;
+        toChord = newToChord;
+        _calculateRangePositions();
+        startDur = event.start -
+            (prog.durations.real(fromChord) - prog.durations[fromChord]);
+        endDur = event.end -
+            (prog.durations.real(toChord) - prog.durations[toChord]);
+        return emit(RangeChanged(
+          progression: currentlyViewedProgression,
+          newToChord: toChord,
+          newFromChord: fromChord,
+          startDur: startDur,
+          endDur: endDur,
+        ));
       }
     });
     on<MeasureEdited>((event, emit) {
@@ -146,6 +184,8 @@ class ProgressionHandlerBloc
         progression: currentProgression,
         fromChord: fromChord,
         toChord: toChord,
+        startDur: startDur,
+        endDur: endDur,
       )),
     );
     on<SurpriseMe>(

@@ -25,6 +25,8 @@ class SubstitutionHandlerBloc
 
   ScaleDegreeProgression? _currentProgression;
   int _fromChord = 0, _toChord = 0;
+  double _startDur = 0.0;
+  double? _endDur;
   bool _keepHarmonicFunction = false;
 
   bool get keepHarmonicFunction => _keepHarmonicFunction;
@@ -40,6 +42,8 @@ class SubstitutionHandlerBloc
       _currentProgression = event.progression;
       _fromChord = event.fromChord;
       _toChord = event.toChord;
+      _startDur = event.startDur;
+      _endDur = event.endDur;
       _inSetup = true;
       emit(SetupPage());
     });
@@ -63,7 +67,9 @@ class SubstitutionHandlerBloc
           bank: _bank,
           keepHarmonicFunction: _keepHarmonicFunction,
           start: _fromChord,
+          startDur: _startDur,
           end: _toChord + 1,
+          endDur: _endDur,
         );
         _chordProgressions =
             List.generate(_substitutions!.length, (index) => null);
@@ -97,6 +103,8 @@ class SubstitutionHandlerBloc
       _currentProgression = null;
       _fromChord = 0;
       _toChord = 0;
+      _startDur = 0.0;
+      _endDur = null;
       _chordProgressions = null;
       _originalSubs = null;
       _inSetup = false;

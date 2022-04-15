@@ -12,45 +12,143 @@ class Measure extends StatelessWidget {
     Key? key,
     required this.child,
     this.last = false,
-    this.fromChord,
-    this.toChord,
   }) : super(key: key);
 
   final Widget child;
   final bool last;
-  final int? fromChord;
-  final int? toChord;
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-          width: Constants.measureWidth,
-          height: Constants.measureHeight,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: last
-                  ? const [
-                      Colors.black,
-                      Constants.measureColor,
-                      Constants.measureColor,
-                      Colors.black,
-                    ]
-                  : const [Colors.black, Constants.measureColor],
-              stops: last ? const [0.01, 0.01, 0.99, 0.99] : const [0.01, 0.01],
-            ),
-          ),
-          child: FittedBox(
-            child: Container(
-              width: Constants.measureWidth,
-              padding: const EdgeInsets.all(Constants.measurePadding),
-              child: child,
-            ),
-          ),
+    return Container(
+      width: Constants.measureWidth,
+      height: Constants.measureHeight,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: last
+              ? const [
+                  Colors.black,
+                  Constants.measureColor,
+                  Constants.measureColor,
+                  Colors.black,
+                ]
+              : const [Colors.black, Constants.measureColor],
+          stops: last ? const [0.01, 0.01, 0.99, 0.99] : const [0.01, 0.01],
         ),
-      ],
+      ),
+      child: FittedBox(
+        child: Container(
+          width: Constants.measureWidth,
+          padding: const EdgeInsets.all(Constants.measurePadding),
+          child: child,
+        ),
+      ),
     );
+  }
+}
+
+class SelectorBloc extends StatelessWidget {
+  const SelectorBloc({
+    Key? key,
+    required this.flex,
+    this.weak = false,
+    this.roundLeft = false,
+    this.roundRight = false,
+  }) : super(key: key);
+
+  final int flex;
+  final bool weak;
+  final bool roundLeft;
+  final bool roundRight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Flexible(
+      flex: flex,
+      child: Material(
+        color: weak
+            ? Constants.rangeSelectTransparentColor
+            : Constants.rangeSelectColor,
+        borderRadius: BorderRadius.horizontal(
+          left: roundLeft
+              ? const Radius.circular(Constants.borderRadius)
+              : Radius.zero,
+          right: roundRight
+              ? const Radius.circular(Constants.borderRadius)
+              : Radius.zero,
+        ),
+        child: const SizedBox(
+          height: Constants.measureFontSize + 10.0,
+          width: double.infinity,
+        ),
+      ),
+    );
+  }
+}
+
+class Selector extends StatelessWidget {
+  const Selector({
+    Key? key,
+    required this.measure,
+    this.fromChord,
+    this.startDur,
+    this.toChord,
+    this.endDur,
+  }) : super(key: key);
+
+  final Progression measure;
+  final int? fromChord;
+  final double? startDur;
+  final int? toChord;
+  final double? endDur;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children:
+          fromChord == null && toChord == null ? const [] : buildSelector(),
+    );
+  }
+
+  List<Widget> buildSelector() {
+    final List<Widget> widgets = [];
+    final double step = measure.timeSignature.step;
+    final double startVal =
+        measure.durations.real(fromChord!) - measure.durations[fromChord!];
+    final double start = startVal + startDur!;
+    double end = measure.durations.real(toChord!);
+    if (endDur != null) end += endDur! - measure.durations[toChord!];
+    final double endOffset = measure.durations.real(toChord!) - end;
+    final double dur = end - start;
+    final double endSpace = measure.duration - measure.durations.real(toChord!);
+    final bool weakLeft = startDur != 0, weakRight = endOffset != 0;
+    if (start != 0.0) {
+      widgets.add(Spacer(flex: startVal ~/ step));
+    }
+    if (weakLeft) {
+      widgets.add(
+        SelectorBloc(
+          flex: startDur! ~/ step,
+          weak: true,
+          roundLeft: true,
+        ),
+      );
+    }
+    widgets.add(SelectorBloc(
+      flex: dur ~/ step,
+      roundLeft: !weakLeft,
+      roundRight: !weakRight,
+    ));
+    if (weakRight) {
+      widgets.add(SelectorBloc(
+        flex: endOffset ~/ step,
+        weak: true,
+        roundRight: true,
+      ));
+    }
+    if (endSpace != 0) {
+      widgets.add(Spacer(flex: endSpace ~/ step));
+    }
+    return widgets;
   }
 }
 
@@ -62,7 +160,9 @@ class MeasureView<T> extends StatelessWidget {
     this.last = false,
     this.editable = true,
     this.fromChord,
+    this.startDur,
     this.toChord,
+    this.endDur,
   }) : super(key: key);
 
   final Progression<T> measure;
@@ -70,7 +170,9 @@ class MeasureView<T> extends StatelessWidget {
   final bool last;
   final bool editable;
   final int? fromChord;
+  final double? startDur;
   final int? toChord;
+  final double? endDur;
 
   @override
   Widget build(BuildContext context) {
@@ -78,11 +180,21 @@ class MeasureView<T> extends StatelessWidget {
       children: [
         Measure(
           last: last,
-          fromChord: fromChord,
-          toChord: toChord,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: buildList(),
+          child: Stack(
+            alignment: Alignment.centerLeft,
+            children: [
+              Selector(
+                measure: measure,
+                fromChord: fromChord,
+                startDur: startDur,
+                toChord: toChord,
+                endDur: endDur,
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: buildList(),
+              ),
+            ],
           ),
         ),
         AnimatedOpacity(
@@ -108,22 +220,14 @@ class MeasureView<T> extends StatelessWidget {
 
   List<Widget> buildList() {
     List<Widget> widgets = [];
+    final double step = measure.timeSignature.step;
     for (int i = 0; i < measure.length; i++) {
-      final bool paint = fromChord != null &&
-          toChord != null &&
-          i >= fromChord! &&
-          i <= toChord!;
       widgets.add(
         Flexible(
-          flex: measure.durations[i] ~/ measure.timeSignature.step,
-          child: Material(
-            // TODO: Do it without the material widget.
-            color: paint ? Constants.rangeSelectColor : Colors.transparent,
-            // TODO: Find a way without a row...
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              children: [ProgressionValueView(value: measure[i])],
-            ),
+          flex: measure.durations[i] ~/ step,
+          child: SizedBox(
+            width: double.infinity,
+            child: ProgressionValueView(value: measure[i]),
           ),
         ),
       );
@@ -134,8 +238,7 @@ class MeasureView<T> extends StatelessWidget {
         child: VerticalDivider(thickness: 4),
       ));
       widgets.add(Spacer(
-          flex: (measure.timeSignature.decimal - measure.duration) ~/
-              measure.timeSignature.step));
+          flex: (measure.timeSignature.decimal - measure.duration) ~/ step));
     }
     return widgets;
   }
@@ -161,15 +264,11 @@ class EditedMeasure<T> extends StatefulWidget {
     required this.measure,
     required this.onDone,
     this.last = false,
-    this.fromChord,
-    this.toChord,
   }) : super(key: key);
 
   final Progression<T> measure;
   final void Function(bool rebuild, List<String> inputs) onDone;
   final bool last;
-  final int? fromChord;
-  final int? toChord;
 
   @override
   State<EditedMeasure<T>> createState() => _EditedMeasureState<T>();
@@ -198,8 +297,6 @@ class _EditedMeasureState<T> extends State<EditedMeasure<T>> {
       children: [
         Measure(
           last: widget.last,
-          fromChord: widget.fromChord,
-          toChord: widget.toChord,
           child: TextField(
             controller: controller,
             inputFormatters: [
