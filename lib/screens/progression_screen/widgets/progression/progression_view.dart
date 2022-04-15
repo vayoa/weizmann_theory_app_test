@@ -31,6 +31,7 @@ class ProgressionView<T> extends StatefulWidget {
 class _ProgressionViewState<T> extends State<ProgressionView<T>> {
   int editedMeasure = -1;
   int hoveredMeasure = -1;
+  int hoveredPos = -1;
 
   int _getIndexFromPosition(Offset localPosition) =>
       (localPosition.dx ~/ Constants.measureWidth) +
@@ -46,13 +47,40 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
     int startIndex = bloc.startIndex;
     int endMeasure = bloc.endMeasure;
     int endIndex = bloc.endIndex;
-    double startDur = bloc.startDur;
-    double endDur = bloc.endDur;
+    double startDur = bloc.fromDur;
+    double endDur = 0.0;
+    if (startMeasure != -1 && endMeasure != -1) {
+      if (startDur != 0) {
+        double durBefore =
+            widget.measures[0].timeSignature.decimal * startMeasure;
+        durBefore += widget.measures[startMeasure].durations.real(startIndex) -
+            widget.measures[startMeasure].durations[startIndex];
+        startDur -= durBefore;
+      }
+      endDur = bloc.toDur;
+      double durBefore = widget.measures[0].timeSignature.decimal * endMeasure;
+      durBefore += widget.measures[endMeasure].durations.real(endIndex) -
+          widget.measures[endMeasure].durations[endIndex];
+      endDur -= durBefore;
+    }
+    const double max = Constants.measureWidth - 2 * Constants.measurePadding;
+    final double stepW = max / widget.measures[0].timeSignature.denominator;
     return SizedBox(
       width: widget.measuresInLine * Constants.measureWidth,
       child: Listener(
         onPointerHover: (event) {
           int index = _getIndexFromPosition(event.localPosition);
+          double x = (event.localPosition.dx % Constants.measureWidth) -
+              Constants.measurePadding;
+          if (x >= 0 && x <= max) {
+            setState(() {
+              hoveredPos = x ~/ stepW;
+            });
+          } else if (hoveredPos != -1) {
+            setState(() {
+              hoveredPos = -1;
+            });
+          }
           if (index != hoveredMeasure) {
             setState(() {
               hoveredMeasure = index;
@@ -78,7 +106,7 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
             ),
             itemBuilder: (context, index) {
               bool shouldPaint = index >= startMeasure && index <= endMeasure;
-              //TODO: Fix this weird case...
+              // TODO: Fix this weird case...
               bool last = (index == widget.measures.length - 1) ||
                   (index + 1) % widget.measuresInLine == 0;
               int? fromChord =
@@ -105,6 +133,7 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
                   },
                 );
               }
+              final bool editable = index == hoveredMeasure;
               return MeasureView(
                 measure: widget.measures[index],
                 last: last,
@@ -112,7 +141,10 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
                 startDur: paintStartDur,
                 toChord: toChord,
                 endDur: paintEndDur,
-                editable: index == hoveredMeasure,
+                editable: editable,
+                cursorPos: editable && hoveredPos != -1 ? hoveredPos : null,
+                selectorStart: index == startMeasure,
+                selectorEnd: index == endMeasure,
                 onEdit: () {
                   setState(() {
                     editedMeasure = index;
@@ -131,7 +163,9 @@ class HorizontalProgressionView extends StatefulWidget {
     required this.progression,
     this.measures,
     this.fromChord,
+    this.startDur = 0.0,
     this.toChord,
+    this.endDur,
     this.startAt,
     this.editable = false,
   }) : super(key: key);
@@ -139,7 +173,9 @@ class HorizontalProgressionView extends StatefulWidget {
   final Progression progression;
   final List<Progression>? measures;
   final int? fromChord;
+  final double startDur;
   final int? toChord;
+  final double? endDur;
   final int? startAt;
   final bool editable;
 
@@ -179,10 +215,13 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
     _measures = widget.measures ?? widget.progression.splitToMeasures();
     if (widget.fromChord != null && widget.toChord != null) {
       List<int> results = Utilities.calculateRangePositions(
-          progression: widget.progression,
-          measures: _measures,
-          fromChord: widget.fromChord!,
-          toChord: widget.toChord!);
+        progression: widget.progression,
+        measures: _measures,
+        fromChord: widget.fromChord!,
+        startDur: widget.startDur,
+        toChord: widget.toChord!,
+        endDur: widget.endDur,
+      );
       startMeasure = results[0];
       startIndex = results[1];
       endMeasure = results[2];

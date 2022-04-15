@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:thoery_test/modals/progression.dart';
 
 import '../../../blocs/progression_handler_bloc.dart';
 import '../../../constants.dart';
@@ -16,7 +17,7 @@ class ReharmonizeRange extends StatefulWidget {
 
 class _ReharmonizeRangeState extends State<ReharmonizeRange> {
   final RegExp validInput = RegExp(r"[\d -.]"),
-      validSubmit = RegExp(r"^ *[\d]*.{1}[\d]+ *-* *[\d]*.{1}[\d]+ *$");
+      validSubmit = RegExp(r"^ *[\d]*.?[\d]+ *-* *[\d]*.{1}[\d]+ *$");
   late TextStyle style;
 
   TextEditingController controller = TextEditingController();
@@ -54,7 +55,9 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
             enableInteractiveSelection: false,
             enableSuggestions: false,
             decoration: InputDecoration(
-              hintText: '${bloc.fromDur} - ${bloc.toDur}',
+              hintText: bloc.rangeDisabled
+                  ? '...'
+                  : '${bloc.fromDur} - ${bloc.toDur}',
               hintStyle: style,
               border: const UnderlineInputBorder(
                   borderRadius: BorderRadius.horizontal(
@@ -70,15 +73,26 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
             autocorrect: false,
             onSubmitted: (input) {
               input = input.trim();
+              bool showSnackBar = true;
               if (validSubmit.hasMatch(input)) {
                 List<String> values = input.split('-');
                 double start = double.parse(values[0].trim());
                 double end = double.parse(values.last.trim());
-                bloc.add(ChangeRangeDuration(start: start, end: end));
-              } else {
-                print('not valid');
+                Progression prog = bloc.currentlyViewedProgression;
+                if (start >= 0.0 && end <= prog.duration && start < end) {
+                  showSnackBar = false;
+                  bloc.add(ChangeRangeDuration(start: start, end: end));
+                }
               }
               controller.clear();
+              if (showSnackBar) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    behavior: SnackBarBehavior.floating,
+                    content: Text("Invalid range inputted."),
+                  ),
+                );
+              }
             },
           ),
         );

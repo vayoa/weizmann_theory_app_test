@@ -51,8 +51,9 @@ class ScaleChanged extends ProgressionHandlerState {
 }
 
 class RangeChanged extends ProgressionHandlerState {
-  final int newFromChord;
-  final int newToChord;
+  final bool rangeDisabled;
+  final int? newFromChord;
+  final int? newToChord;
   final double startDur;
   final double? endDur;
 
@@ -62,8 +63,9 @@ class RangeChanged extends ProgressionHandlerState {
 
   const RangeChanged({
     required Progression progression,
-    required this.newToChord,
-    required this.newFromChord,
+    required this.rangeDisabled,
+    this.newToChord,
+    this.newFromChord,
     this.startDur = 0.0,
     this.endDur,
   }) : super(progression);

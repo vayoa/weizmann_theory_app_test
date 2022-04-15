@@ -19,7 +19,18 @@ class ReharmonizeBar extends StatelessWidget {
           borderRadius: const BorderRadius.horizontal(
               left: Radius.circular(Constants.borderRadius)),
           onPressed: () {
-            BlocProvider.of<ProgressionHandlerBloc>(context).add(Reharmonize());
+            ProgressionHandlerBloc bloc =
+                BlocProvider.of<ProgressionHandlerBloc>(context);
+            if (bloc.rangeDisabled) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  behavior: SnackBarBehavior.floating,
+                  content: Text("Can't reharmonize with no range selected."),
+                ),
+              );
+            } else {
+              bloc.add(Reharmonize());
+            }
           },
         ),
         const ReharmonizeRange(),

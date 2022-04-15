@@ -42,10 +42,13 @@ abstract class Utilities {
     required List<Progression> measures,
     required int fromChord,
     required int toChord,
+    required double startDur,
+    required double? endDur,
   }) {
     double decimal = progression.timeSignature.decimal;
     double durationToStart = progression.durations.real(fromChord) -
-        progression.durations[fromChord];
+        progression.durations[fromChord] +
+        startDur;
     int startMeasure = durationToStart ~/ decimal;
     int startIndex =
         measures[startMeasure].getPlayingIndex(durationToStart % decimal);
@@ -56,6 +59,9 @@ abstract class Utilities {
     // endMeasure of 3 which it would've given if we didn't subtract...).
     double durationWithEnd = progression.durations.real(toChord) -
         (progression.timeSignature.step / 2);
+    if (endDur != null) {
+      durationWithEnd += endDur - progression.durations[toChord];
+    }
     int endMeasure = durationWithEnd ~/ decimal;
     int endIndex =
         measures[endMeasure].getPlayingIndex(durationWithEnd % decimal);

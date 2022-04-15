@@ -31,6 +31,7 @@ class ProgressionHandlerBloc
   double endDur = 0.0;
   int startMeasure = -1, startIndex = 0;
   int endMeasure = -1, endIndex = 0;
+  bool rangeDisabled = true;
 
   double get fromDur => currentlyViewedProgression.isEmpty
       ? 0.0
@@ -64,10 +65,14 @@ class ProgressionHandlerBloc
       }
       _substitutionHandlerBloc.add(ClearSubstitutions());
       emit(ProgressionChanged(currentlyViewedProgression));
+      rangeDisabled = true;
       return emit(RangeChanged(
         progression: currentlyViewedProgression,
+        rangeDisabled: true,
         newFromChord: fromChord,
         newToChord: toChord,
+        startDur: startDur,
+        endDur: endDur,
       ));
     });
     on<SwitchType>((event, emit) {
@@ -100,37 +105,50 @@ class ProgressionHandlerBloc
       if (event.toChord != null) newToChord = event.toChord!;
       if (!(event.fromChord == null && event.toChord == null) &&
           newToChord - newFromChord > 0) {
+        rangeDisabled = false;
         fromChord = newFromChord;
         toChord = newToChord;
         startDur = 0.0;
         endDur = currentlyViewedProgression.durations.real(toChord);
         _calculateRangePositions();
-        return emit(RangeChanged(
+        return emit(
+          RangeChanged(
             progression: currentlyViewedProgression,
+            rangeDisabled: false,
             newToChord: toChord,
-            newFromChord: fromChord));
+            newFromChord: fromChord,
+            startDur: startDur,
+            endDur: endDur,
+          ),
+        );
       }
     });
     on<ChangeRangeDuration>((event, emit) {
       Progression prog = currentlyViewedProgression;
-      double realEnd = event.end - (prog.timeSignature.step / 2);
-      int newFromChord = prog.getPlayingIndex(event.start),
-          newToChord = prog.getPlayingIndex(realEnd);
-      if (newToChord >= newFromChord) {
-        fromChord = newFromChord;
-        toChord = newToChord;
-        _calculateRangePositions();
-        startDur = event.start -
-            (prog.durations.real(fromChord) - prog.durations[fromChord]);
-        endDur = event.end -
-            (prog.durations.real(toChord) - prog.durations[toChord]);
-        return emit(RangeChanged(
-          progression: currentlyViewedProgression,
-          newToChord: toChord,
-          newFromChord: fromChord,
-          startDur: startDur,
-          endDur: endDur,
-        ));
+      if (event.start >= 0.0 &&
+          event.end <= prog.duration &&
+          event.start < event.end) {
+        double realEnd = event.end - (prog.timeSignature.step / 2);
+        int newFromChord = prog.getPlayingIndex(event.start),
+            newToChord = prog.getPlayingIndex(realEnd);
+        if (newToChord >= newFromChord) {
+          rangeDisabled = false;
+          fromChord = newFromChord;
+          toChord = newToChord;
+          startDur = event.start -
+              (prog.durations.real(fromChord) - prog.durations[fromChord]);
+          endDur = event.end -
+              (prog.durations.real(toChord) - prog.durations[toChord]);
+          _calculateRangePositions();
+          return emit(RangeChanged(
+            progression: currentlyViewedProgression,
+            rangeDisabled: false,
+            newToChord: toChord,
+            newFromChord: fromChord,
+            startDur: startDur,
+            endDur: endDur,
+          ));
+        }
       }
     });
     on<MeasureEdited>((event, emit) {
@@ -152,6 +170,17 @@ class ProgressionHandlerBloc
       }
     });
     on<SetMeasure>((event, emit) {
+      // if (event.index >= startMeasure && event.index <= endMeasure) {
+      //   final Progression prog = currentlyViewedProgression;
+      //   if (event.index == startMeasure && event.index == endMeasure) {
+      //     rangeDisabled = true;
+      //     emit(RangeChanged(progression: prog, rangeDisabled: rangeDisabled));
+      //   } else if (startMeasure == event.index) {
+      //     startDur = 0.0;
+      //     fromChord =
+      //   } else if (endMeasure == event.index) {
+      //   } else {}
+      // }
       if (event.newMeasure.isEmpty || event.newMeasure[0] is Chord) {
         add(
           OverrideProgression(
@@ -179,15 +208,17 @@ class ProgressionHandlerBloc
         );
       }
     });
-    on<Reharmonize>(
-      (event, emit) => _substitutionHandlerBloc.add(SetupReharmonization(
-        progression: currentProgression,
-        fromChord: fromChord,
-        toChord: toChord,
-        startDur: startDur,
-        endDur: endDur,
-      )),
-    );
+    on<Reharmonize>((event, emit) {
+      if (!rangeDisabled) {
+        _substitutionHandlerBloc.add(SetupReharmonization(
+          progression: currentProgression,
+          fromChord: fromChord,
+          toChord: toChord,
+          startDur: startDur,
+          endDur: endDur,
+        ));
+      }
+    });
     on<SurpriseMe>(
       (event, emit) => _substitutionHandlerBloc.add(
           SurpriseMeSubs(progression: currentChords, scale: currentScale!)),
@@ -236,10 +267,13 @@ class ProgressionHandlerBloc
   // TODO: Optimize this.
   void _calculateRangePositions() {
     List<int> results = Utilities.calculateRangePositions(
-        progression: currentlyViewedProgression,
-        measures: currentlyViewedMeasures,
-        fromChord: fromChord,
-        toChord: toChord);
+      progression: currentlyViewedProgression,
+      measures: currentlyViewedMeasures,
+      fromChord: fromChord,
+      toChord: toChord,
+      startDur: startDur,
+      endDur: endDur,
+    );
     startMeasure = results[0];
     startIndex = results[1];
     endMeasure = results[2];

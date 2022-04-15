@@ -93,6 +93,8 @@ class Selector extends StatelessWidget {
     this.startDur,
     this.toChord,
     this.endDur,
+    this.selectorStart = false,
+    this.selectorEnd = false,
   }) : super(key: key);
 
   final Progression measure;
@@ -100,6 +102,8 @@ class Selector extends StatelessWidget {
   final double? startDur;
   final int? toChord;
   final double? endDur;
+  final bool selectorStart;
+  final bool selectorEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -119,9 +123,10 @@ class Selector extends StatelessWidget {
     if (endDur != null) end += endDur! - measure.durations[toChord!];
     final double endOffset = measure.durations.real(toChord!) - end;
     final double dur = end - start;
-    final double endSpace = measure.duration - measure.durations.real(toChord!);
-    final bool weakLeft = startDur != 0, weakRight = endOffset != 0;
-    if (start != 0.0) {
+    final double endSpace =
+        measure.timeSignature.decimal - measure.durations.real(toChord!);
+    final bool weakLeft = startDur != 0, weakRight = endOffset > 0;
+    if (startVal != 0.0) {
       widgets.add(Spacer(flex: startVal ~/ step));
     }
     if (weakLeft) {
@@ -129,20 +134,20 @@ class Selector extends StatelessWidget {
         SelectorBloc(
           flex: startDur! ~/ step,
           weak: true,
-          roundLeft: true,
+          roundLeft: selectorStart,
         ),
       );
     }
     widgets.add(SelectorBloc(
       flex: dur ~/ step,
-      roundLeft: !weakLeft,
-      roundRight: !weakRight,
+      roundLeft: !weakLeft && selectorStart,
+      roundRight: !weakRight && selectorEnd,
     ));
     if (weakRight) {
       widgets.add(SelectorBloc(
         flex: endOffset ~/ step,
         weak: true,
-        roundRight: true,
+        roundRight: selectorEnd,
       ));
     }
     if (endSpace != 0) {
@@ -159,10 +164,13 @@ class MeasureView<T> extends StatelessWidget {
     required this.onEdit,
     this.last = false,
     this.editable = true,
+    this.cursorPos,
     this.fromChord,
     this.startDur,
     this.toChord,
     this.endDur,
+    this.selectorStart = false,
+    this.selectorEnd = false,
   }) : super(key: key);
 
   final Progression<T> measure;
@@ -173,6 +181,9 @@ class MeasureView<T> extends StatelessWidget {
   final double? startDur;
   final int? toChord;
   final double? endDur;
+  final int? cursorPos;
+  final bool selectorStart;
+  final bool selectorEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -189,11 +200,18 @@ class MeasureView<T> extends StatelessWidget {
                 startDur: startDur,
                 toChord: toChord,
                 endDur: endDur,
+                selectorStart: selectorStart,
+                selectorEnd: selectorEnd,
               ),
               Row(
-                mainAxisSize: MainAxisSize.min,
+                // mainAxisSize: MainAxisSize.min,
                 children: buildList(),
               ),
+              cursorPos == null
+                  ? const SizedBox()
+                  : Row(
+                      children: buildCursor(),
+                    )
             ],
           ),
         ),
@@ -233,12 +251,33 @@ class MeasureView<T> extends StatelessWidget {
       );
     }
     if (!measure.full && last) {
-      widgets.add(const SizedBox(
-        height: Constants.measureHeight - (Constants.measureFontSize * 0.8),
-        child: VerticalDivider(thickness: 4),
+      widgets.add(Flexible(
+        flex: (measure.timeSignature.decimal - measure.duration) ~/ step,
+        child: const SizedBox(
+          height: Constants.measureHeight - (Constants.measureFontSize * 0.8),
+          child: VerticalDivider(thickness: 4),
+        ),
       ));
-      widgets.add(Spacer(
-          flex: (measure.timeSignature.decimal - measure.duration) ~/ step));
+    }
+    return widgets;
+  }
+
+  List<Widget> buildCursor() {
+    List<Widget> widgets = [];
+    final int max = measure.timeSignature.denominator;
+    if (cursorPos != 0) {
+      widgets.add(Spacer(flex: cursorPos!));
+    }
+    widgets.add(
+      const SelectorBloc(
+        flex: 1,
+        weak: true,
+        roundLeft: true,
+        roundRight: true,
+      ),
+    );
+    if (cursorPos != max - 1) {
+      widgets.add(Spacer(flex: max - 1 - cursorPos!));
     }
     return widgets;
   }
