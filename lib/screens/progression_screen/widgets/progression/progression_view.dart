@@ -220,12 +220,16 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
     _measures = widget.measures ?? widget.progression.splitToMeasures();
     final Progression prog = widget.progression;
     if (widget.fromChord != null && widget.toChord != null) {
+      int toChord = widget.toChord!;
+      if (toChord >= widget.progression.length) {
+        toChord = widget.progression.length - 1;
+      }
       List<int> results = Utilities.calculateRangePositions(
         progression: widget.progression,
         measures: _measures,
         fromChord: widget.fromChord!,
         startDur: widget.startDur,
-        toChord: widget.toChord!,
+        toChord: toChord,
         endDur: widget.endDur,
       );
       startMeasure = results[0];
@@ -246,9 +250,9 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
               _measures[startMeasure].durations[startIndex];
           startDur -= durBefore;
         }
-        endDur = prog.isEmpty ? 0.0 : prog.durations.real(widget.toChord!);
+        endDur = prog.isEmpty ? 0.0 : prog.durations.real(toChord);
         if (widget.endDur != null) {
-          endDur += widget.endDur! - prog.durations[widget.toChord!];
+          endDur += widget.endDur! - prog.durations[toChord];
         }
         double durBefore = _measures[0].timeSignature.decimal * endMeasure;
         durBefore += _measures[endMeasure].durations.real(endIndex) -

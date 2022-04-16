@@ -39,17 +39,6 @@ class ChangeScale extends ProgressionHandlerEvent {
   const ChangeScale(this.newScale);
 }
 
-class ChangeRange extends ProgressionHandlerEvent {
-  final int? fromChord;
-  final int? toChord;
-
-  @override
-  List<Object?> get props => [fromChord, toString()];
-
-  const ChangeRange({this.fromChord, this.toChord})
-      : assert(!(fromChord == null && toChord == null));
-}
-
 class ChangeRangeDuration extends ProgressionHandlerEvent {
   final double start;
   final double end;

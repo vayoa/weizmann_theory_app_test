@@ -48,7 +48,6 @@ class ProgressionHandlerBloc
   ProgressionHandlerBloc(this._substitutionHandlerBloc)
       : super(ProgressionHandlerInitial()) {
     on<OverrideProgression>((event, emit) {
-      // TODO: Add an OverrideChords event...
       if (_currentScale == null) _calculateScales();
       _chordMeasures = null;
       _progressionMeasures = null;
@@ -99,29 +98,6 @@ class ProgressionHandlerBloc
       return emit(ScaleChanged(
           progression: currentlyViewedProgression, scale: _currentScale!));
     });
-    on<ChangeRange>((event, emit) {
-      int newFromChord = fromChord, newToChord = toChord;
-      if (event.fromChord != null) newFromChord = event.fromChord!;
-      if (event.toChord != null) newToChord = event.toChord!;
-      if (newToChord - newFromChord > 0) {
-        rangeDisabled = false;
-        fromChord = newFromChord;
-        toChord = newToChord;
-        startDur = 0.0;
-        endDur = currentlyViewedProgression.durations.real(toChord);
-        _calculateRangePositions();
-        return emit(
-          RangeChanged(
-            progression: currentlyViewedProgression,
-            rangeDisabled: false,
-            newToChord: toChord,
-            newFromChord: fromChord,
-            startDur: startDur,
-            endDur: endDur,
-          ),
-        );
-      }
-    });
     on<ChangeRangeDuration>((event, emit) {
       Progression prog = currentlyViewedProgression;
       if (event.start >= 0.0 &&
@@ -131,7 +107,6 @@ class ProgressionHandlerBloc
         int newFromChord = prog.getPlayingIndex(event.start),
             newToChord = prog.getPlayingIndex(realEnd);
         if (newToChord >= newFromChord) {
-          rangeDisabled = false;
           fromChord = newFromChord;
           toChord = newToChord;
           startDur = event.start -
@@ -139,6 +114,7 @@ class ProgressionHandlerBloc
           endDur = event.end -
               (prog.durations.real(toChord) - prog.durations[toChord]);
           _calculateRangePositions();
+          rangeDisabled = false;
           return emit(RangeChanged(
             progression: currentlyViewedProgression,
             rangeDisabled: false,

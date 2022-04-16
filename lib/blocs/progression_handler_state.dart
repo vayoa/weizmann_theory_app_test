@@ -58,8 +58,14 @@ class RangeChanged extends ProgressionHandlerState {
   final double? endDur;
 
   @override
-  List<Object?> get props =>
-      [...super.props, newFromChord, newToChord, startDur, endDur];
+  List<Object?> get props => [
+        ...super.props,
+        newFromChord,
+        newToChord,
+        startDur,
+        endDur,
+        rangeDisabled,
+      ];
 
   const RangeChanged({
     required Progression progression,
