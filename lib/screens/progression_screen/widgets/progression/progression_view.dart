@@ -47,9 +47,11 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
     int startIndex = bloc.startIndex;
     int endMeasure = bloc.endMeasure;
     int endIndex = bloc.endIndex;
-    double startDur = bloc.fromDur;
+    double startDur = 0.0;
     double endDur = 0.0;
-    if (startMeasure != -1 && endMeasure != -1) {
+    bool disabled = bloc.rangeDisabled;
+    if (!disabled && startMeasure != -1 && endMeasure != -1) {
+      startDur = bloc.fromDur;
       if (startDur != 0) {
         double durBefore =
             widget.measures[0].timeSignature.decimal * startMeasure;
@@ -142,6 +144,7 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
                 toChord: toChord,
                 endDur: paintEndDur,
                 editable: editable,
+                disabled: disabled,
                 cursorPos: editable && hoveredPos != -1 ? hoveredPos : null,
                 selectorStart: index == startMeasure,
                 selectorEnd: index == endMeasure,
@@ -189,6 +192,8 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
   late List<Progression> _measures;
   int startMeasure = -1, startIndex = -1;
   int endMeasure = -1, endIndex = -1;
+  double startDur = 0.0;
+  double endDur = 0.0;
 
   @override
   void initState() {
@@ -213,6 +218,7 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
 
   void _updateMeasures() {
     _measures = widget.measures ?? widget.progression.splitToMeasures();
+    final Progression prog = widget.progression;
     if (widget.fromChord != null && widget.toChord != null) {
       List<int> results = Utilities.calculateRangePositions(
         progression: widget.progression,
@@ -226,6 +232,29 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
       startIndex = results[1];
       endMeasure = results[2];
       endIndex = results[3];
+      startDur = 0.0;
+      endDur = 0.0;
+      if (startMeasure != -1 && endMeasure != -1) {
+        startDur = prog.isEmpty
+            ? 0.0
+            : prog.durations.real(widget.fromChord!) -
+                prog.durations[widget.fromChord!] +
+                widget.startDur;
+        if (startDur != 0) {
+          double durBefore = _measures[0].timeSignature.decimal * startMeasure;
+          durBefore += _measures[startMeasure].durations.real(startIndex) -
+              _measures[startMeasure].durations[startIndex];
+          startDur -= durBefore;
+        }
+        endDur = prog.isEmpty ? 0.0 : prog.durations.real(widget.toChord!);
+        if (widget.endDur != null) {
+          endDur += widget.endDur! - prog.durations[widget.toChord!];
+        }
+        double durBefore = _measures[0].timeSignature.decimal * endMeasure;
+        durBefore += _measures[endMeasure].durations.real(endIndex) -
+            _measures[endMeasure].durations[endIndex];
+        endDur -= durBefore;
+      }
     }
   }
 
@@ -262,17 +291,19 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
                     widget.toChord != null &&
                     index >= startMeasure &&
                     index <= endMeasure;
+                bool start = index == startMeasure;
+                bool end = index == endMeasure;
                 return MeasureView(
                   measure: _measures[index],
                   last: index == _measures.length - 1,
-                  fromChord: shouldPaint
-                      ? (index == startMeasure ? startIndex : 0)
-                      : null,
+                  fromChord: shouldPaint ? (start ? startIndex : 0) : null,
+                  startDur: shouldPaint && start ? startDur : null,
                   toChord: shouldPaint
                       ? (index == endMeasure
                           ? endIndex
                           : _measures[index].length)
                       : null,
+                  endDur: shouldPaint && end ? endDur : null,
                   editable: widget.editable,
                   onEdit: () {},
                 );

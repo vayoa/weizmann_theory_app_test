@@ -68,7 +68,7 @@ class ProgressionHandlerBloc
       rangeDisabled = true;
       return emit(RangeChanged(
         progression: currentlyViewedProgression,
-        rangeDisabled: true,
+        rangeDisabled: rangeDisabled,
         newFromChord: fromChord,
         newToChord: toChord,
         startDur: startDur,
@@ -103,8 +103,7 @@ class ProgressionHandlerBloc
       int newFromChord = fromChord, newToChord = toChord;
       if (event.fromChord != null) newFromChord = event.fromChord!;
       if (event.toChord != null) newToChord = event.toChord!;
-      if (!(event.fromChord == null && event.toChord == null) &&
-          newToChord - newFromChord > 0) {
+      if (newToChord - newFromChord > 0) {
         rangeDisabled = false;
         fromChord = newFromChord;
         toChord = newToChord;
@@ -172,12 +171,14 @@ class ProgressionHandlerBloc
     on<SetMeasure>((event, emit) {
       // if (event.index >= startMeasure && event.index <= endMeasure) {
       //   final Progression prog = currentlyViewedProgression;
+      //   print(
+      //       'startMeasure: $startMeasure, endMeasure: $endMeasure, index: ${event.index}');
       //   if (event.index == startMeasure && event.index == endMeasure) {
       //     rangeDisabled = true;
       //     emit(RangeChanged(progression: prog, rangeDisabled: rangeDisabled));
       //   } else if (startMeasure == event.index) {
       //     startDur = 0.0;
-      //     fromChord =
+      //     // fromChord =
       //   } else if (endMeasure == event.index) {
       //   } else {}
       // }

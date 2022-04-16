@@ -171,6 +171,7 @@ class MeasureView<T> extends StatelessWidget {
     this.endDur,
     this.selectorStart = false,
     this.selectorEnd = false,
+    this.disabled = false,
   }) : super(key: key);
 
   final Progression<T> measure;
@@ -184,6 +185,7 @@ class MeasureView<T> extends StatelessWidget {
   final int? cursorPos;
   final bool selectorStart;
   final bool selectorEnd;
+  final bool disabled;
 
   @override
   Widget build(BuildContext context) {
@@ -194,15 +196,17 @@ class MeasureView<T> extends StatelessWidget {
           child: Stack(
             alignment: Alignment.centerLeft,
             children: [
-              Selector(
-                measure: measure,
-                fromChord: fromChord,
-                startDur: startDur,
-                toChord: toChord,
-                endDur: endDur,
-                selectorStart: selectorStart,
-                selectorEnd: selectorEnd,
-              ),
+              (disabled
+                  ? const SizedBox()
+                  : Selector(
+                      measure: measure,
+                      fromChord: fromChord,
+                      startDur: startDur,
+                      toChord: toChord,
+                      endDur: endDur,
+                      selectorStart: selectorStart,
+                      selectorEnd: selectorEnd,
+                    )),
               Row(
                 // mainAxisSize: MainAxisSize.min,
                 children: buildList(),
