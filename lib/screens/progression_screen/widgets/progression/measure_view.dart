@@ -208,7 +208,6 @@ class MeasureView<T> extends StatelessWidget {
                       selectorEnd: selectorEnd,
                     )),
               Row(
-                // mainAxisSize: MainAxisSize.min,
                 children: buildList(),
               ),
               cursorPos == null

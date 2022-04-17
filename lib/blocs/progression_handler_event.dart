@@ -50,6 +50,15 @@ class ChangeRangeDuration extends ProgressionHandlerEvent {
       : assert(start < end);
 }
 
+class DisableRange extends ProgressionHandlerEvent {
+  final bool disable;
+
+  @override
+  List<Object?> get props => [disable];
+
+  const DisableRange({required this.disable});
+}
+
 class SetMeasure extends ProgressionHandlerEvent {
   final Progression newMeasure;
   final int index;

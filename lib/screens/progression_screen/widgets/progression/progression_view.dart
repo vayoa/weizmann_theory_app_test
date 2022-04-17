@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,15 +31,56 @@ class ProgressionView<T> extends StatefulWidget {
 }
 
 class _ProgressionViewState<T> extends State<ProgressionView<T>> {
+  late double stepW;
+  late double minSelectDur;
   int editedMeasure = -1;
   int hoveredMeasure = -1;
   int hoveredPos = -1;
+  double startHold = -1;
+  int holdMeasure = -1;
+  int holdPos = -1;
+  late double maxDur;
+
+  static const double max =
+      Constants.measureWidth - 2 * Constants.measurePadding;
 
   int _getIndexFromPosition(Offset localPosition) =>
       (localPosition.dx ~/ Constants.measureWidth) +
       (widget.measuresInLine *
           (localPosition.dy ~/
               (Constants.measureHeight + Constants.measureSpacing)));
+
+  int _getMeasureDur(Offset localPosition) {
+    double x =
+        (localPosition.dx % Constants.measureWidth) - Constants.measurePadding;
+    return x >= 0 && x <= max ? x ~/ stepW : -1;
+  }
+
+  double _calcPosDur(int measure, int duration) =>
+      measure != -1 && widget.measures.length > measure && duration != -1
+          ? (measure * widget.measures[0].timeSignature.decimal) +
+              (duration * widget.measures[0].timeSignature.step)
+          : -1;
+
+  _setup() {
+    stepW = max / widget.measures[0].timeSignature.denominator;
+    minSelectDur = widget.measures[0].timeSignature.step * 2;
+    maxDur = math.max(widget.measures.length - 1, 0) *
+            widget.measures[0].timeSignature.decimal +
+        (widget.measures.last.duration);
+  }
+
+  @override
+  void initState() {
+    _setup();
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant ProgressionView<T> oldWidget) {
+    _setup();
+    super.didUpdateWidget(oldWidget);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,24 +108,47 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
           widget.measures[endMeasure].durations[endIndex];
       endDur -= durBefore;
     }
-    const double max = Constants.measureWidth - 2 * Constants.measurePadding;
-    final double stepW = max / widget.measures[0].timeSignature.denominator;
     return SizedBox(
       width: widget.measuresInLine * Constants.measureWidth,
       child: Listener(
+        onPointerMove: (event) {
+          if (event.buttons == kPrimaryButton) {
+            print('hold: $holdMeasure-$holdPos');
+            if (holdMeasure != -1 && holdPos != -1) {
+              int measureDur = _getMeasureDur(event.localPosition);
+              int measure = _getIndexFromPosition(event.localPosition);
+              if (measure != -1 && measureDur != -1) {
+                double selectorEndDur, selectorStartDur;
+                if (holdMeasure > measure ||
+                    (holdMeasure == measure && holdPos > measureDur)) {
+                  selectorEndDur = _calcPosDur(holdMeasure, holdPos + 1);
+                  selectorStartDur = _calcPosDur(measure, measureDur);
+                } else {
+                  selectorEndDur = _calcPosDur(measure, measureDur + 1);
+                  selectorStartDur = startHold;
+                }
+                if (selectorEndDur > 0 &&
+                    selectorEndDur <= maxDur &&
+                    selectorStartDur >= 0 &&
+                    selectorStartDur < maxDur) {
+                  if (selectorEndDur - selectorStartDur >= minSelectDur) {
+                    BlocProvider.of<ProgressionHandlerBloc>(context).add(
+                        ChangeRangeDuration(
+                            start: selectorStartDur, end: selectorEndDur));
+                  } else {
+                    BlocProvider.of<ProgressionHandlerBloc>(context)
+                        .add(const DisableRange(disable: true));
+                  }
+                }
+              }
+            }
+          }
+        },
         onPointerHover: (event) {
           int index = _getIndexFromPosition(event.localPosition);
-          double x = (event.localPosition.dx % Constants.measureWidth) -
-              Constants.measurePadding;
-          if (x >= 0 && x <= max) {
-            setState(() {
-              hoveredPos = x ~/ stepW;
-            });
-          } else if (hoveredPos != -1) {
-            setState(() {
-              hoveredPos = -1;
-            });
-          }
+          setState(() {
+            hoveredPos = _getMeasureDur(event.localPosition);
+          });
           if (index != hoveredMeasure) {
             setState(() {
               hoveredMeasure = index;
@@ -90,7 +156,16 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
           }
         },
         onPointerDown: (event) {
-          if (event.buttons == kSecondaryButton) {
+          if (event.buttons == kPrimaryButton) {
+            double hold = _calcPosDur(hoveredMeasure, hoveredPos);
+            if (hold >= 0 && hold <= maxDur) {
+              setState(() {
+                holdMeasure = hoveredMeasure;
+                holdPos = hoveredPos;
+                startHold = hold;
+              });
+            }
+          } else if (event.buttons == kSecondaryButton) {
             int index = _getIndexFromPosition(event.localPosition);
             setState(() {
               editedMeasure = index;
@@ -104,7 +179,7 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
               maxCrossAxisExtent: Constants.measureWidth,
               mainAxisSpacing: Constants.measureSpacing,
               childAspectRatio:
-                  Constants.measureWidth / Constants.measureHeight,
+              Constants.measureWidth / Constants.measureHeight,
             ),
             itemBuilder: (context, index) {
               bool shouldPaint = index >= startMeasure && index <= endMeasure;
@@ -112,11 +187,11 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
               bool last = (index == widget.measures.length - 1) ||
                   (index + 1) % widget.measuresInLine == 0;
               int? fromChord =
-                  shouldPaint ? (index == startMeasure ? startIndex : 0) : null;
+              shouldPaint ? (index == startMeasure ? startIndex : 0) : null;
               int? toChord = shouldPaint
                   ? (index == endMeasure
-                      ? endIndex
-                      : widget.measures[index].length - 1)
+                  ? endIndex
+                  : widget.measures[index].length - 1)
                   : null;
               double paintStartDur = index == startMeasure ? startDur : 0.0;
               double? paintEndDur = index == endMeasure ? endDur : null;
@@ -242,8 +317,8 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
         startDur = prog.isEmpty
             ? 0.0
             : prog.durations.real(widget.fromChord!) -
-                prog.durations[widget.fromChord!] +
-                widget.startDur;
+            prog.durations[widget.fromChord!] +
+            widget.startDur;
         if (startDur != 0) {
           double durBefore = _measures[0].timeSignature.decimal * startMeasure;
           durBefore += _measures[startMeasure].durations.real(startIndex) -
@@ -304,8 +379,8 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
                   startDur: shouldPaint && start ? startDur : null,
                   toChord: shouldPaint
                       ? (index == endMeasure
-                          ? endIndex
-                          : _measures[index].length)
+                      ? endIndex
+                      : _measures[index].length)
                       : null,
                   endDur: shouldPaint && end ? endDur : null,
                   editable: widget.editable,

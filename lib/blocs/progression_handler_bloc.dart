@@ -126,6 +126,14 @@ class ProgressionHandlerBloc
         }
       }
     });
+    on<DisableRange>((event, emit) {
+      if (event.disable != rangeDisabled) {
+        rangeDisabled = event.disable;
+        return emit(RangeChanged(
+            progression: currentlyViewedProgression,
+            rangeDisabled: rangeDisabled));
+      }
+    });
     on<MeasureEdited>((event, emit) {
       try {
         Progression progression;
