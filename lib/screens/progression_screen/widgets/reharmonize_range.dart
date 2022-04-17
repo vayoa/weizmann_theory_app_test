@@ -48,7 +48,7 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
         ProgressionHandlerBloc bloc =
             BlocProvider.of<ProgressionHandlerBloc>(context);
         return SizedBox(
-          width: widget.textSize * 3.8,
+          width: widget.textSize * 4.8,
           child: TextField(
             controller: controller,
             inputFormatters: [FilteringTextInputFormatter.allow(validInput)],
