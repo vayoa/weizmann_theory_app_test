@@ -113,7 +113,6 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
       child: Listener(
         onPointerMove: (event) {
           if (event.buttons == kPrimaryButton) {
-            print('hold: $holdMeasure-$holdPos');
             if (holdMeasure != -1 && holdPos != -1) {
               int measureDur = _getMeasureDur(event.localPosition);
               int measure = _getIndexFromPosition(event.localPosition);
