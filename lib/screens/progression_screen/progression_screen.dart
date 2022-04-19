@@ -130,7 +130,7 @@ class ProgressionScreen extends StatelessWidget {
                         ),
                         ConstrainedBox(
                           constraints: const BoxConstraints(
-                              minHeight: 24, maxHeight: 24, maxWidth: 590),
+                              minHeight: 24, maxHeight: 24, maxWidth: 600),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
