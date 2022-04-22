@@ -257,8 +257,8 @@ class MeasureView<T> extends StatelessWidget {
       widgets.add(Flexible(
         flex: (measure.timeSignature.decimal - measure.duration) ~/ step,
         child: const SizedBox(
-          height: Constants.measureHeight - (Constants.measureFontSize * 0.8),
-          child: VerticalDivider(thickness: 4),
+          height: Constants.measureFontSize * 1.6,
+          child: VerticalDivider(thickness: 4, width: 4),
         ),
       ));
     }

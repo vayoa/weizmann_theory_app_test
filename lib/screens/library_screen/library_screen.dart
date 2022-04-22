@@ -117,6 +117,9 @@ class LibraryScreen extends StatelessWidget {
                               MaterialPageRoute(
                                 builder: (context) => ProgressionScreen(
                                   title: state.titles[index],
+                                  initiallyBanked: ProgressionBank
+                                      .bank[state.titles[index]]!
+                                      .usedInSubstitutions,
                                   entry: ProgressionBank
                                       .bank[state.titles[index]]!,
                                 ),

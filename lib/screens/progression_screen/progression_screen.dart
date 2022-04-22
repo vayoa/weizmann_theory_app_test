@@ -25,10 +25,12 @@ class ProgressionScreen extends StatelessWidget {
     Key? key,
     required this.entry,
     required this.title,
+    required this.initiallyBanked,
   }) : super(key: key);
 
   final ProgressionBankEntry entry;
   final String title;
+  final bool initiallyBanked;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +47,10 @@ class ProgressionScreen extends StatelessWidget {
         BlocProvider(create: (_) => AudioPlayerBloc()),
       ],
       child: Scaffold(
-        body: ProgressionScreenUI(title: title),
+        body: ProgressionScreenUI(
+          title: title,
+          initiallyBanked: initiallyBanked,
+        ),
       ),
     );
   }
@@ -55,9 +60,11 @@ class ProgressionScreenUI extends StatelessWidget {
   const ProgressionScreenUI({
     Key? key,
     required this.title,
+    required this.initiallyBanked,
   }) : super(key: key);
 
   final String title;
+  final bool initiallyBanked;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +95,7 @@ class ProgressionScreenUI extends StatelessWidget {
                         children: [
                           ProgressionTitle(title: title),
                           BankProgressionButton(
+                            initiallyBanked: initiallyBanked,
                             onToggle: (active) {},
                           ),
                         ],

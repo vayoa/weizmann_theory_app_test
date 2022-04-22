@@ -6,10 +6,12 @@ class BankProgressionButton extends StatefulWidget {
   const BankProgressionButton({
     Key? key,
     required this.onToggle,
+    this.initiallyBanked = false,
     this.canBank = true,
   }) : super(key: key);
 
   final void Function(bool) onToggle;
+  final bool initiallyBanked;
   final bool canBank;
 
   @override
@@ -18,7 +20,13 @@ class BankProgressionButton extends StatefulWidget {
 
 class _BankProgressionButtonState extends State<BankProgressionButton> {
   bool hovering = false;
-  bool active = false;
+  late bool active;
+
+  @override
+  void initState() {
+    active = widget.canBank && widget.initiallyBanked;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
