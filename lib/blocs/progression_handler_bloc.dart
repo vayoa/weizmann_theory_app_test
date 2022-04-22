@@ -25,13 +25,16 @@ class ProgressionHandlerBloc
   ScaleDegreeProgression currentProgression = ScaleDegreeProgression.empty();
   List<Progression<Chord>>? _chordMeasures;
   List<Progression<ScaleDegreeChord>>? _progressionMeasures;
-  ProgressionType type = ProgressionType.chords;
+  ProgressionType type = ProgressionType.romanNumerals;
   int fromChord = 0, toChord = 0;
   double startDur = 0.0;
   double endDur = 0.0;
   int startMeasure = -1, startIndex = 0;
   int endMeasure = -1, endIndex = 0;
   bool rangeDisabled = true;
+
+  static final PitchScale defaultScale =
+      PitchScale.common(tonic: Pitch.parse('C'));
 
   double get fromDur => currentlyViewedProgression.isEmpty
       ? 0.0
@@ -45,19 +48,23 @@ class ProgressionHandlerBloc
           currentlyViewedProgression.durations[toChord] +
           endDur;
 
-  ProgressionHandlerBloc(this._substitutionHandlerBloc)
-      : super(ProgressionHandlerInitial()) {
+  ProgressionHandlerBloc({
+    required SubstitutionHandlerBloc substitutionHandlerBloc,
+    required this.currentProgression,
+  })  : _substitutionHandlerBloc = substitutionHandlerBloc,
+        super(ProgressionHandlerInitial()) {
     on<OverrideProgression>((event, emit) {
-      if (_currentScale == null) _calculateScales();
       _chordMeasures = null;
       _progressionMeasures = null;
       if (!event.newProgression.isEmpty) {
         if (event.newProgression[0] is Chord) {
+          if (_currentScale == null) _calculateScales();
           currentChords = ChordProgression.fromProgression(
               event.newProgression as Progression<Chord>);
           currentProgression =
               ScaleDegreeProgression.fromChords(_currentScale!, currentChords);
         } else {
+          _currentScale ??= defaultScale;
           currentProgression = event.newProgression as ScaleDegreeProgression;
           currentChords = currentProgression.inScale(_currentScale!);
         }
@@ -167,6 +174,14 @@ class ProgressionHandlerBloc
       //   } else {}
       // }
       if (event.newMeasure.isEmpty || event.newMeasure[0] is Chord) {
+        if (_currentScale == null) {
+          _currentScale = ChordProgression.fromProgression(
+                  event.newMeasure as Progression<Chord>)
+              .krumhanslSchmucklerScales
+              .first;
+          emit(RecalculatedScales(
+              progression: currentlyViewedProgression, scale: _currentScale!));
+        }
         add(
           OverrideProgression(
             ScaleDegreeProgression.fromChords(

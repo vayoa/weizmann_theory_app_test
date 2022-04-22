@@ -7,7 +7,6 @@ import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/modals/substitution.dart';
 import 'package:thoery_test/modals/substitution_match.dart';
-import 'package:thoery_test/state/progression_bank.dart';
 import 'package:thoery_test/state/substitution_handler.dart';
 import 'package:weizmann_theory_app_test/modals/progression_type.dart';
 
@@ -16,7 +15,6 @@ part 'substitution_handler_state.dart';
 
 class SubstitutionHandlerBloc
     extends Bloc<SubstitutionHandlerEvent, SubstitutionHandlerState> {
-  final ProgressionBank _bank = ProgressionBank();
   ProgressionType type = ProgressionType.chords;
   List<Substitution>? _substitutions;
   bool _inSetup = false;
@@ -64,7 +62,6 @@ class SubstitutionHandlerBloc
             CalculatingSubstitutions(fromChord: _fromChord, toChord: _toChord));
         _substitutions = SubstitutionHandler.getRatedSubstitutions(
           _currentProgression!,
-          bank: _bank,
           keepHarmonicFunction: _keepHarmonicFunction,
           start: _fromChord,
           startDur: _startDur,
@@ -87,7 +84,6 @@ class SubstitutionHandlerBloc
       _substitutions = [
         SubstitutionHandler.substituteBy(
           base: event.progression,
-          bank: _bank,
           maxIterations: 50,
           scale: event.scale,
         )

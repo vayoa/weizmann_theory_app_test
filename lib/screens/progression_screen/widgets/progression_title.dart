@@ -3,7 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:weizmann_theory_app_test/constants.dart';
 
 class ProgressionTitle extends StatefulWidget {
-  const ProgressionTitle({Key? key}) : super(key: key);
+  const ProgressionTitle({
+    Key? key,
+    required this.title,
+  }) : super(key: key);
+
+  final String title;
 
   @override
   State<ProgressionTitle> createState() => _ProgressionTitleState();
@@ -14,7 +19,7 @@ class _ProgressionTitleState extends State<ProgressionTitle> {
 
   @override
   void initState() {
-    _controller = TextEditingController(text: "My Song's Title");
+    _controller = TextEditingController(text: widget.title);
     super.initState();
   }
 

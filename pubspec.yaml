@@ -44,6 +44,7 @@ dependencies:
   menu_button: ^1.4.2+1
   fluent_ui: ^3.9.0
   equatable: ^2.0.3
+  path_provider: ^2.0.9
 
 dev_dependencies:
   flutter_test:

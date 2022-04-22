@@ -112,7 +112,7 @@ packages:
       name: fluent_ui
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.10.2"
+    version: "3.10.3"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -199,7 +199,7 @@ packages:
     source: hosted
     version: "1.8.0"
   path_provider:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path_provider
       url: "https://pub.dartlang.org"
@@ -341,7 +341,7 @@ packages:
     description:
       path: "."
       ref: "feat/absolute-durations"
-      resolved-ref: "9913c932e5aadca148ef9698cc82dffa340e7d3e"
+      resolved-ref: "9e043622e19a6b4cf9417ac3e1c2c1e3007d539d"
       url: "https://github.com/vayoa/theory_test.git"
     source: git
     version: "1.0.0+1"

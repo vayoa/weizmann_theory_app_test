@@ -1,12 +1,9 @@
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart' hide Interval;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/modals/scale_degree_progression.dart';
-import 'package:weizmann_theory_app_test/blocs/progression_handler_bloc.dart';
-import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/progression_screen.dart';
+import 'package:weizmann_theory_app_test/blocs/bank/bank_bloc.dart';
+import 'package:weizmann_theory_app_test/screens/library_screen/library_screen.dart';
 
-import 'blocs/audio_player/audio_player_bloc.dart';
 import 'constants.dart';
 
 void main() {
@@ -74,17 +71,7 @@ class _MyAppState extends State<MyApp> {
           fillColor: Constants.selectedColor,
         ),
       ),
-      home: MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (_) => SubstitutionHandlerBloc()),
-          BlocProvider(
-            create: (context) => ProgressionHandlerBloc(
-                BlocProvider.of<SubstitutionHandlerBloc>(context)),
-          ),
-          BlocProvider(create: (_) => AudioPlayerBloc()),
-        ],
-        child: const MyHomePage(title: 'Flutter Demo Home Page'),
-      ),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -99,15 +86,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  @override
-  void initState() {
-    BlocProvider.of<ProgressionHandlerBloc>(context)
-        .add(OverrideProgression(ScaleDegreeProgression.empty()));
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
-    return const ProgressionScreen();
+    return BlocProvider(
+      create: (_) => BankBloc(),
+      child: const LibraryScreen(),
+    );
   }
 }
