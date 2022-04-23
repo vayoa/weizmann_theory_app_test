@@ -10,7 +10,7 @@ import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/view
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/weights_view.dart';
 import 'package:weizmann_theory_app_test/widgets/TButton.dart';
 import 'package:weizmann_theory_app_test/widgets/TSelector.dart';
-import 'package:weizmann_theory_app_test/widgets/general_dialog_page.dart';
+import 'package:weizmann_theory_app_test/widgets/dialogs.dart';
 import 'package:weizmann_theory_app_test/widgets/t_icon_button.dart';
 
 import '../../../blocs/progression_handler_bloc.dart';

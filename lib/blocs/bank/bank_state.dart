@@ -18,3 +18,15 @@ class BankLoading extends BankInitial {}
 class BankLoaded extends BankState {
   const BankLoaded({required List<String> titles}) : super(titles: titles);
 }
+
+class AddedNewEntry extends BankState {
+  final String addedEntryTitle;
+
+  @override
+  List<Object?> get props => [...super.props, addedEntryTitle];
+
+  const AddedNewEntry({
+    required List<String> titles,
+    required this.addedEntryTitle,
+  }) : super(titles: titles);
+}

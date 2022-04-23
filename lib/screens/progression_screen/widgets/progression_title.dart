@@ -41,7 +41,9 @@ class _ProgressionTitleState extends State<ProgressionTitle> {
       child: TextField(
         controller: _controller,
         style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        inputFormatters: [LengthLimitingTextInputFormatter(36)],
+        inputFormatters: [
+          LengthLimitingTextInputFormatter(Constants.maxTitleCharacters)
+        ],
         decoration: const InputDecoration(
           isDense: true,
           border: InputBorder.none,

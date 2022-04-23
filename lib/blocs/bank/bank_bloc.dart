@@ -5,10 +5,11 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/state/progression_bank.dart';
+import 'package:thoery_test/state/progression_bank_entry.dart';
 
 part 'bank_event.dart';
-
 part 'bank_state.dart';
 
 class BankBloc extends Bloc<BankEvent, BankState> {
@@ -28,6 +29,21 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       emit(BankLoading());
       await _initialLoad();
       _getKeys();
+      return emit(BankLoaded(titles: _titles));
+    });
+    on<AddNewEntry>((event, emit) async {
+      ProgressionBank.add(
+        title: event.title,
+        entry: ProgressionBankEntry(
+          progression: ScaleDegreeProgression.empty(),
+        ),
+      );
+      _bankLoaded = false;
+      emit(BankLoading());
+      await _saveBankData();
+      _titles.add(event.title);
+      _bankLoaded = true;
+      emit(AddedNewEntry(titles: _titles, addedEntryTitle: event.title));
       return emit(BankLoaded(titles: _titles));
     });
     on<DeleteEntry>((event, emit) async {

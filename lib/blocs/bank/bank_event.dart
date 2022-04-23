@@ -24,3 +24,12 @@ class RevertAll extends BankEvent {
 
   const RevertAll();
 }
+
+class AddNewEntry extends BankEvent {
+  final String title;
+
+  @override
+  List<Object?> get props => [title];
+
+  const AddNewEntry(this.title);
+}

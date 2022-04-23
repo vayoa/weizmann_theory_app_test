@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_chord.dart';
@@ -51,7 +52,7 @@ abstract class Utilities {
         startDur;
     int startMeasure = durationToStart ~/ decimal;
     int startIndex =
-        measures[startMeasure].getPlayingIndex(durationToStart % decimal);
+    measures[startMeasure].getPlayingIndex(durationToStart % decimal);
     // We divide decimal by 2 and subtract it here so that for instance 3.0
     // where the chord at toChord is with a duration of 1.0 (meaning the
     // duration to him was 2.0 and he starts at the first position of his
@@ -66,5 +67,11 @@ abstract class Utilities {
     int endIndex =
         measures[endMeasure].getPlayingIndex(durationWithEnd % decimal);
     return [startMeasure, startIndex, endMeasure, endIndex];
+  }
+
+  static void showSnackBar(BuildContext context, String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(behavior: SnackBarBehavior.floating, content: Text(text)),
+    );
   }
 }

@@ -7,7 +7,7 @@ import 'package:weizmann_theory_app_test/screens/progression_screen/progression_
 import 'package:weizmann_theory_app_test/widgets/TButton.dart';
 
 import '../../blocs/bank/bank_bloc.dart';
-import '../../widgets/general_dialog_page.dart';
+import '../../widgets/dialogs.dart';
 
 class LibraryScreen extends StatelessWidget {
   const LibraryScreen({Key? key}) : super(key: key);
@@ -25,17 +25,45 @@ class LibraryScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(6.0),
             child: TButton(
-              label: 'Add New',
+              label: 'Create New',
               iconData: Icons.add,
               tight: true,
-              onPressed: () {},
+              onPressed: () async {
+                String? _title = await showGeneralDialog<String>(
+                  context: context,
+                  barrierLabel: 'Create New',
+                  barrierDismissible: true,
+                  pageBuilder: (context, _, __) => GeneralDialogTextField(
+                    title: const Text(
+                      'Create a new entry named...',
+                      style: Constants.valuePatternTextStyle,
+                      textAlign: TextAlign.center,
+                    ),
+                    submitButtonName: 'Create',
+                    onCancelled: (text) => Navigator.pop(context),
+                    onSubmitted: (text) {
+                      /* TODO: Choose what characters are illegal in a title
+                              and block them here. */
+                      if (ProgressionBank.bank.containsKey(text)) {
+                        return 'Title already exists in bank.';
+                      } else {
+                        Navigator.pop(context, text);
+                        return null;
+                      }
+                    },
+                  ),
+                );
+                if (_title != null) {
+                  BlocProvider.of<BankBloc>(context).add(AddNewEntry(_title));
+                }
+              },
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(6.0),
             child: TButton(
               label: 'Revert All',
-              iconData: Icons.add,
+              iconData: Icons.restart_alt_rounded,
               tight: true,
               onPressed: () async {
                 bool? _result = await showGeneralDialog<bool>(
@@ -90,13 +118,15 @@ class LibraryScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: BlocBuilder<BankBloc, BankState>(
+      body: BlocConsumer<BankBloc, BankState>(
+        listenWhen: (previous, state) => state is AddedNewEntry,
+        listener: (context, state) {
+          if (state is AddedNewEntry) {
+            _pushProgressionPage(context, state.addedEntryTitle);
+          }
+        },
         builder: (context, state) {
-          if (state is BankLoading || state is BankInitial) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (state is BankLoaded) {
+          if (state is! BankLoading && state is! BankInitial) {
             return Scrollbar(
               child: GridView.builder(
                   itemCount: state.titles.length,
@@ -110,21 +140,12 @@ class LibraryScreen extends StatelessWidget {
                       crossAxisSpacing: Constants.libraryEntryWidth * 0.1,
                       mainAxisSpacing: Constants.libraryEntryHeight * 0.8),
                   itemBuilder: (context, index) {
+                    String currentTitle =
+                        state.titles[state.titles.length - index - 1];
                     return LibraryEntry(
-                        title: state.titles[index],
-                        onOpen: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProgressionScreen(
-                                  title: state.titles[index],
-                                  initiallyBanked: ProgressionBank
-                                      .bank[state.titles[index]]!
-                                      .usedInSubstitutions,
-                                  entry: ProgressionBank
-                                      .bank[state.titles[index]]!,
-                                ),
-                              ),
-                            ),
+                        title: currentTitle,
+                        onOpen: () =>
+                            _pushProgressionPage(context, currentTitle),
                         onDelete: () async {
                           final bool? _result = await showGeneralDialog<bool>(
                             context: context,
@@ -136,41 +157,58 @@ class LibraryScreen extends StatelessWidget {
                                 TextSpan(
                                   text: 'Are you sure you want to permanently '
                                       'delete "',
-                                  children: [
-                                    TextSpan(
-                                      text: state.titles[index],
+                                      children: [
+                                        TextSpan(
+                                          text: currentTitle,
                                       style:
                                           Constants.boldedValuePatternTextStyle,
                                     ),
-                                    const TextSpan(text: '"?'),
-                                  ],
+                                        const TextSpan(text: '"?'),
+                                      ],
+                                    ),
+                                    style: Constants.valuePatternTextStyle,
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 3,
+                                    softWrap: true,
+                                  ),
+                                  onPressed: (deleted) =>
+                                      Navigator.pop(context, deleted),
+                                  noButtonName: 'Cancel',
+                                  yesButtonName: 'DELETE!',
                                 ),
-                                style: Constants.valuePatternTextStyle,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 3,
-                                softWrap: true,
-                              ),
-                              onPressed: (deleted) =>
-                                  Navigator.pop(context, deleted),
-                              noButtonName: 'Cancel',
-                              yesButtonName: 'DELETE!',
-                            ),
                           );
                           // When a choice was made...
                           // This is done like this (and not "if (_result) ..."
                           // since it can be null...
                           if (_result == true) {
                             BlocProvider.of<BankBloc>(context)
-                                .add(DeleteEntry(state.titles[index]));
+                                .add(DeleteEntry(currentTitle));
                           }
                         });
                   }),
             );
           } else {
-            return const SizedBox();
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
         },
+      ),
+    );
+  }
+
+  Future<dynamic> _pushProgressionPage(
+      BuildContext context, String currentTitle) {
+    return Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProgressionScreen(
+          title: currentTitle,
+          initiallyBanked:
+              ProgressionBank.bank[currentTitle]!.usedInSubstitutions,
+          entry: ProgressionBank.bank[currentTitle]!,
+        ),
       ),
     );
   }

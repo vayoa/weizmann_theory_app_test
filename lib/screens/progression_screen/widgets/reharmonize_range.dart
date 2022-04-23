@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/time_signature.dart';
+import 'package:weizmann_theory_app_test/utilities.dart';
 
 import '../../../blocs/progression_handler_bloc.dart';
 import '../../../constants.dart';
@@ -92,12 +93,7 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
               }
               controller.clear();
               if (showSnackBar) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    behavior: SnackBarBehavior.floating,
-                    content: Text("Invalid range inputted."),
-                  ),
-                );
+                Utilities.showSnackBar(context, "Invalid range inputted.");
               }
             },
           ),
