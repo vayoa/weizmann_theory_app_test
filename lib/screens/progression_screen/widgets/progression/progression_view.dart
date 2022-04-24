@@ -178,7 +178,7 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
               maxCrossAxisExtent: Constants.measureWidth,
               mainAxisSpacing: Constants.measureSpacing,
               childAspectRatio:
-              Constants.measureWidth / Constants.measureHeight,
+                  Constants.measureWidth / Constants.measureHeight,
             ),
             itemBuilder: (context, index) {
               bool shouldPaint = index >= startMeasure && index <= endMeasure;
@@ -186,11 +186,11 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
               bool last = (index == widget.measures.length - 1) ||
                   (index + 1) % widget.measuresInLine == 0;
               int? fromChord =
-              shouldPaint ? (index == startMeasure ? startIndex : 0) : null;
+                  shouldPaint ? (index == startMeasure ? startIndex : 0) : null;
               int? toChord = shouldPaint
                   ? (index == endMeasure
-                  ? endIndex
-                  : widget.measures[index].length - 1)
+                      ? endIndex
+                      : widget.measures[index].length - 1)
                   : null;
               double paintStartDur = index == startMeasure ? startDur : 0.0;
               double? paintEndDur = index == endMeasure ? endDur : null;
@@ -268,6 +268,7 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
   int endMeasure = -1, endIndex = -1;
   double startDur = 0.0;
   double endDur = 0.0;
+  bool _canPaint = false;
 
   @override
   void initState() {
@@ -294,7 +295,7 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
     _measures = widget.measures ?? widget.progression.splitToMeasures();
     final Progression prog = widget.progression;
     if (widget.fromChord != null && widget.toChord != null) {
-      int toChord = widget.toChord!;
+      int toChord = widget.toChord! - 1;
       if (toChord >= widget.progression.length) {
         toChord = widget.progression.length - 1;
       }
@@ -316,8 +317,8 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
         startDur = prog.isEmpty
             ? 0.0
             : prog.durations.real(widget.fromChord!) -
-            prog.durations[widget.fromChord!] +
-            widget.startDur;
+                prog.durations[widget.fromChord!] +
+                widget.startDur;
         if (startDur != 0) {
           double durBefore = _measures[0].timeSignature.decimal * startMeasure;
           durBefore += _measures[startMeasure].durations.real(startIndex) -
@@ -334,6 +335,7 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
         endDur -= durBefore;
       }
     }
+    _canPaint = widget.fromChord != null && widget.toChord != null;
   }
 
   void _updateController() =>
@@ -365,23 +367,37 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
               itemCount: _measures.length,
               shrinkWrap: true,
               itemBuilder: (context, index) {
-                bool shouldPaint = widget.fromChord != null &&
-                    widget.toChord != null &&
-                    index >= startMeasure &&
-                    index <= endMeasure;
+                bool shouldPaint =
+                    _canPaint && index >= startMeasure && index <= endMeasure;
                 bool start = index == startMeasure;
                 bool end = index == endMeasure;
+                int? fromChord, toChord;
+                double? _startDur, _endDur;
+                if (shouldPaint) {
+                  if (start) {
+                    fromChord = startIndex;
+                    _startDur = startDur;
+                  } else {
+                    fromChord = 0;
+                    _startDur = 0.0;
+                  }
+                  if (end) {
+                    toChord = endIndex;
+                    _endDur = endDur;
+                  } else {
+                    toChord = _measures[index].length - 1;
+                    _endDur = _measures[index].durations[toChord];
+                  }
+                }
                 return MeasureView(
                   measure: _measures[index],
                   last: index == _measures.length - 1,
-                  fromChord: shouldPaint ? (start ? startIndex : 0) : null,
-                  startDur: shouldPaint && start ? startDur : null,
-                  toChord: shouldPaint
-                      ? (index == endMeasure
-                      ? endIndex
-                      : _measures[index].length)
-                      : null,
-                  endDur: shouldPaint && end ? endDur : null,
+                  fromChord: fromChord,
+                  startDur: _startDur,
+                  toChord: toChord,
+                  endDur: _endDur,
+                  selectorStart: start,
+                  selectorEnd: end,
                   editable: widget.editable,
                   onEdit: () {},
                 );

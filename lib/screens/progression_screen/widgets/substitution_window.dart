@@ -99,9 +99,22 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                   child: SubstitutionButtonBar(
                     inSetup: true,
                   )));
-        } else if (subBloc.substitutions == null ||
-            subBloc.substitutions!.isEmpty) {
+        } else if (subBloc.substitutions == null) {
           return const SizedBox();
+        } else if (subBloc.substitutions!.isEmpty) {
+          return SubstitutionWindowCover(
+              child: Column(
+            children: const [
+              SubstitutionButtonBar(
+                inSetup: false,
+              ),
+              Divider(),
+              Center(
+                child: Text('No Substitutions Were found.',
+                    style: Constants.valuePatternTextStyle),
+              ),
+            ],
+          ));
         } else {
           return SubstitutionWindowCover(
             child: Column(
@@ -148,14 +161,14 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                   previous: _currentIndex == 0
                       ? null
                       : () => _controller.previousPage(
-                            duration: widget.pageSwitchDuration,
-                            curve: _scrollCurve,
-                          ),
+                    duration: widget.pageSwitchDuration,
+                    curve: _scrollCurve,
+                  ),
                   next: _currentIndex == subBloc.substitutions!.length - 1
                       ? null
                       : () => _controller.nextPage(
-                          duration: widget.pageSwitchDuration,
-                          curve: _scrollCurve),
+                      duration: widget.pageSwitchDuration,
+                      curve: _scrollCurve),
                   play: () {},
                   apply: () => progressionBloc.add(
                       ApplySubstitution(subBloc.substitutions![_currentIndex])),

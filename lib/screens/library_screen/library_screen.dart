@@ -127,7 +127,6 @@ class LibraryScreen extends StatelessWidget {
         },
         buildWhen: (previous, state) => state is! RenamedEntry,
         builder: (context, state) {
-          print('building library');
           if (state is! BankLoading && state is! BankInitial) {
             return Scrollbar(
               child: GridView.builder(
