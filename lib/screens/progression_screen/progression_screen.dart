@@ -5,6 +5,7 @@ import 'package:thoery_test/modals/exceptions.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/state/progression_bank_entry.dart';
 import 'package:tonic/tonic.dart';
+import 'package:weizmann_theory_app_test/blocs/bank/bank_bloc.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/BankProgressionButton.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/bpm_input.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression_title.dart';
@@ -23,11 +24,13 @@ import 'widgets/view_type_selector.dart';
 class ProgressionScreen extends StatelessWidget {
   const ProgressionScreen({
     Key? key,
+    required this.bankBloc,
     required this.entry,
     required this.title,
     required this.initiallyBanked,
   }) : super(key: key);
 
+  final BankBloc bankBloc;
   final ProgressionBankEntry entry;
   final String title;
   final bool initiallyBanked;
@@ -36,6 +39,7 @@ class ProgressionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider(create: (_) => bankBloc),
         BlocProvider(create: (_) => SubstitutionHandlerBloc()),
         BlocProvider(
           create: (context) => ProgressionHandlerBloc(

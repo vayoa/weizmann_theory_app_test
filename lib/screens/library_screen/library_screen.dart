@@ -125,7 +125,9 @@ class LibraryScreen extends StatelessWidget {
             _pushProgressionPage(context, state.addedEntryTitle);
           }
         },
+        buildWhen: (previous, state) => state is! RenamedEntry,
         builder: (context, state) {
+          print('building library');
           if (state is! BankLoading && state is! BankInitial) {
             return Scrollbar(
               child: GridView.builder(
@@ -141,7 +143,7 @@ class LibraryScreen extends StatelessWidget {
                       mainAxisSpacing: Constants.libraryEntryHeight * 0.8),
                   itemBuilder: (context, index) {
                     String currentTitle =
-                        state.titles[state.titles.length - index - 1];
+                    state.titles[state.titles.length - index - 1];
                     return LibraryEntry(
                         title: currentTitle,
                         onOpen: () =>
@@ -157,26 +159,26 @@ class LibraryScreen extends StatelessWidget {
                                 TextSpan(
                                   text: 'Are you sure you want to permanently '
                                       'delete "',
-                                      children: [
-                                        TextSpan(
-                                          text: currentTitle,
+                                  children: [
+                                    TextSpan(
+                                      text: currentTitle,
                                       style:
                                           Constants.boldedValuePatternTextStyle,
                                     ),
-                                        const TextSpan(text: '"?'),
-                                      ],
-                                    ),
-                                    style: Constants.valuePatternTextStyle,
-                                    textAlign: TextAlign.center,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 3,
-                                    softWrap: true,
-                                  ),
-                                  onPressed: (deleted) =>
-                                      Navigator.pop(context, deleted),
-                                  noButtonName: 'Cancel',
-                                  yesButtonName: 'DELETE!',
+                                    const TextSpan(text: '"?'),
+                                  ],
                                 ),
+                                style: Constants.valuePatternTextStyle,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 3,
+                                softWrap: true,
+                              ),
+                              onPressed: (deleted) =>
+                                  Navigator.pop(context, deleted),
+                              noButtonName: 'Cancel',
+                              yesButtonName: 'DELETE!',
+                            ),
                           );
                           // When a choice was made...
                           // This is done like this (and not "if (_result) ..."
@@ -198,12 +200,14 @@ class LibraryScreen extends StatelessWidget {
     );
   }
 
-  Future<dynamic> _pushProgressionPage(
-      BuildContext context, String currentTitle) {
-    return Navigator.push(
+  Future<void> _pushProgressionPage(
+      BuildContext context, String currentTitle) async {
+    BankBloc bloc = BlocProvider.of<BankBloc>(context);
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ProgressionScreen(
+          bankBloc: bloc,
           title: currentTitle,
           initiallyBanked:
               ProgressionBank.bank[currentTitle]!.usedInSubstitutions,
@@ -211,5 +215,6 @@ class LibraryScreen extends StatelessWidget {
         ),
       ),
     );
+    bloc.add(const ExitingProgressionView());
   }
 }

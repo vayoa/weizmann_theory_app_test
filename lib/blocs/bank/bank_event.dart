@@ -33,3 +33,20 @@ class AddNewEntry extends BankEvent {
 
   const AddNewEntry(this.title);
 }
+
+class RenameEntry extends BankEvent {
+  final String previousTitle;
+  final String newTitle;
+
+  @override
+  List<Object?> get props => [previousTitle, newTitle];
+
+  const RenameEntry({required this.previousTitle, required this.newTitle});
+}
+
+class ExitingProgressionView extends BankEvent {
+  @override
+  List<Object?> get props => const [];
+
+  const ExitingProgressionView();
+}

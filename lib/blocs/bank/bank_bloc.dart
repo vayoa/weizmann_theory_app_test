@@ -64,6 +64,19 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       _getKeys();
       return emit(BankLoaded(titles: _titles));
     });
+    // Since we never rename a progression from the library screen we don't
+    // have to rebuild yet.
+    on<RenameEntry>((event, emit) async {
+      ProgressionBank.rename(
+          previousTitle: event.previousTitle, newTitle: event.previousTitle);
+      _titles.remove(event.previousTitle);
+      _titles.add(event.newTitle);
+      await _saveBankData();
+      return emit(RenamedEntry(titles: _titles, newEntryName: event.newTitle));
+    });
+    on<ExitingProgressionView>((event, emit) async {
+      return emit(BankLoaded(titles: _titles));
+    });
 
     // TODO: Not sure this is the right place...
     add(LoadInitialBank());

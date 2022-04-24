@@ -30,3 +30,15 @@ class AddedNewEntry extends BankState {
     required this.addedEntryTitle,
   }) : super(titles: titles);
 }
+
+class RenamedEntry extends BankState {
+  final String newEntryName;
+
+  @override
+  List<Object?> get props => [...super.props, newEntryName];
+
+  const RenamedEntry({
+    required List<String> titles,
+    required this.newEntryName,
+  }) : super(titles: titles);
+}

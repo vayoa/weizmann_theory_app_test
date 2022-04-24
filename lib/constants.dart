@@ -31,5 +31,5 @@ abstract class Constants {
   static const double libraryEntryHeight = 40;
   static const Color libraryEntryColor = Color.fromARGB(255, 163, 163, 163);
 
-  static const int maxTitleCharacters = 36;
+  static const int maxTitleCharacters = 35;
 }
