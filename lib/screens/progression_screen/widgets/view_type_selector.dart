@@ -15,7 +15,7 @@ class ViewTypeSelector extends StatelessWidget {
   final bool enabled;
   final bool tight;
   final bool startOnChords;
-  final void Function(ProgressionType newType) onPressed;
+  final bool Function(ProgressionType newType) onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +25,9 @@ class ViewTypeSelector extends StatelessWidget {
       tight: tight,
       onPressed: enabled
           ? (index) {
-              onPressed.call(index == 0
+              return onPressed.call(index == 0
                   ? ProgressionType.chords
                   : ProgressionType.romanNumerals);
-              return true;
             }
           : (i) => false,
     );

@@ -5,6 +5,7 @@ import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/substitution.dart';
 import 'package:thoery_test/modals/substitution_match.dart';
 import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
+import 'package:weizmann_theory_app_test/modals/progression_type.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_view.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/view_type_selector.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/weights_view.dart';
@@ -161,14 +162,14 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                   previous: _currentIndex == 0
                       ? null
                       : () => _controller.previousPage(
-                    duration: widget.pageSwitchDuration,
-                    curve: _scrollCurve,
-                  ),
+                            duration: widget.pageSwitchDuration,
+                            curve: _scrollCurve,
+                          ),
                   next: _currentIndex == subBloc.substitutions!.length - 1
                       ? null
                       : () => _controller.nextPage(
-                      duration: widget.pageSwitchDuration,
-                      curve: _scrollCurve),
+                          duration: widget.pageSwitchDuration,
+                          curve: _scrollCurve),
                   play: () {},
                   apply: () => progressionBloc.add(
                       ApplySubstitution(subBloc.substitutions![_currentIndex])),
@@ -223,10 +224,19 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
               children: [
                 ViewTypeSelector(
                   tight: true,
+                  startOnChords: false,
                   enabled: !widget.inSetup,
-                  onPressed: (newType) =>
+                  onPressed: (newType) {
+                    if (newType == ProgressionType.romanNumerals ||
+                        BlocProvider.of<ProgressionHandlerBloc>(context)
+                                .currentScale !=
+                            null) {
                       BlocProvider.of<SubstitutionHandlerBloc>(context)
-                          .add(SwitchSubType(newType)),
+                          .add(SwitchSubType(newType));
+                      return true;
+                    }
+                    return false;
+                  },
                 ),
                 Row(
                   children: [
@@ -366,8 +376,8 @@ class SubstitutionView extends StatelessWidget {
     SubstitutionHandlerBloc bloc =
         BlocProvider.of<SubstitutionHandlerBloc>(context);
     Substitution substitution = bloc.substitutions![index];
-    PitchScale scale =
-        BlocProvider.of<ProgressionHandlerBloc>(context).currentScale!;
+    PitchScale? scale =
+        BlocProvider.of<ProgressionHandlerBloc>(context).currentScale;
     SubstitutionMatch match = bloc.substitutions![index].match;
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

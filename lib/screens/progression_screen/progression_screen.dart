@@ -17,6 +17,7 @@ import '../../Constants.dart';
 import '../../blocs/audio_player/audio_player_bloc.dart';
 import '../../blocs/progression_handler_bloc.dart';
 import '../../blocs/substitution_handler/substitution_handler_bloc.dart';
+import '../../modals/progression_type.dart';
 import '../../widgets/TButton.dart';
 import '../../widgets/t_icon_button.dart';
 import 'widgets/progression/selectable_progression_view.dart';
@@ -216,10 +217,17 @@ class ProgressionScreenUI extends StatelessWidget {
                             ViewTypeSelector(
                               tight: true,
                               startOnChords: false,
-                              onPressed: (newType) =>
-                                  BlocProvider.of<ProgressionHandlerBloc>(
-                                          context)
-                                      .add(SwitchType(newType)),
+                              onPressed: (newType) {
+                                ProgressionHandlerBloc _bloc =
+                                    BlocProvider.of<ProgressionHandlerBloc>(
+                                        context);
+                                if (newType == ProgressionType.romanNumerals ||
+                                    _bloc.currentScale != null) {
+                                  _bloc.add(SwitchType(newType));
+                                  return true;
+                                }
+                                return false;
+                              },
                             ),
                             const ScaleChooser(),
                             const ReharmonizeBar(),

@@ -15,7 +15,7 @@ part 'substitution_handler_state.dart';
 
 class SubstitutionHandlerBloc
     extends Bloc<SubstitutionHandlerEvent, SubstitutionHandlerState> {
-  ProgressionType type = ProgressionType.chords;
+  ProgressionType type = ProgressionType.romanNumerals;
   List<Substitution>? _substitutions;
   bool _inSetup = false;
 
@@ -112,16 +112,16 @@ class SubstitutionHandlerBloc
     });
   }
 
-  Progression getSubstitutedBase(PitchScale scale, int index) {
-    if (type == ProgressionType.romanNumerals) {
+  Progression getSubstitutedBase(PitchScale? scale, int index) {
+    if (scale == null || type == ProgressionType.romanNumerals) {
       return _substitutions![index].substitutedBase;
     } else {
       return getChordProgression(scale, index);
     }
   }
 
-  Progression getOriginalSubstitution(PitchScale scale, int index) {
-    if (type == ProgressionType.romanNumerals) {
+  Progression getOriginalSubstitution(PitchScale? scale, int index) {
+    if (scale == null || type == ProgressionType.romanNumerals) {
       return _substitutions![index].originalSubstitution;
     } else {
       return getOriginalSubChords(scale, index);
