@@ -13,6 +13,7 @@ import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/prog
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/reharmonize_bar.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_window.dart';
 
+import '../../Constants.dart';
 import '../../blocs/audio_player/audio_player_bloc.dart';
 import '../../blocs/progression_handler_bloc.dart';
 import '../../blocs/substitution_handler/substitution_handler_bloc.dart';
@@ -95,12 +96,34 @@ class ProgressionScreenUI extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TButton(
-                        label: 'Back',
-                        tight: true,
-                        size: 12,
-                        iconData: Icons.arrow_back_ios_rounded,
-                        onPressed: () => Navigator.pop(context),
+                      Row(
+                        children: [
+                          TButton(
+                            label: 'Back & Save',
+                            tight: true,
+                            size: 12,
+                            iconData: Constants.backIcon,
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                          const SizedBox(width: 8),
+                          BlocBuilder<BankBloc, BankState>(
+                            builder: (context, state) {
+                              final bool loading = state is BankLoading;
+                              return TButton(
+                                label: loading ? 'Saving...' : 'Save',
+                                tight: true,
+                                size: 12,
+                                iconData: loading
+                                    ? Icons.hourglass_bottom_rounded
+                                    : Constants.saveIcon,
+                                onPressed: loading
+                                    ? null
+                                    : () => BlocProvider.of<BankBloc>(context)
+                                        .add(const SaveToJson()),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                       Row(
                         children: [

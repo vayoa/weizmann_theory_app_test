@@ -35,5 +35,7 @@ abstract class Constants {
 
   static const int maxTitleCharacters = 35;
 
+  static const IconData backIcon = Icons.arrow_back_ios_rounded;
   static const IconData builtInIcon = Icons.inventory_2_rounded;
+  static const IconData saveIcon = Icons.upload_rounded;
 }

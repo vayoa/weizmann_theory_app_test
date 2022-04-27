@@ -60,3 +60,10 @@ class OverrideEntry extends BankEvent {
 
   const OverrideEntry({required this.title, required this.progression});
 }
+
+class SaveAndCloseWindow extends BankEvent {
+  @override
+  List<Object?> get props => const [];
+
+  const SaveAndCloseWindow();
+}

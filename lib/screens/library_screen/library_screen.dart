@@ -5,12 +5,93 @@ import 'package:weizmann_theory_app_test/constants.dart';
 import 'package:weizmann_theory_app_test/screens/library_screen/widgets/library_entry.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/progression_screen.dart';
 import 'package:weizmann_theory_app_test/widgets/TButton.dart';
+import 'package:window_manager/window_manager.dart';
 
 import '../../blocs/bank/bank_bloc.dart';
 import '../../widgets/dialogs.dart';
 
-class LibraryScreen extends StatelessWidget {
+class LibraryScreen extends StatefulWidget {
   const LibraryScreen({Key? key}) : super(key: key);
+
+  @override
+  State<LibraryScreen> createState() => _LibraryScreenState();
+}
+
+class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
+  @override
+  void initState() {
+    windowManager.addListener(this);
+    _init();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    windowManager.removeListener(this);
+    super.dispose();
+  }
+
+  void _init() async {
+    // Overrides the default close handler
+    await windowManager.setPreventClose(true);
+    setState(() {});
+  }
+
+  @override
+  void onWindowClose() async {
+    bool _isPreventClose = await windowManager.isPreventClose();
+    if (_isPreventClose) {
+      final bool? r = await showDialog<bool>(
+        context: context,
+        builder: (_) {
+          return GeneralDialog(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                const Text(
+                  'Save before closing?',
+                  style: Constants.valuePatternTextStyle,
+                ),
+                SizedBox(
+                  width: 280,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      TButton(
+                        label: 'Back',
+                        iconData: Constants.backIcon,
+                        tight: true,
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      TButton(
+                        label: 'Quit',
+                        iconData: Icons.close,
+                        tight: true,
+                        onPressed: () => Navigator.pop(context, false),
+                      ),
+                      TButton(
+                        label: 'Save & Quit',
+                        iconData: Constants.saveIcon,
+                        tight: true,
+                        onPressed: () => Navigator.pop(context, true),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+      if (r != null) {
+        if (r) {
+          BlocProvider.of<BankBloc>(context).add(const SaveAndCloseWindow());
+        } else {
+          await windowManager.destroy();
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -142,15 +223,22 @@ class LibraryScreen extends StatelessWidget {
           const Divider(thickness: 1, height: 1, indent: 30.0, endIndent: 30.0),
           Expanded(
             child: BlocConsumer<BankBloc, BankState>(
-              listenWhen: (previous, state) => state is AddedNewEntry,
-              listener: (context, state) {
+              listenWhen: (previous, state) =>
+                  state is AddedNewEntry ||
+                  state is ClosingWindow && previous is BankLoaded,
+              listener: (context, state) async {
+                if (state is ClosingWindow) {
+                  await windowManager.destroy();
+                }
                 if (state is AddedNewEntry) {
                   _pushProgressionPage(context, state.addedEntryTitle);
                 }
               },
               buildWhen: (previous, state) => state is! RenamedEntry,
               builder: (context, state) {
-                if (state is! BankLoading && state is! BankInitial) {
+                if (state is! BankLoading &&
+                    state is! BankInitial &&
+                    state is! ClosingWindow) {
                   return Scrollbar(
                     child: GridView.builder(
                         itemCount: state.titles.length,
@@ -219,8 +307,16 @@ class LibraryScreen extends StatelessWidget {
                         }),
                   );
                 } else {
-                  return const Center(
-                    child: CircularProgressIndicator(),
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 8),
+                      Text(
+                        'Loading...',
+                        style: Constants.valuePatternTextStyle,
+                      ),
+                    ],
                   );
                 }
               },

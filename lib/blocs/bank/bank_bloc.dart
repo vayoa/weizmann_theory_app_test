@@ -77,6 +77,12 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       await _saveBankData();
       return emit(BankLoaded(titles: _titles));
     });
+    on<SaveAndCloseWindow>((event, emit) async {
+      emit(BankLoading());
+      await _saveBankData();
+      emit(BankLoaded(titles: _titles));
+      return emit(const ClosingWindow());
+    });
   }
 
   _getKeys() => _titles = ProgressionBank.bank.keys.toList();
@@ -114,6 +120,6 @@ class BankBloc extends Bloc<BankEvent, BankState> {
   /// Overrides the current data if present. If not re-creates the json file.
   Future<void> _saveBankData() async {
     final String json = jsonEncode(ProgressionBank.toJson());
-    jsonFile.writeAsString(json, mode: FileMode.write);
+    await jsonFile.writeAsString(json, mode: FileMode.write);
   }
 }

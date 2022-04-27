@@ -42,3 +42,7 @@ class RenamedEntry extends BankState {
     required this.newEntryName,
   }) : super(titles: titles);
 }
+
+class ClosingWindow extends BankInitial {
+  const ClosingWindow();
+}

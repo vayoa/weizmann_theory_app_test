@@ -20,14 +20,16 @@ class GeneralDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FractionallySizedBox(
-      widthFactor: widthFactor,
-      heightFactor: heightFactor,
-      child: Material(
-        borderRadius: BorderRadius.circular(Constants.borderRadius),
-        child: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: child,
+    return Center(
+      child: SizedBox(
+        width: widthFactor * 1100,
+        height: heightFactor * 750,
+        child: Material(
+          borderRadius: BorderRadius.circular(Constants.borderRadius),
+          child: Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: child,
+          ),
         ),
       ),
     );
