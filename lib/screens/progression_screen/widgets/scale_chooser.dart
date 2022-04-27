@@ -41,8 +41,7 @@ class _ScaleChooserState extends State<ScaleChooser> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProgressionHandlerBloc, ProgressionHandlerState>(
-        buildWhen: (context, state) =>
-            state is ScaleChanged || state is RecalculatedScales,
+        buildWhen: (context, state) => state is ScaleChanged,
         builder: (context, state) {
           ProgressionHandlerBloc bloc =
               BlocProvider.of<ProgressionHandlerBloc>(context);

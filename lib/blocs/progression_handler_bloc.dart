@@ -53,8 +53,7 @@ class ProgressionHandlerBloc
     required SubstitutionHandlerBloc substitutionHandlerBloc,
     required this.currentProgression,
     required String initialTitle,
-  })
-      : _substitutionHandlerBloc = substitutionHandlerBloc,
+  })  : _substitutionHandlerBloc = substitutionHandlerBloc,
         title = initialTitle,
         super(ProgressionHandlerInitial()) {
     on<OverrideProgression>((event, emit) {
@@ -111,9 +110,9 @@ class ProgressionHandlerBloc
           TypeChanged(progression: currentlyViewedProgression, newType: type));
     });
     on<CalculateScale>((event, emit) {
-      _calculateScales();
-      return emit(RecalculatedScales(
-          progression: currentlyViewedProgression, scale: _currentScale!));
+      add(ChangeScale(type == ProgressionType.romanNumerals
+          ? defaultScale
+          : currentChords.krumhanslSchmucklerScales.first));
     });
     on<ChangeScale>((event, emit) {
       _currentScale = event.newScale;
@@ -205,7 +204,7 @@ class ProgressionHandlerBloc
                   event.newMeasure as Progression<Chord>)
               .krumhanslSchmucklerScales
               .first;
-          emit(RecalculatedScales(
+          emit(ScaleChanged(
               progression: currentlyViewedProgression, scale: _currentScale!));
         }
         add(
