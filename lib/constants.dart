@@ -34,4 +34,6 @@ abstract class Constants {
   static const Color libraryEntryColor = Color.fromARGB(255, 163, 163, 163);
 
   static const int maxTitleCharacters = 35;
+
+  static const IconData builtInIcon = Icons.inventory_2_rounded;
 }

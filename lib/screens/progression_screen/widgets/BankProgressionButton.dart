@@ -75,7 +75,7 @@ class _BankProgressionButtonState extends State<BankProgressionButton> {
                     const VerticalDivider(thickness: 0.5, width: 8),
                     SizedBox(
                       height: 18,
-                      width: 210,
+                      width: 190,
                       child: Stack(
                         children: [
                           AnimatedPositioned(
@@ -95,6 +95,7 @@ class _BankProgressionButtonState extends State<BankProgressionButton> {
                                         : Constants.buttonUnfocusedColor
                                     : Constants.buttonUnfocusedColor,
                               ),
+                              maxLines: 2,
                             ),
                           ),
                         ],

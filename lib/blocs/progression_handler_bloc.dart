@@ -20,6 +20,7 @@ part 'progression_handler_state.dart';
 class ProgressionHandlerBloc
     extends Bloc<ProgressionHandlerEvent, ProgressionHandlerState> {
   late final SubstitutionHandlerBloc _substitutionHandlerBloc;
+  String title;
   PitchScale? _currentScale;
   ChordProgression currentChords = ChordProgression.empty();
   ScaleDegreeProgression currentProgression = ScaleDegreeProgression.empty();
@@ -51,27 +52,50 @@ class ProgressionHandlerBloc
   ProgressionHandlerBloc({
     required SubstitutionHandlerBloc substitutionHandlerBloc,
     required this.currentProgression,
-  })  : _substitutionHandlerBloc = substitutionHandlerBloc,
+    required String initialTitle,
+  })
+      : _substitutionHandlerBloc = substitutionHandlerBloc,
+        title = initialTitle,
         super(ProgressionHandlerInitial()) {
     on<OverrideProgression>((event, emit) {
       _chordMeasures = null;
       _progressionMeasures = null;
       if (!event.newProgression.isEmpty) {
         if (event.newProgression[0] is Chord) {
-          if (_currentScale == null) _calculateScales();
+          bool scaleChanged = _currentScale == null;
+          if (scaleChanged) _calculateScales();
           currentChords = ChordProgression.fromProgression(
               event.newProgression as Progression<Chord>);
-          currentProgression =
-              ScaleDegreeProgression.fromChords(_currentScale!, currentChords);
+          if (event.overrideOther) {
+            currentProgression = ScaleDegreeProgression.fromChords(
+                _currentScale!, currentChords);
+          }
+          if (scaleChanged) {
+            emit(ScaleChanged(
+                progression: currentlyViewedProgression,
+                scale: _currentScale!));
+          }
         } else {
-          _currentScale ??= defaultScale;
+          bool scaleChanged = _currentScale == null;
+          if (scaleChanged) _currentScale = defaultScale;
           currentProgression = event.newProgression as ScaleDegreeProgression;
-          currentChords = currentProgression.inScale(_currentScale!);
+          if (event.overrideOther) {
+            currentChords = currentProgression.inScale(_currentScale!);
+          }
+          if (scaleChanged) {
+            emit(ScaleChanged(
+                progression: currentlyViewedProgression,
+                scale: _currentScale!));
+          }
         }
       }
       _substitutionHandlerBloc.add(ClearSubstitutions());
       emit(ProgressionChanged(currentlyViewedProgression));
-      rangeDisabled = true;
+      if (!_rangeValid() || !_recalculateRangePositions(fromDur, toDur)) {
+        rangeDisabled = true;
+        fromChord = -1;
+        toChord = -1;
+      }
       return emit(RangeChanged(
         progression: currentlyViewedProgression,
         rangeDisabled: rangeDisabled,
@@ -92,16 +116,18 @@ class ProgressionHandlerBloc
           progression: currentlyViewedProgression, scale: _currentScale!));
     });
     on<ChangeScale>((event, emit) {
-      if (_currentScale == null) {
-        _calculateScales();
-        emit(RecalculatedScales(
-            progression: currentlyViewedProgression, scale: _currentScale!));
-      }
       _currentScale = event.newScale;
-      currentProgression =
-          ScaleDegreeProgression.fromChords(_currentScale!, currentChords);
-      _progressionMeasures = null;
-      emit(ProgressionChanged(currentlyViewedProgression));
+      if (type == ProgressionType.romanNumerals) {
+        add(OverrideProgression(
+          currentProgression.inScale(_currentScale!),
+          overrideOther: false,
+        ));
+      } else {
+        add(OverrideProgression(
+          ScaleDegreeProgression.fromChords(_currentScale!, currentChords),
+          overrideOther: false,
+        ));
+      }
       return emit(ScaleChanged(
           progression: currentlyViewedProgression, scale: _currentScale!));
     });
@@ -264,6 +290,12 @@ class ProgressionHandlerBloc
     _currentScale = currentChords.krumhanslSchmucklerScales.first;
   }
 
+  bool _rangeValid() =>
+      fromChord >= 0 &&
+      toChord >= 0 &&
+      fromDur < currentlyViewedProgression.length &&
+      toChord < currentlyViewedProgression.length;
+
   // TODO: Optimize this.
   void _calculateRangePositions() {
     List<int> results = Utilities.calculateRangePositions(
@@ -278,6 +310,34 @@ class ProgressionHandlerBloc
     startIndex = results[1];
     endMeasure = results[2];
     endIndex = results[3];
+  }
+
+  bool _recalculateRangePositions(double start, double end) {
+    Progression prog = currentlyViewedProgression;
+    if (start >= 0.0 && end <= prog.duration && start < end) {
+      double realEnd = end - (prog.timeSignature.step / 2);
+      int newFromChord = prog.getPlayingIndex(start),
+          newToChord = prog.getPlayingIndex(realEnd);
+      if (newToChord >= newFromChord) {
+        int _fromChord = newFromChord;
+        int _toChord = newToChord;
+        double _startDur = start -
+            (prog.durations.real(_fromChord) - prog.durations[_fromChord]);
+        double _endDur =
+            end - (prog.durations.real(_toChord) - prog.durations[_toChord]);
+        if (prog.timeSignature.validDuration(_startDur) &&
+            prog.timeSignature.validDuration(_endDur)) {
+          fromChord = _fromChord;
+          toChord = _toChord;
+          startDur = _startDur;
+          endDur = _endDur;
+          _calculateRangePositions();
+          rangeDisabled = false;
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   Progression<T> _parseInputs<T>(

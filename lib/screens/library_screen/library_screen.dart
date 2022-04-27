@@ -243,9 +243,10 @@ class LibraryScreen extends StatelessWidget {
           initiallyBanked:
               ProgressionBank.bank[currentTitle]!.usedInSubstitutions,
           entry: ProgressionBank.bank[currentTitle]!,
+          builtIn: ProgressionBank.bank[currentTitle]!.builtIn,
         ),
       ),
     );
-    bloc.add(const ExitingProgressionView());
+    bloc.add(const SaveToJson());
   }
 }

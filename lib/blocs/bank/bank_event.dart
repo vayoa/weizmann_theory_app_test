@@ -44,9 +44,19 @@ class RenameEntry extends BankEvent {
   const RenameEntry({required this.previousTitle, required this.newTitle});
 }
 
-class ExitingProgressionView extends BankEvent {
+class SaveToJson extends BankEvent {
   @override
   List<Object?> get props => const [];
 
-  const ExitingProgressionView();
+  const SaveToJson();
+}
+
+class OverrideEntry extends BankEvent {
+  final String title;
+  final ScaleDegreeProgression progression;
+
+  @override
+  List<Object?> get props => [title, progression];
+
+  const OverrideEntry({required this.title, required this.progression});
 }

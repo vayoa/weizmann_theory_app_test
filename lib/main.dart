@@ -90,7 +90,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => BankBloc(),
+      // Instantiate the bloc and call the initial event.
+      create: (_) => BankBloc()..add(LoadInitialBank()),
       child: const LibraryScreen(),
     );
   }

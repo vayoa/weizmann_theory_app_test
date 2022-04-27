@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/exceptions.dart';
 import 'package:thoery_test/modals/progression.dart';
+import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/state/progression_bank_entry.dart';
 import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/blocs/bank/bank_bloc.dart';
@@ -28,21 +29,24 @@ class ProgressionScreen extends StatelessWidget {
     required this.entry,
     required this.title,
     required this.initiallyBanked,
+    required this.builtIn,
   }) : super(key: key);
 
   final BankBloc bankBloc;
   final ProgressionBankEntry entry;
   final String title;
   final bool initiallyBanked;
+  final bool builtIn;
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => bankBloc),
+        BlocProvider<BankBloc>.value(value: bankBloc),
         BlocProvider(create: (_) => SubstitutionHandlerBloc()),
         BlocProvider(
           create: (context) => ProgressionHandlerBloc(
+            initialTitle: title,
             currentProgression: entry.progression,
             substitutionHandlerBloc:
                 BlocProvider.of<SubstitutionHandlerBloc>(context),
@@ -54,6 +58,7 @@ class ProgressionScreen extends StatelessWidget {
         body: ProgressionScreenUI(
           title: title,
           initiallyBanked: initiallyBanked,
+          builtIn: builtIn,
         ),
       ),
     );
@@ -65,10 +70,12 @@ class ProgressionScreenUI extends StatelessWidget {
     Key? key,
     required this.title,
     required this.initiallyBanked,
+    required this.builtIn,
   }) : super(key: key);
 
   final String title;
   final bool initiallyBanked;
+  final bool builtIn;
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +104,7 @@ class ProgressionScreenUI extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          ProgressionTitle(title: title),
+                          ProgressionTitle(title: title, builtIn: builtIn),
                           BankProgressionButton(
                             initiallyBanked: initiallyBanked,
                             onToggle: (active) {},
@@ -209,7 +216,15 @@ class ProgressionScreenUI extends StatelessWidget {
                 ),
                 BlocConsumer<ProgressionHandlerBloc, ProgressionHandlerState>(
                   listener: (context, state) {
-                    if (state is InvalidInputReceived) {
+                    if (state is ProgressionChanged &&
+                        state.progression is ScaleDegreeProgression) {
+                      BlocProvider.of<BankBloc>(context).add(OverrideEntry(
+                        title: BlocProvider.of<ProgressionHandlerBloc>(context)
+                            .title,
+                        progression:
+                            state.progression as ScaleDegreeProgression,
+                      ));
+                    } else if (state is InvalidInputReceived) {
                       Duration duration = const Duration(seconds: 4);
                       String message = 'An invalid value was inputted:'
                           '\n${state.exception}';

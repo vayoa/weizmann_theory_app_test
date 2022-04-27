@@ -18,75 +18,68 @@ class BankBloc extends Bloc<BankEvent, BankState> {
   late final File jsonFile;
   static const String jsonFilePath = r'WeizmannTheory\bank.json';
 
-  bool _bankLoaded = false;
   late List<String> _titles;
 
-  bool get bankLoaded => _bankLoaded;
-
   BankBloc() : super(const BankInitial()) {
+    // --- Initial Load Event ---
     on<LoadInitialBank>((event, emit) async {
-      _bankLoaded = false;
       emit(BankLoading());
       await _initialLoad();
       _getKeys();
       return emit(BankLoaded(titles: _titles));
     });
-    on<AddNewEntry>((event, emit) async {
+
+    on<AddNewEntry>((event, emit) {
       ProgressionBank.add(
         title: event.title,
         entry: ProgressionBankEntry(
           progression: ScaleDegreeProgression.empty(),
         ),
       );
-      _bankLoaded = false;
-      emit(BankLoading());
-      await _saveBankData();
       _titles.add(event.title);
-      _bankLoaded = true;
-      emit(AddedNewEntry(titles: _titles, addedEntryTitle: event.title));
-      return emit(BankLoaded(titles: _titles));
-    });
-    on<DeleteEntry>((event, emit) async {
-      ProgressionBank.remove(event.title);
-      _bankLoaded = false;
-      emit(BankLoading());
-      await _saveBankData();
-      _titles.remove(event.title);
-      _bankLoaded = true;
-      return emit(BankLoaded(titles: _titles));
-    });
-    on<RevertAll>((event, emit) async {
-      _bankLoaded = false;
-      emit(BankLoading());
-      ProgressionBank.initializeBuiltIn();
-      await _saveBankData();
-      _bankLoaded = true;
-      _getKeys();
-      return emit(BankLoaded(titles: _titles));
+      return emit(AddedNewEntry(titles: _titles, addedEntryTitle: event.title));
     });
     // Since we never rename a progression from the library screen we don't
     // have to rebuild yet.
-    on<RenameEntry>((event, emit) async {
+    on<RenameEntry>((event, emit) {
       ProgressionBank.rename(
-          previousTitle: event.previousTitle, newTitle: event.previousTitle);
+          previousTitle: event.previousTitle, newTitle: event.newTitle);
       _titles.remove(event.previousTitle);
       _titles.add(event.newTitle);
-      await _saveBankData();
       return emit(RenamedEntry(titles: _titles, newEntryName: event.newTitle));
     });
-    on<ExitingProgressionView>((event, emit) async {
-      return emit(BankLoaded(titles: _titles));
+    on<OverrideEntry>((event, emit) {
+      if (ProgressionBank.bank.containsKey(event.title)) {
+        ProgressionBank.add(
+            title: event.title,
+            entry: ProgressionBank.bank[event.title]!
+                .copyWith(progression: event.progression));
+      }
     });
 
-    // TODO: Not sure this is the right place...
-    add(LoadInitialBank());
+    // --- Save Points ---
+    on<DeleteEntry>((event, emit) async {
+      ProgressionBank.remove(event.title);
+      emit(BankLoading());
+      await _saveBankData();
+      _titles.remove(event.title);
+      return emit(BankLoaded(titles: _titles));
+    });
+    on<RevertAll>((event, emit) async {
+      emit(BankLoading());
+      ProgressionBank.initializeBuiltIn();
+      await _saveBankData();
+      _getKeys();
+      return emit(BankLoaded(titles: _titles));
+    });
+    on<SaveToJson>((event, emit) async {
+      emit(BankLoading());
+      await _saveBankData();
+      return emit(BankLoaded(titles: _titles));
+    });
   }
 
-  _getKeys() {
-    if (_bankLoaded) {
-      _titles = ProgressionBank.bank.keys.toList();
-    }
-  }
+  _getKeys() => _titles = ProgressionBank.bank.keys.toList();
 
   Future<void> _initialLoad() async {
     final directory = await getApplicationDocumentsDirectory();
@@ -98,7 +91,6 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       try {
         final String json = await jsonFile.readAsString();
         ProgressionBank.initializeFromJson(jsonDecode(json));
-        _bankLoaded = true;
       } catch (e) {
         await jsonFile.delete();
         exists = false;
@@ -109,7 +101,6 @@ class BankBloc extends Bloc<BankEvent, BankState> {
         ProgressionBank.initializeBuiltIn();
         await jsonFile.create(recursive: true);
         await jsonFile.writeAsString(jsonEncode(ProgressionBank.toJson()));
-        _bankLoaded = true;
       } catch (e) {
         // TODO: Handle case...
         rethrow;

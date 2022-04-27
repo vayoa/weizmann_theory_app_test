@@ -9,11 +9,12 @@ abstract class ProgressionHandlerEvent extends Equatable {
 
 class OverrideProgression extends ProgressionHandlerEvent {
   final Progression newProgression;
+  final bool overrideOther;
 
   @override
-  List<Object?> get props => [newProgression];
+  List<Object?> get props => [newProgression, overrideOther];
 
-  OverrideProgression(this.newProgression)
+  OverrideProgression(this.newProgression, {this.overrideOther = true})
       : assert((newProgression.isEmpty ||
             newProgression[0] is Chord ||
             newProgression is ScaleDegreeProgression));
