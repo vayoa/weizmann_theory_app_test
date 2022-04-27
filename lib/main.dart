@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weizmann_theory_app_test/blocs/bank/bank_bloc.dart';
 import 'package:weizmann_theory_app_test/screens/library_screen/library_screen.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'constants.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await windowManager.ensureInitialized();
+  windowManager.setMinimumSize(Constants.minimumWindowSize);
   DartVLC.initialize();
   runApp(const MyApp());
 }
