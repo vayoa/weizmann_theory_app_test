@@ -20,6 +20,7 @@ class BankBloc extends Bloc<BankEvent, BankState> {
 
   late List<String> _titles;
 
+  // TODO: Some events here don't emit any state, decide if that's ok...
   BankBloc() : super(const BankInitial()) {
     // --- Initial Load Event ---
     on<LoadInitialBank>((event, emit) async {
@@ -55,6 +56,10 @@ class BankBloc extends Bloc<BankEvent, BankState> {
             entry: ProgressionBank.bank[event.title]!
                 .copyWith(progression: event.progression));
       }
+    });
+    on<ChangeUseInSubstitutions>((event, emit) {
+      ProgressionBank.changeUseInSubstitutions(
+          title: event.title, useInSubstitutions: event.useInSubstitutions);
     });
 
     // --- Save Points ---

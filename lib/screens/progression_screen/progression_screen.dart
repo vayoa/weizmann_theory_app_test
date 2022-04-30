@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/exceptions.dart';
 import 'package:thoery_test/modals/progression.dart';
-import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/state/progression_bank_entry.dart';
 import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/blocs/bank/bank_bloc.dart';
@@ -131,8 +130,15 @@ class ProgressionScreenUI extends StatelessWidget {
                           ProgressionTitle(title: title, builtIn: builtIn),
                           BankProgressionButton(
                             initiallyBanked: initiallyBanked,
-                            onToggle: (active) {},
-                          ),
+                            onToggle: (active) {
+                              BlocProvider.of<BankBloc>(context).add(
+                                  ChangeUseInSubstitutions(
+                                      title: BlocProvider.of<
+                                              ProgressionHandlerBloc>(context)
+                                          .title,
+                                      useInSubstitutions: active));
+                            },
+                          )
                         ],
                       ),
                       Row(
@@ -247,13 +253,13 @@ class ProgressionScreenUI extends StatelessWidget {
                 ),
                 BlocConsumer<ProgressionHandlerBloc, ProgressionHandlerState>(
                   listener: (context, state) {
-                    if (state is ProgressionChanged &&
-                        state.progression is ScaleDegreeProgression) {
+                    if (state is ProgressionChanged) {
                       BlocProvider.of<BankBloc>(context).add(OverrideEntry(
                         title: BlocProvider.of<ProgressionHandlerBloc>(context)
                             .title,
                         progression:
-                            state.progression as ScaleDegreeProgression,
+                            BlocProvider.of<ProgressionHandlerBloc>(context)
+                                .currentProgression,
                       ));
                     } else if (state is InvalidInputReceived) {
                       Duration duration = const Duration(seconds: 4);

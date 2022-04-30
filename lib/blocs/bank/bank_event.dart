@@ -67,3 +67,14 @@ class SaveAndCloseWindow extends BankEvent {
 
   const SaveAndCloseWindow();
 }
+
+class ChangeUseInSubstitutions extends BankEvent {
+  final String title;
+  final bool useInSubstitutions;
+
+  @override
+  List<Object?> get props => [title, useInSubstitutions];
+
+  const ChangeUseInSubstitutions(
+      {required this.title, required this.useInSubstitutions});
+}
