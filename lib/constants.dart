@@ -24,13 +24,13 @@ abstract class Constants {
   static const double minButtonHeight = 29;
   static const double borderRadius = 10;
   static const TextStyle valueTextStyle =
-  TextStyle(fontSize: Constants.measureFontSize);
+      TextStyle(fontSize: Constants.measureFontSize);
   static const TextStyle valuePatternTextStyle =
-  TextStyle(fontSize: Constants.measurePatternFontSize);
+      TextStyle(fontSize: Constants.measurePatternFontSize);
   static const TextStyle boldedValuePatternTextStyle = TextStyle(
       fontSize: Constants.measurePatternFontSize, fontWeight: FontWeight.bold);
   static const TextStyle titleTextStyle =
-  TextStyle(fontSize: 24, fontWeight: FontWeight.bold);
+      TextStyle(fontSize: 24, fontWeight: FontWeight.bold);
   static const double libraryEntryWidth = 340;
   static const double libraryEntryHeight = 40;
   static const Color libraryEntryColor = Color.fromARGB(255, 163, 163, 163);

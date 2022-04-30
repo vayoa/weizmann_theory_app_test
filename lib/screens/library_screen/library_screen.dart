@@ -128,6 +128,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                   style: Constants.valuePatternTextStyle,
                                   textAlign: TextAlign.center,
                                 ),
+                                autoFocus: true,
                                 submitButtonName: 'Create',
                                 onCancelled: (text) => Navigator.pop(context),
                                 onSubmitted: (text) {
@@ -162,6 +163,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                               barrierDismissible: true,
                               pageBuilder: (context, _, __) =>
                                   GeneralDialogChoice(
+                                    widthFactor: 0.45,
                                 title: const Text.rich(
                                   TextSpan(
                                     text: 'Permanently ',
@@ -174,17 +176,17 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                       TextSpan(
                                           text:
                                               '\n(delete everything and revert to the '
-                                              'built-in bank)'),
-                                    ],
-                                  ),
-                                  style: Constants.valuePatternTextStyle,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                ),
-                                onPressed: (choice) =>
-                                    Navigator.pop(context, choice),
-                                yesButtonName: 'REVERT',
-                                noButtonName: 'Cancel',
+                                                  'built-in bank)'),
+                                        ],
+                                      ),
+                                      style: Constants.valuePatternTextStyle,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                    ),
+                                    onPressed: (choice) =>
+                                        Navigator.pop(context, choice),
+                                    yesButtonName: 'REVERT',
+                                    noButtonName: 'Cancel',
                               ),
                             );
 
@@ -194,6 +196,8 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                 context: context,
                                 pageBuilder: (context, _, __) =>
                                     GeneralDialogChoice(
+                                  widthFactor: 0.3,
+                                  heightFactor: 0.15,
                                   title: const Text(
                                     'Are you sure?',
                                     style:

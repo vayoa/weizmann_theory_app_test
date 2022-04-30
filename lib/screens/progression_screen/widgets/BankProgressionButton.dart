@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/state/progression_bank.dart';
 
 import '../../../blocs/bank/bank_bloc.dart';
@@ -41,8 +40,6 @@ class _BankProgressionButtonState extends State<BankProgressionButton> {
     ProgressionHandlerBloc _bloc =
         BlocProvider.of<ProgressionHandlerBloc>(context);
     int id = _bloc.currentProgression.id;
-    print(id);
-    print(ProgressionBank.substitutionsIDBank[id]);
     if (ProgressionBank.idFreeInSubs(_bloc.title, id)) {
       if (!ProgressionBank.canBeSubstitution(_bloc.currentProgression)) {
         _error = 'Progression is does not consist of 2 - 8 chords';
@@ -60,9 +57,7 @@ class _BankProgressionButtonState extends State<BankProgressionButton> {
     return BlocListener<ProgressionHandlerBloc, ProgressionHandlerState>(
       listenWhen: (previous, state) => state is ProgressionChanged,
       listener: (context, state) {
-        var bloc = BlocProvider.of<ProgressionHandlerBloc>(context);
-        ScaleDegreeProgression prog = bloc.currentProgression;
-        String title = bloc.title;
+        String title = BlocProvider.of<ProgressionHandlerBloc>(context).title;
         String? _error = _getError(context);
         bool _canBank = _error == null;
         if (!_canBank && ProgressionBank.bank[title]!.usedInSubstitutions) {

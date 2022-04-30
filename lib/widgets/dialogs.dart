@@ -139,6 +139,7 @@ class GeneralDialogTextField extends StatefulWidget {
     required this.onSubmitted,
     this.cancelButtonName = 'Cancel',
     this.submitButtonName = 'Submit',
+    this.autoFocus = false,
   }) : super(key: key);
 
   final Widget title;
@@ -146,6 +147,7 @@ class GeneralDialogTextField extends StatefulWidget {
   final String submitButtonName;
   final void Function(String) onCancelled;
   final String? Function(String) onSubmitted;
+  final bool autoFocus;
 
   @override
   _GeneralDialogTextFieldState createState() => _GeneralDialogTextFieldState();
@@ -177,6 +179,7 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
           widget.title,
           TextField(
             controller: _controller,
+            autofocus: widget.autoFocus,
             maxLength: Constants.maxTitleCharacters,
             maxLines: 1,
             style: Constants.boldedValuePatternTextStyle,
