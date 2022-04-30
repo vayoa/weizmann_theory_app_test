@@ -96,61 +96,65 @@ class _BankProgressionButtonState extends State<BankProgressionButton> {
                 });
               }
             },
-            child: Row(
-              children: [
-                Icon(
-                  canBank ? Icons.music_note_rounded : Icons.music_off_rounded,
-                  size: 24,
-                  color: canBank
-                      ? active
-                          ? Colors.black
-                          : Constants.buttonUnfocusedColor
-                      : Constants.buttonUnfocusedColor,
-                ),
-                AnimatedOpacity(
-                  opacity: hovering ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const VerticalDivider(thickness: 0.5, width: 8),
-                      SizedBox(
-                        height: error.length > 40 ? double.infinity : 18,
-                        width: 190,
-                        child: Stack(
-                          children: [
-                            AnimatedPositioned(
-                              left: hovering ? 0.0 : -20.0,
-                              duration: const Duration(milliseconds: 200),
-                              child: SizedBox(
-                                width: 190,
+            child: Tooltip(
+              message: canBank
+                  ? active
+                      ? 'Stop using for other substitutions'
+                      : 'Use for other substitutions'
+                  : error,
+              waitDuration: canBank ? const Duration(seconds: 3) : null,
+              preferBelow: true,
+              child: Row(
+                children: [
+                  Icon(
+                    canBank
+                        ? Icons.music_note_rounded
+                        : Icons.music_off_rounded,
+                    size: 24,
+                    color: canBank
+                        ? active
+                            ? Colors.black
+                            : Constants.buttonUnfocusedColor
+                        : Constants.buttonUnfocusedColor,
+                  ),
+                  AnimatedOpacity(
+                    opacity: hovering ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const VerticalDivider(thickness: 0.5, width: 8),
+                        SizedBox(
+                          height: 18,
+                          width: 62,
+                          child: Stack(
+                            children: [
+                              AnimatedPositioned(
+                                left: hovering ? 0.0 : -20.0,
+                                duration: const Duration(milliseconds: 200),
                                 child: Text(
                                   canBank
                                       ? active
-                                          ? 'Stop using for other substitutions'
-                                          : 'Use for other substitutions'
-                                      : error,
-                                  maxLines: 2,
-                                  softWrap: true,
+                                          ? 'In Use'
+                                          : 'Not In Use'
+                                      : "Can't Use",
                                   style: TextStyle(
-                                    fontSize: error.length > 40 ? 11.0 : 12.0,
-                                    color: canBank
-                                        ? active
-                                            ? Colors.black
-                                            : Constants.buttonUnfocusedColor
+                                    fontSize: 13.0,
+                                    color: active
+                                        ? Colors.black
                                         : Constants.buttonUnfocusedColor,
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

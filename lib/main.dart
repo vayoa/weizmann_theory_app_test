@@ -74,6 +74,12 @@ class _MyAppState extends State<MyApp> {
           selectedColor: Colors.black,
           fillColor: Constants.selectedColor,
         ),
+        tooltipTheme: TooltipThemeData(
+          decoration: BoxDecoration(
+              color: Constants.selectedColor,
+              borderRadius: BorderRadius.circular(Constants.borderRadius)),
+          textStyle: const TextStyle(fontSize: 12, color: Colors.black),
+        ),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );

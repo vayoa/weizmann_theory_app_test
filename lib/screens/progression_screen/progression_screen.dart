@@ -99,7 +99,7 @@ class ProgressionScreenUI extends StatelessWidget {
                       Row(
                         children: [
                           TButton(
-                            label: 'Back & Save',
+                            label: 'Back',
                             tight: true,
                             size: 12,
                             iconData: Constants.backIcon,
