@@ -224,7 +224,9 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
               children: [
                 ViewTypeSelector(
                   tight: true,
-                  startOnChords: false,
+                  startOnChords:
+                      BlocProvider.of<SubstitutionHandlerBloc>(context).type ==
+                          ProgressionType.chords,
                   enabled: !widget.inSetup,
                   onPressed: (newType) {
                     if (newType == ProgressionType.romanNumerals ||
@@ -388,7 +390,7 @@ class SubstitutionView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              'From "My Other Song" (${match.type.name})',
+              'From "${substitution.title}" (${match.type.name})',
               style:
                   const TextStyle(fontSize: Constants.measurePatternFontSize),
             ),
