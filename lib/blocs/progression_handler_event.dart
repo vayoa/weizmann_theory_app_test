@@ -60,20 +60,6 @@ class DisableRange extends ProgressionHandlerEvent {
   const DisableRange({required this.disable});
 }
 
-class SetMeasure extends ProgressionHandlerEvent {
-  final Progression newMeasure;
-  final int index;
-
-  @override
-  List<Object?> get props => [newMeasure, index];
-
-  SetMeasure({required this.newMeasure, required this.index})
-      : assert(index >= 0 &&
-            (newMeasure.isEmpty ||
-                newMeasure[0] is Chord ||
-                newMeasure is ScaleDegreeProgression));
-}
-
 class MeasureEdited extends ProgressionHandlerEvent {
   final List<String> inputs;
   final int measureIndex;

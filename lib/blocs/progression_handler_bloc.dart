@@ -3,11 +3,13 @@ import 'package:equatable/equatable.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/absolute_durations.dart';
 import 'package:thoery_test/modals/chord_progression.dart';
+import 'package:thoery_test/modals/exceptions.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_chord.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/modals/substitution.dart';
+import 'package:thoery_test/modals/time_signature.dart';
 import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
 import 'package:weizmann_theory_app_test/utilities.dart';
@@ -167,41 +169,35 @@ class ProgressionHandlerBloc
       }
     });
     on<MeasureEdited>((event, emit) {
+      Progression progression;
+      ProgressionType? newType;
+      bool chords = type == ProgressionType.chords;
       try {
-        Progression progression;
-        if (type == ProgressionType.chords) {
-          progression = _parseInputs<Chord>(
-              event.inputs, (input) => ChordExtension.parse(input));
-        } else {
-          progression = ScaleDegreeProgression.fromProgression(
-              _parseInputs<ScaleDegreeChord>(
-                  event.inputs, (input) => ScaleDegreeChord.parse(input)));
+        progression = chords
+            ? _parseChordInputs(event.inputs)
+            : _parseScaleDegreeInputs(event.inputs);
+      } on Exception catch (firstError) {
+        try {
+          progression = chords
+              ? _parseScaleDegreeInputs(event.inputs)
+              : _parseChordInputs(event.inputs);
+          newType =
+              chords ? ProgressionType.romanNumerals : ProgressionType.chords;
+        } on Exception catch (_) {
+          return emit(InvalidInputReceived(
+              progression: currentlyViewedProgression, exception: firstError));
         }
-        add(SetMeasure(newMeasure: progression, index: event.measureIndex));
-      } on Exception catch (e) {
-        print('hey');
-        return emit(InvalidInputReceived(
-            progression: currentlyViewedProgression, exception: e));
       }
-    });
-    on<SetMeasure>((event, emit) {
-      // if (event.index >= startMeasure && event.index <= endMeasure) {
-      //   final Progression prog = currentlyViewedProgression;
-      //   print(
-      //       'startMeasure: $startMeasure, endMeasure: $endMeasure, index: ${event.index}');
-      //   if (event.index == startMeasure && event.index == endMeasure) {
-      //     rangeDisabled = true;
-      //     emit(RangeChanged(progression: prog, rangeDisabled: rangeDisabled));
-      //   } else if (startMeasure == event.index) {
-      //     startDur = 0.0;
-      //     // fromChord =
-      //   } else if (endMeasure == event.index) {
-      //   } else {}
-      // }
-      if (event.newMeasure.isEmpty || event.newMeasure[0] is Chord) {
+      if (newType != null) {
+        type = newType;
+        emit(TypeChanged(
+            progression: currentlyViewedProgression, newType: newType));
+      }
+      // If we're here then the input was valid...
+      if (progression.isEmpty || type == ProgressionType.chords) {
         if (_currentScale == null) {
           _currentScale = ChordProgression.fromProgression(
-                  event.newMeasure as Progression<Chord>)
+                  progression as Progression<Chord>)
               .krumhanslSchmucklerScales
               .first;
           emit(ScaleChanged(
@@ -212,8 +208,8 @@ class ProgressionHandlerBloc
             ScaleDegreeProgression.fromChords(
               _currentScale!,
               currentChords.replaceMeasure(
-                event.index,
-                event.newMeasure as Progression<Chord>,
+                event.measureIndex,
+                progression as Progression<Chord>,
                 measures: chordMeasures,
               ),
             ),
@@ -224,8 +220,8 @@ class ProgressionHandlerBloc
           OverrideProgression(
             ScaleDegreeProgression.fromProgression(
               currentProgression.replaceMeasure(
-                event.index,
-                event.newMeasure as Progression<ScaleDegreeChord>,
+                event.measureIndex,
+                progression as Progression<ScaleDegreeChord>,
                 measures: progressionMeasures,
               ),
             ),
@@ -253,6 +249,13 @@ class ProgressionHandlerBloc
           add(OverrideProgression(event.substitution.substitutedBase)),
     );
   }
+
+  Progression<ScaleDegreeChord> _parseScaleDegreeInputs(List<String> inputs) =>
+      ScaleDegreeProgression.fromProgression(_parseInputs<ScaleDegreeChord>(
+          inputs, (input) => ScaleDegreeChord.parse(input)));
+
+  Progression<Chord> _parseChordInputs(List<String> inputs) =>
+      _parseInputs<Chord>(inputs, (input) => ChordExtension.parse(input));
 
   Progression get currentlyViewedProgression {
     if (type == ProgressionType.romanNumerals) {
@@ -346,7 +349,9 @@ class ProgressionHandlerBloc
       return Progression.empty();
     }
     List<double> durations = [];
-    final double step = currentProgression.timeSignature.step;
+    final TimeSignature ts = currentProgression.timeSignature;
+    final double step = ts.step;
+    final double decimal = ts.decimal;
     double duration = 0.0;
     List<T?> newValues = [];
     bool hasNull = false;
@@ -357,27 +362,26 @@ class ProgressionHandlerBloc
             inputs.isEmpty ||
             inputs[i] != inputs[i + 1]) {
           String value = inputs[i];
-          if (value == '/' || value == '//') {
+          if (value == '/' || value == '//' || value == 'null') {
             hasNull = true;
-            value = 'null';
-          }
-          if (value == 'null') {
             newValues.add(null);
           } else {
             newValues.add(parse.call(value));
           }
-          double dur = duration % currentProgression.timeSignature.decimal;
+          double dur = duration % decimal;
           double overallDur = 0.0;
           if (durations.isNotEmpty) {
-            dur = (duration - durations.last) %
-                currentProgression.timeSignature.decimal;
+            dur = (duration - durations.last) % decimal;
             overallDur = dur;
           }
-          currentlyViewedProgression.checkValidDuration(
-            value: newValues.last,
-            duration: dur,
-            overallDuration: overallDur,
-          );
+          if (dur < 0) {
+            throw NonPositiveDuration(value, duration);
+          } else if ((overallDur % decimal) + duration <= decimal) {
+            if (!currentProgression.timeSignature.validDuration(dur)) {
+              throw NonValidDuration(
+                  value: value, duration: duration, timeSignature: ts);
+            }
+          }
           durations.add(duration);
         }
       }

@@ -15,7 +15,8 @@ import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/subs
 import '../../Constants.dart';
 import '../../blocs/audio_player/audio_player_bloc.dart';
 import '../../blocs/progression_handler_bloc.dart';
-import '../../blocs/substitution_handler/substitution_handler_bloc.dart';
+import '../../blocs/substitution_handler/substitution_handler_bloc.dart'
+    hide TypeChanged;
 import '../../modals/progression_type.dart';
 import '../../widgets/TButton.dart';
 import '../../widgets/t_icon_button.dart';
@@ -220,19 +221,31 @@ class ProgressionScreenUI extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            ViewTypeSelector(
-                              tight: true,
-                              startOnChords: false,
-                              onPressed: (newType) {
-                                ProgressionHandlerBloc _bloc =
-                                    BlocProvider.of<ProgressionHandlerBloc>(
-                                        context);
-                                if (newType == ProgressionType.romanNumerals ||
-                                    _bloc.currentScale != null) {
-                                  _bloc.add(SwitchType(newType));
-                                  return true;
-                                }
-                                return false;
+                            BlocBuilder<ProgressionHandlerBloc,
+                                ProgressionHandlerState>(
+                              buildWhen: (previous, state) =>
+                                  state is TypeChanged,
+                              builder: (context, state) {
+                                return ViewTypeSelector(
+                                  tight: true,
+                                  startOnChords:
+                                      BlocProvider.of<ProgressionHandlerBloc>(
+                                                  context)
+                                              .type ==
+                                          ProgressionType.chords,
+                                  onPressed: (newType) {
+                                    ProgressionHandlerBloc _bloc =
+                                        BlocProvider.of<ProgressionHandlerBloc>(
+                                            context);
+                                    if (newType ==
+                                            ProgressionType.romanNumerals ||
+                                        _bloc.currentScale != null) {
+                                      _bloc.add(SwitchType(newType));
+                                      return true;
+                                    }
+                                    return false;
+                                  },
+                                );
                               },
                             ),
                             const ScaleChooser(),

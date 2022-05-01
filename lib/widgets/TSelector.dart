@@ -42,6 +42,17 @@ class _TSelectorState extends State<TSelector> {
   }
 
   @override
+  void didUpdateWidget(covariant TSelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _selected[_selectedIndex] = false;
+      _selectedIndex = widget.values.indexOf(widget.value);
+      assert(_selectedIndex != -1);
+      _selected[_selectedIndex] = true;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: widget.tight ? Constants.minButtonHeight : null,
