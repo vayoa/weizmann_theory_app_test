@@ -50,6 +50,7 @@ class LibraryEntry extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 4),
               Row(
                 children: [
                   TButton(
