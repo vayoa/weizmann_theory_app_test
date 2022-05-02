@@ -20,6 +20,8 @@ class BankBloc extends Bloc<BankEvent, BankState> {
 
   late List<String> _titles;
 
+  List<String> get titles => _titles;
+
   // TODO: Some events here don't emit any state, decide if that's ok...
   BankBloc() : super(const BankInitial()) {
     // --- Initial Load Event ---
