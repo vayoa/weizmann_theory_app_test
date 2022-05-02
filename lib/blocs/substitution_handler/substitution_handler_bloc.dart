@@ -60,6 +60,7 @@ class SubstitutionHandlerBloc
         }
         emit(
             CalculatingSubstitutions(fromChord: _fromChord, toChord: _toChord));
+        print('$_fromChord, $_startDur, ${_toChord + 1}, $_endDur');
         _substitutions = SubstitutionHandler.getRatedSubstitutions(
           _currentProgression!,
           keepHarmonicFunction: _keepHarmonicFunction,

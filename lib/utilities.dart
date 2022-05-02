@@ -10,9 +10,18 @@ abstract class Utilities {
       ? '//'
       : (value is Chord ? value.commonName : value.toString());
 
-  static String abbr(ChordPattern pattern) => pattern.abbr == 'min7'
-      ? 'm7'
-      : (pattern.abbr == 'maj7' ? '∆7' : pattern.abbr);
+  static String abbr(ChordPattern pattern) {
+    switch (pattern.abbr) {
+      case 'min7':
+        return 'm7';
+      case 'maj7':
+        return '∆7';
+      case 'min/maj7':
+        return 'mΔ7';
+      default:
+        return pattern.abbr;
+    }
+  }
 
   static List<String> cutProgressionValue<T>(T value) {
     assert(value == null || value is Chord || value is ScaleDegreeChord);
@@ -30,7 +39,7 @@ abstract class Utilities {
       String _patternStr = chord.patternString;
       if (value is TonicizedScaleDegreeChord) {
         _rootDegreeStr = value.tonicizedToTonic.rootDegreeString;
-        _patternStr += '/${value.tonic}';
+        _patternStr += '/${value.tonic.rootDegreeString}';
       }
       return [_rootDegreeStr, _patternStr];
     }
@@ -52,7 +61,7 @@ abstract class Utilities {
         startDur;
     int startMeasure = durationToStart ~/ decimal;
     int startIndex =
-    measures[startMeasure].getPlayingIndex(durationToStart % decimal);
+        measures[startMeasure].getPlayingIndex(durationToStart % decimal);
     // We divide decimal by 2 and subtract it here so that for instance 3.0
     // where the chord at toChord is with a duration of 1.0 (meaning the
     // duration to him was 2.0 and he starts at the first position of his

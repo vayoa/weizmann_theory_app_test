@@ -295,10 +295,7 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
     _measures = widget.measures ?? widget.progression.splitToMeasures();
     final Progression prog = widget.progression;
     if (widget.fromChord != null && widget.toChord != null) {
-      int toChord = widget.toChord! - 1;
-      if (toChord >= widget.progression.length) {
-        toChord = widget.progression.length - 1;
-      }
+      int toChord = widget.toChord!;
       List<int> results = Utilities.calculateRangePositions(
         progression: widget.progression,
         measures: _measures,

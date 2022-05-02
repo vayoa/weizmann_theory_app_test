@@ -151,7 +151,10 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                       onPageChanged: (newIndex) =>
                           setState(() => _currentIndex = newIndex),
                       itemBuilder: (BuildContext context, int index) =>
-                          SubstitutionView(index: index),
+                          SubstitutionView(
+                        index: index,
+                        substitution: subBloc.substitutions![index],
+                      ),
                     ),
                   ),
                 ),
@@ -369,18 +372,19 @@ class SubstitutionView extends StatelessWidget {
   const SubstitutionView({
     Key? key,
     required this.index,
+    required this.substitution,
   }) : super(key: key);
 
   final int index;
+  final Substitution substitution;
 
   @override
   Widget build(BuildContext context) {
-    SubstitutionHandlerBloc bloc =
+    final SubstitutionHandlerBloc bloc =
         BlocProvider.of<SubstitutionHandlerBloc>(context);
-    Substitution substitution = bloc.substitutions![index];
-    PitchScale? scale =
+    final PitchScale? scale =
         BlocProvider.of<ProgressionHandlerBloc>(context).currentScale;
-    SubstitutionMatch match = bloc.substitutions![index].match;
+    final SubstitutionMatch match = substitution.match;
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -425,6 +429,7 @@ class SubstitutionView extends StatelessWidget {
           fromChord: substitution.firstChangedIndex,
           toChord: substitution.lastChangedIndex,
           startAt: substitution.firstChangedIndex,
+          startDur: substitution.match.baseOffset,
           progression: bloc.getSubstitutedBase(scale, index),
         ),
       ],
