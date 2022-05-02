@@ -36,7 +36,7 @@ class SwitchSubType extends SubstitutionHandlerEvent {
 }
 
 class ReharmonizeSubs extends SubstitutionHandlerEvent {
-  final bool? keepHarmonicFunction;
+  final KeepHarmonicFunctionAmount? keepHarmonicFunction;
 
   @override
   List<Object?> get props => [keepHarmonicFunction];
@@ -57,7 +57,7 @@ class SurpriseMeSubs extends SubstitutionHandlerEvent {
 class ClearSubstitutions extends SubstitutionHandlerEvent {}
 
 class SetKeepHarmonicFunction extends SubstitutionHandlerEvent {
-  final bool keepHarmonicFunction;
+  final KeepHarmonicFunctionAmount keepHarmonicFunction;
 
   @override
   List<Object?> get props => [keepHarmonicFunction];

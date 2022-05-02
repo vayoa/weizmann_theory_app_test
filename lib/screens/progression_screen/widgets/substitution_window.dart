@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/substitution.dart';
 import 'package:thoery_test/modals/substitution_match.dart';
+import 'package:thoery_test/modals/weights/keep_harmonic_function_weight.dart';
 import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
 import 'package:weizmann_theory_app_test/modals/progression_type.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_view.dart';
@@ -199,7 +200,16 @@ class SubstitutionButtonBar extends StatefulWidget {
 }
 
 class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
-  late bool _keepHarmonicFunction;
+  late KeepHarmonicFunctionAmount _keepHarmonicFunction;
+  static const keepAmounts = [
+    KeepHarmonicFunctionAmount.low,
+    KeepHarmonicFunctionAmount.med,
+    KeepHarmonicFunctionAmount.high,
+  ];
+
+  static final amountNames = [
+    for (KeepHarmonicFunctionAmount amount in keepAmounts) amount.name
+  ];
 
   @override
   void initState() {
@@ -265,14 +275,13 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
                     ),
                     TSelector(
                       tight: true,
-                      values: const ['low', 'med', 'high'],
-                      value: _keepHarmonicFunction ? 'high' : 'low',
+                      values: amountNames,
+                      value: _keepHarmonicFunction.name,
                       onPressed: (index) {
-                        if (index == 1) return false;
-                        int current = _keepHarmonicFunction ? 2 : 0;
-                        if (index != current) {
+                        KeepHarmonicFunctionAmount amount = keepAmounts[index];
+                        if (_keepHarmonicFunction != amount) {
                           setState(() {
-                            _keepHarmonicFunction = index == 2;
+                            _keepHarmonicFunction = amount;
                           });
                         }
                         return true;
@@ -288,8 +297,10 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
                       : Icons.refresh_rounded,
                   onPressed: _showGo && _goDisabled
                       ? null
-                      : () => bloc.add(ReharmonizeSubs(
-                          keepHarmonicFunction: _keepHarmonicFunction)),
+                      : () => setState(() {
+                            bloc.add(ReharmonizeSubs(
+                                keepHarmonicFunction: _keepHarmonicFunction));
+                          }),
                 ),
               ],
             ),

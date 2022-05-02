@@ -7,6 +7,7 @@ import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/modals/substitution.dart';
 import 'package:thoery_test/modals/substitution_match.dart';
+import 'package:thoery_test/modals/weights/keep_harmonic_function_weight.dart';
 import 'package:thoery_test/state/substitution_handler.dart';
 import 'package:weizmann_theory_app_test/modals/progression_type.dart';
 
@@ -25,9 +26,10 @@ class SubstitutionHandlerBloc
   int _fromChord = 0, _toChord = 0;
   double _startDur = 0.0;
   double? _endDur;
-  bool _keepHarmonicFunction = false;
+  KeepHarmonicFunctionAmount _keepHarmonicFunction =
+      SubstitutionHandler.keepAmount;
 
-  bool get keepHarmonicFunction => _keepHarmonicFunction;
+  KeepHarmonicFunctionAmount get keepHarmonicFunction => _keepHarmonicFunction;
 
   // If we calculate a ChordProgression for a substitution we save it here.
   List<ChordProgression?>? _chordProgressions;
@@ -60,10 +62,9 @@ class SubstitutionHandlerBloc
         }
         emit(
             CalculatingSubstitutions(fromChord: _fromChord, toChord: _toChord));
-        print('$_fromChord, $_startDur, ${_toChord + 1}, $_endDur');
         _substitutions = SubstitutionHandler.getRatedSubstitutions(
           _currentProgression!,
-          keepHarmonicFunction: _keepHarmonicFunction,
+          keepAmount: _keepHarmonicFunction,
           start: _fromChord,
           startDur: _startDur,
           end: _toChord + 1,
