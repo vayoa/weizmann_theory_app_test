@@ -221,7 +221,7 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
-            width: 750,
+            width: 725,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
