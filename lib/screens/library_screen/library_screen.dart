@@ -133,8 +133,12 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                 onCancelled: (text) => Navigator.pop(context),
                                 onSubmitted: (text) {
                                   /* TODO: Choose what characters are illegal in a title
-                                  and block them here. */
-                                  if (ProgressionBank.bank.containsKey(text)) {
+                                            and block them here. */
+                                  if (text.isEmpty ||
+                                      RegExp(r'^\s*$').hasMatch(text)) {
+                                    return "Entry titles can't be empty.";
+                                  } else if (ProgressionBank.bank
+                                      .containsKey(text)) {
                                     return 'Title already exists in bank.';
                                   } else {
                                     Navigator.pop(context, text);
@@ -176,17 +180,17 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                       TextSpan(
                                           text:
                                               '\n(delete everything and revert to the '
-                                                  'built-in bank)'),
-                                        ],
-                                      ),
-                                      style: Constants.valuePatternTextStyle,
-                                      textAlign: TextAlign.center,
-                                      maxLines: 2,
-                                    ),
-                                    onPressed: (choice) =>
-                                        Navigator.pop(context, choice),
-                                    yesButtonName: 'REVERT',
-                                    noButtonName: 'Cancel',
+                                              'built-in bank)'),
+                                    ],
+                                  ),
+                                  style: Constants.valuePatternTextStyle,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                ),
+                                onPressed: (choice) =>
+                                    Navigator.pop(context, choice),
+                                yesButtonName: 'REVERT',
+                                noButtonName: 'Cancel',
                               ),
                             );
 
@@ -264,6 +268,8 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                               state.titles[state.titles.length - index - 1];
                           return LibraryEntry(
                               title: currentTitle,
+                              builtIn:
+                                  ProgressionBank.bank[currentTitle]!.builtIn,
                               onOpen: () =>
                                   _pushProgressionPage(context, currentTitle),
                               onDelete: () async {
