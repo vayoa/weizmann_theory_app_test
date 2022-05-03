@@ -79,6 +79,14 @@ class ApplySubstitution extends ProgressionHandlerEvent {
   const ApplySubstitution(this.substitution);
 }
 
-class Reharmonize extends ProgressionHandlerEvent {}
+class Reharmonize extends ProgressionHandlerEvent {
+  const Reharmonize();
+}
 
-class SurpriseMe extends ProgressionHandlerEvent {}
+class SurpriseMe extends ProgressionHandlerEvent {
+  const SurpriseMe();
+}
+
+class ChangeTimeSignature extends ProgressionHandlerEvent {
+  const ChangeTimeSignature();
+}

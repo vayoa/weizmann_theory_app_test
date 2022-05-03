@@ -248,6 +248,20 @@ class ProgressionHandlerBloc
       (event, emit) =>
           add(OverrideProgression(event.substitution.substitutedBase)),
     );
+    on<ChangeTimeSignature>((event, emit) {
+      ScaleDegreeProgression progression;
+      bool even = currentProgression.timeSignature.numerator == 4;
+      try {
+        progression = currentProgression.inTimeSignature(
+            even ? const TimeSignature(3, 4) : const TimeSignature.evenTime());
+      } on Exception catch (e) {
+        return emit(InvalidInputReceived(
+            progression: currentlyViewedProgression, exception: e));
+      }
+      emit(ChangedTimeSignature(
+          progression: currentlyViewedProgression, even: !even));
+      add(OverrideProgression(progression));
+    });
   }
 
   Progression<ScaleDegreeChord> _parseScaleDegreeInputs(List<String> inputs) =>

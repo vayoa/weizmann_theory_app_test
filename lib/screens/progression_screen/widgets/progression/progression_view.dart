@@ -63,7 +63,7 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
           : -1;
 
   _setup() {
-    stepW = max / widget.measures[0].timeSignature.denominator;
+    stepW = max / widget.measures[0].timeSignature.numerator;
     minSelectDur = widget.measures[0].timeSignature.step * 2;
     maxDur = math.max(widget.measures.length - 1, 0) *
             widget.measures[0].timeSignature.decimal +

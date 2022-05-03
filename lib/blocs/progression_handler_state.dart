@@ -76,3 +76,14 @@ class InvalidInputReceived extends ProgressionHandlerState {
       {required Progression progression, required this.exception})
       : super(progression);
 }
+
+class ChangedTimeSignature extends ProgressionHandlerState {
+  final bool even;
+
+  @override
+  List<Object?> get props => [even];
+
+  const ChangedTimeSignature(
+      {required Progression progression, required this.even})
+      : super(progression);
+}

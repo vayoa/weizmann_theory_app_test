@@ -267,7 +267,7 @@ class MeasureView<T> extends StatelessWidget {
 
   List<Widget> buildCursor() {
     List<Widget> widgets = [];
-    final int max = measure.timeSignature.denominator;
+    final int max = measure.timeSignature.numerator;
     if (cursorPos != 0) {
       widgets.add(Spacer(flex: cursorPos!));
     }

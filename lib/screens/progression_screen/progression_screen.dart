@@ -153,6 +153,11 @@ class ProgressionScreenUI extends StatelessWidget {
                                                 context,
                                                 listen: true)
                                             .progressionEmpty ||
+                                        BlocProvider.of<ProgressionHandlerBloc>(
+                                                    context,
+                                                    listen: true)
+                                                .currentScale ==
+                                            null ||
                                         (state is Playing &&
                                             !state.baseControl),
                                 child: Row(
@@ -207,18 +212,32 @@ class ProgressionScreenUI extends StatelessWidget {
                             ', ',
                             style: TextStyle(fontSize: 16),
                           ),
-                          TextButton(
-                            child: const Text(
-                              '4/4',
-                              style: TextStyle(fontSize: 16.0),
-                            ),
-                            style: TextButton.styleFrom(
-                              minimumSize: const Size(40, 36),
-                              primary: Colors.black,
-                              padding: EdgeInsets.zero,
-                              backgroundColor: Colors.transparent,
-                            ),
-                            onPressed: () {},
+                          BlocBuilder<ProgressionHandlerBloc,
+                              ProgressionHandlerState>(
+                            buildWhen: (_, state) =>
+                                state is ChangedTimeSignature,
+                            builder: (context, state) {
+                              return TextButton(
+                                child: Text(
+                                  BlocProvider.of<ProgressionHandlerBloc>(
+                                          context)
+                                      .currentProgression
+                                      .timeSignature
+                                      .toString(),
+                                  style: const TextStyle(fontSize: 16.0),
+                                ),
+                                style: TextButton.styleFrom(
+                                  minimumSize: const Size(40, 36),
+                                  primary: Colors.black,
+                                  padding: EdgeInsets.zero,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                                onPressed: () =>
+                                    BlocProvider.of<ProgressionHandlerBloc>(
+                                            context)
+                                        .add(const ChangeTimeSignature()),
+                              );
+                            },
                           )
                         ],
                       ),
