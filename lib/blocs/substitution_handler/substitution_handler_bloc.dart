@@ -1,27 +1,35 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/extensions/scale_extension.dart';
 import 'package:thoery_test/modals/chord_progression.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/modals/substitution.dart';
 import 'package:thoery_test/modals/substitution_match.dart';
-import 'package:thoery_test/state/progression_bank.dart';
+import 'package:thoery_test/modals/weights/keep_harmonic_function_weight.dart';
 import 'package:thoery_test/state/substitution_handler.dart';
-import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/modals/progression_type.dart';
 
 part 'substitution_handler_event.dart';
-
 part 'substitution_handler_state.dart';
 
 class SubstitutionHandlerBloc
     extends Bloc<SubstitutionHandlerEvent, SubstitutionHandlerState> {
-  final ProgressionBank _bank = ProgressionBank();
-  ProgressionType type = ProgressionType.chords;
+  ProgressionType type = ProgressionType.romanNumerals;
   List<Substitution>? _substitutions;
+  bool _inSetup = false;
+
+  bool get inSetup => _inSetup;
+
+  ScaleDegreeProgression? _currentProgression;
+  int _fromChord = 0, _toChord = 0;
+  double _startDur = 0.0;
+  double? _endDur;
+  KeepHarmonicFunctionAmount _keepHarmonicFunction =
+      SubstitutionHandler.keepAmount;
+
+  KeepHarmonicFunctionAmount get keepHarmonicFunction => _keepHarmonicFunction;
 
   // If we calculate a ChordProgression for a substitution we save it here.
   List<ChordProgression?>? _chordProgressions;
@@ -29,16 +37,93 @@ class SubstitutionHandlerBloc
 
   List<Substitution>? get substitutions => _substitutions;
 
-  Progression getSubstitutedBase(PitchScale scale, int index) {
-    if (type == ProgressionType.romanNumerals) {
+  SubstitutionHandlerBloc() : super(SubstitutionHandlerInitial()) {
+    on<SetupReharmonization>((event, emit) {
+      _currentProgression = event.progression;
+      _fromChord = event.fromChord;
+      _toChord = event.toChord;
+      _startDur = event.startDur;
+      _endDur = event.endDur;
+      _inSetup = true;
+      emit(SetupPage());
+    });
+    on<SwitchSubType>((event, emit) {
+      type = event.progressionType;
+      return emit(TypeChanged(type));
+    });
+    on<ReharmonizeSubs>((event, emit) {
+      bool changedSettings = event.keepHarmonicFunction != null &&
+          event.keepHarmonicFunction != _keepHarmonicFunction;
+      if ((_substitutions == null && _currentProgression != null) ||
+          changedSettings) {
+        if (changedSettings) {
+          _keepHarmonicFunction = event.keepHarmonicFunction!;
+          emit(ChangedSubstitutionSettings());
+        }
+        emit(
+            CalculatingSubstitutions(fromChord: _fromChord, toChord: _toChord));
+        _substitutions = SubstitutionHandler.getRatedSubstitutions(
+          _currentProgression!,
+          keepAmount: _keepHarmonicFunction,
+          start: _fromChord,
+          startDur: _startDur,
+          end: _toChord + 1,
+          endDur: _endDur,
+        );
+        _chordProgressions =
+            List.generate(_substitutions!.length, (index) => null);
+        _originalSubs = List.generate(_substitutions!.length, (index) => null);
+        _inSetup = false;
+        return emit(CalculatedSubstitutions(substitutions!));
+      }
+    });
+    on<SurpriseMeSubs>((event, emit) {
+      emit(CalculatingSubstitutions(
+        fromChord: 0,
+        toChord: event.progression.length - 1,
+      ));
+      // TODO: Give it a scaleDegreeProgression instead...
+      _substitutions = [
+        SubstitutionHandler.substituteBy(
+          base: event.progression,
+          maxIterations: 50,
+          scale: event.scale,
+        )
+      ];
+      _chordProgressions =
+          List.generate(_substitutions!.length, (index) => null);
+      _originalSubs = List.generate(_substitutions!.length, (index) => null);
+      _inSetup = false;
+      return emit(CalculatedSubstitutions(substitutions!));
+    });
+    on<ClearSubstitutions>((event, emit) {
+      _substitutions = null;
+      _currentProgression = null;
+      _fromChord = 0;
+      _toChord = 0;
+      _startDur = 0.0;
+      _endDur = null;
+      _chordProgressions = null;
+      _originalSubs = null;
+      _inSetup = false;
+      return emit(const ClearedSubstitutions());
+    });
+    on<SetKeepHarmonicFunction>((event, emit) {
+      _keepHarmonicFunction = event.keepHarmonicFunction;
+      return emit(ChangedSubstitutionSettings());
+    });
+  }
+
+  Progression getSubstitutedBase(PitchScale? scale, int index) {
+    if (scale == null || type == ProgressionType.romanNumerals) {
       return _substitutions![index].substitutedBase;
     } else {
       return getChordProgression(scale, index);
     }
   }
 
-  Progression getOriginalSubstitution(PitchScale scale, int index) {
-    if (type == ProgressionType.romanNumerals) {
+  Progression getOriginalSubstitution(PitchScale? scale, int index) {
+    if (scale == null || type == ProgressionType.romanNumerals) {
       return _substitutions![index].originalSubstitution;
     } else {
       return getOriginalSubChords(scale, index);
@@ -59,7 +144,7 @@ class SubstitutionHandlerBloc
     if (_originalSubs![index] == null) {
       ScaleDegreeProgression originalSub =
           _substitutions![index].originalSubstitution;
-      SubstitutionMatch match = _substitutions![index].match!;
+      SubstitutionMatch match = _substitutions![index].match;
       if (match.type == SubstitutionMatchType.tonicization) {
         // TODO: Optimize.
         originalSub = originalSub.tonicizedFor(
@@ -68,53 +153,5 @@ class SubstitutionHandlerBloc
       _originalSubs![index] = originalSub.inScale(scale);
     }
     return _originalSubs![index]!;
-  }
-
-  SubstitutionHandlerBloc() : super(SubstitutionHandlerInitial()) {
-    on<SwitchSubType>((event, emit) {
-      type = event.progressionType;
-      return emit(TypeChanged(type));
-    });
-    on<ReharmonizeSubs>((event, emit) {
-      if (_substitutions == null) {
-        emit(CalculatingSubstitutions(
-            fromChord: event.fromChord, toChord: event.toChord));
-        _substitutions = SubstitutionHandler.getRatedSubstitutions(
-          event.progression,
-          bank: _bank,
-          start: event.fromChord,
-          end: event.toChord + 1,
-        );
-        _chordProgressions =
-            List.generate(_substitutions!.length, (index) => null);
-        _originalSubs = List.generate(_substitutions!.length, (index) => null);
-        return emit(CalculatedSubstitutions(substitutions!));
-      }
-    });
-    on<SurpriseMeSubs>((event, emit) {
-      emit(CalculatingSubstitutions(
-        fromChord: 0,
-        toChord: event.progression.length - 1,
-      ));
-      // TODO: Give it a scaleDegreeProgression instead...
-      _substitutions = [
-        SubstitutionHandler.substituteBy(
-          base: event.progression,
-          bank: _bank,
-          maxIterations: 50,
-          scale: event.scale,
-        )
-      ];
-      _chordProgressions =
-          List.generate(_substitutions!.length, (index) => null);
-      _originalSubs = List.generate(_substitutions!.length, (index) => null);
-      return emit(CalculatedSubstitutions(substitutions!));
-    });
-    on<ClearSubstitutions>((event, emit) {
-      _substitutions = null;
-      _chordProgressions = null;
-      _originalSubs = null;
-      return emit(const ClearedSubstitutions());
-    });
   }
 }

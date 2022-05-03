@@ -12,6 +12,11 @@ class SubstitutionHandlerInitial extends SubstitutionHandlerState {
   List<Object> get props => [];
 }
 
+class SetupPage extends SubstitutionHandlerState {
+  @override
+  List<Object?> get props => [];
+}
+
 class TypeChanged extends SubstitutionHandlerState {
   final ProgressionType newType;
 
@@ -40,4 +45,9 @@ class CalculatedSubstitutions extends SubstitutionHandlerState {
 
 class ClearedSubstitutions extends SubstitutionHandlerState {
   const ClearedSubstitutions();
+}
+
+class ChangedSubstitutionSettings extends SubstitutionHandlerState {
+  @override
+  List<Object?> get props => [];
 }

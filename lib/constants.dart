@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 abstract class Constants {
+  static const Size minimumWindowSize = Size(855, 200);
+
   static const Color titleBarColor = Color.fromARGB(255, 196, 196, 196);
   static const Color buttonBackgroundColor = Color.fromARGB(255, 227, 227, 227);
   static const Color buttonUnfocusedColor = Color.fromARGB(255, 192, 192, 192);
@@ -25,7 +27,17 @@ abstract class Constants {
       TextStyle(fontSize: Constants.measureFontSize);
   static const TextStyle valuePatternTextStyle =
       TextStyle(fontSize: Constants.measurePatternFontSize);
+  static const TextStyle boldedValuePatternTextStyle = TextStyle(
+      fontSize: Constants.measurePatternFontSize, fontWeight: FontWeight.bold);
+  static const TextStyle titleTextStyle =
+      TextStyle(fontSize: 24, fontWeight: FontWeight.bold);
   static const double libraryEntryWidth = 340;
   static const double libraryEntryHeight = 40;
   static const Color libraryEntryColor = Color.fromARGB(255, 163, 163, 163);
+
+  static const int maxTitleCharacters = 35;
+
+  static const IconData backIcon = Icons.arrow_back_ios_rounded;
+  static const IconData builtInIcon = Icons.inventory_2_rounded;
+  static const IconData saveIcon = Icons.upload_rounded;
 }

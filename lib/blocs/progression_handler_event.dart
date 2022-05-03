@@ -9,12 +9,14 @@ abstract class ProgressionHandlerEvent extends Equatable {
 
 class OverrideProgression extends ProgressionHandlerEvent {
   final Progression newProgression;
+  final bool overrideOther;
 
   @override
-  List<Object?> get props => [newProgression];
+  List<Object?> get props => [newProgression, overrideOther];
 
-  OverrideProgression(this.newProgression)
-      : assert((newProgression.isEmpty || newProgression[0] is Chord ||
+  OverrideProgression(this.newProgression, {this.overrideOther = true})
+      : assert((newProgression.isEmpty ||
+            newProgression[0] is Chord ||
             newProgression is ScaleDegreeProgression));
 }
 
@@ -38,29 +40,24 @@ class ChangeScale extends ProgressionHandlerEvent {
   const ChangeScale(this.newScale);
 }
 
-class ChangeRange extends ProgressionHandlerEvent {
-  final int? fromChord;
-  final int? toChord;
+class ChangeRangeDuration extends ProgressionHandlerEvent {
+  final double start;
+  final double end;
 
   @override
-  List<Object?> get props => [fromChord, toString()];
+  List<Object?> get props => [start, end];
 
-  const ChangeRange({this.fromChord, this.toChord})
-      : assert(!(fromChord == null && toChord == null));
+  const ChangeRangeDuration({required this.start, required this.end})
+      : assert(start < end);
 }
 
-class SetMeasure extends ProgressionHandlerEvent {
-  final Progression newMeasure;
-  final int index;
+class DisableRange extends ProgressionHandlerEvent {
+  final bool disable;
 
   @override
-  List<Object?> get props => [newMeasure, index];
+  List<Object?> get props => [disable];
 
-  SetMeasure({required this.newMeasure, required this.index})
-      : assert(index >= 0 &&
-            (newMeasure.isEmpty ||
-                newMeasure[0] is Chord ||
-                newMeasure is ScaleDegreeProgression));
+  const DisableRange({required this.disable});
 }
 
 class MeasureEdited extends ProgressionHandlerEvent {

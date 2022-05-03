@@ -4,17 +4,44 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/substitution.dart';
 import 'package:thoery_test/modals/substitution_match.dart';
+import 'package:thoery_test/modals/weights/keep_harmonic_function_weight.dart';
 import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
+import 'package:weizmann_theory_app_test/modals/progression_type.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_view.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/view_type_selector.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/weights_view.dart';
 import 'package:weizmann_theory_app_test/widgets/TButton.dart';
 import 'package:weizmann_theory_app_test/widgets/TSelector.dart';
-import 'package:weizmann_theory_app_test/widgets/general_dialog_page.dart';
+import 'package:weizmann_theory_app_test/widgets/dialogs.dart';
 import 'package:weizmann_theory_app_test/widgets/t_icon_button.dart';
 
+import '../../../blocs/audio_player/audio_player_bloc.dart';
 import '../../../blocs/progression_handler_bloc.dart';
 import '../../../constants.dart';
+
+class SubstitutionWindowCover extends StatelessWidget {
+  const SubstitutionWindowCover({
+    Key? key,
+    required this.child,
+  }) : super(key: key);
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 350,
+      padding: const EdgeInsets.only(
+          top: 20.0, left: 20.0, right: 20.0, bottom: 10.0),
+      decoration: const BoxDecoration(
+        color: Constants.rangeSelectColor,
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(Constants.borderRadius * 3)),
+      ),
+      child: child,
+    );
+  }
+}
 
 class SubstitutionWindow extends StatefulWidget {
   const SubstitutionWindow({
@@ -65,32 +92,39 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
         ProgressionHandlerBloc progressionBloc =
             BlocProvider.of<ProgressionHandlerBloc>(context);
         if (state is CalculatingSubstitutions) {
-          return Container(
-            height: 350,
-            padding: const EdgeInsets.only(
-                top: 20.0, left: 20.0, right: 20.0, bottom: 10.0),
-            decoration: const BoxDecoration(
-              color: Constants.rangeSelectColor,
-              borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(Constants.borderRadius * 3)),
-            ),
-            child: const CircularProgressIndicator(),
+          return const SubstitutionWindowCover(
+            child: CircularProgressIndicator(),
           );
-        }
-        if (subBloc.substitutions == null || subBloc.substitutions!.isEmpty) {
+        } else if (subBloc.inSetup) {
+          return const SubstitutionWindowCover(
+              child: Align(
+                  alignment: Alignment.topLeft,
+                  child: SubstitutionButtonBar(
+                    inSetup: true,
+                  )));
+        } else if (subBloc.substitutions == null) {
           return const SizedBox();
+        } else if (subBloc.substitutions!.isEmpty) {
+          return SubstitutionWindowCover(
+              child: Column(
+            children: const [
+              SubstitutionButtonBar(
+                inSetup: false,
+              ),
+              Divider(),
+              Center(
+                child: Text('No Substitutions Were found.',
+                    style: Constants.valuePatternTextStyle),
+              ),
+            ],
+          ));
         } else {
-          return Container(
-            height: 350,
-            padding: const EdgeInsets.all(20.0),
-            decoration: const BoxDecoration(
-              color: Constants.rangeSelectColor,
-              borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(Constants.borderRadius * 3)),
-            ),
+          return SubstitutionWindowCover(
             child: Column(
               children: [
-                const SubstitutionButtonBar(),
+                const SubstitutionButtonBar(
+                  inSetup: false,
+                ),
                 const Divider(),
                 SizedBox(
                   height: 200,
@@ -119,28 +153,52 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                       onPageChanged: (newIndex) =>
                           setState(() => _currentIndex = newIndex),
                       itemBuilder: (BuildContext context, int index) =>
-                          SubstitutionView(index: index),
+                          SubstitutionView(
+                        index: index,
+                        substitution: subBloc.substitutions![index],
+                      ),
                     ),
                   ),
                 ),
                 const Divider(),
-                SubstitutionBottomButtonBar(
-                  currentPage: _currentIndex + 1,
-                  pages: subBloc.substitutions!.length,
-                  previous: _currentIndex == 0
-                      ? null
-                      : () => _controller.previousPage(
-                            duration: widget.pageSwitchDuration,
-                            curve: _scrollCurve,
-                          ),
-                  next: _currentIndex == subBloc.substitutions!.length - 1
-                      ? null
-                      : () => _controller.nextPage(
-                          duration: widget.pageSwitchDuration,
-                          curve: _scrollCurve),
-                  play: () {},
-                  apply: () => progressionBloc.add(
-                      ApplySubstitution(subBloc.substitutions![_currentIndex])),
+                BlocBuilder<AudioPlayerBloc, AudioPlayerState>(
+                  builder: (context, state) {
+                    PitchScale? blocScale =
+                        BlocProvider.of<ProgressionHandlerBloc>(context)
+                            .currentScale;
+                    return SubstitutionBottomButtonBar(
+                      currentPage: _currentIndex + 1,
+                      pages: subBloc.substitutions!.length,
+                      previous: _currentIndex == 0
+                          ? null
+                          : () => _controller.previousPage(
+                                duration: widget.pageSwitchDuration,
+                                curve: _scrollCurve,
+                              ),
+                      next: _currentIndex == subBloc.substitutions!.length - 1
+                          ? null
+                          : () => _controller.nextPage(
+                              duration: widget.pageSwitchDuration,
+                              curve: _scrollCurve),
+                      playing: state is Playing && !state.baseControl,
+                      play: ((state is Playing && state.baseControl) ||
+                              blocScale == null)
+                          ? null
+                          : () => BlocProvider.of<AudioPlayerBloc>(context).add(
+                                state is Playing
+                                    ? const Pause()
+                                    : Play(
+                                        basePlaying: false,
+                                        measures: subBloc
+                                            .getChordProgression(
+                                                blocScale, _currentIndex)
+                                            .splitToMeasures(),
+                                      ),
+                              ),
+                      apply: () => progressionBloc.add(ApplySubstitution(
+                          subBloc.substitutions![_currentIndex])),
+                    );
+                  },
                 ),
               ],
             ),
@@ -151,26 +209,71 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
   }
 }
 
-class SubstitutionButtonBar extends StatelessWidget {
-  const SubstitutionButtonBar({Key? key}) : super(key: key);
+class SubstitutionButtonBar extends StatefulWidget {
+  const SubstitutionButtonBar({
+    Key? key,
+    required this.inSetup,
+  }) : super(key: key);
+
+  final bool inSetup;
+
+  @override
+  State<SubstitutionButtonBar> createState() => _SubstitutionButtonBarState();
+}
+
+class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
+  late KeepHarmonicFunctionAmount _keepHarmonicFunction;
+  static const keepAmounts = [
+    KeepHarmonicFunctionAmount.low,
+    KeepHarmonicFunctionAmount.med,
+    KeepHarmonicFunctionAmount.high,
+  ];
+
+  static final amountNames = [
+    for (KeepHarmonicFunctionAmount amount in keepAmounts) amount.name
+  ];
+
+  @override
+  void initState() {
+    _keepHarmonicFunction =
+        BlocProvider.of<SubstitutionHandlerBloc>(context).keepHarmonicFunction;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    SubstitutionHandlerBloc bloc =
+        BlocProvider.of<SubstitutionHandlerBloc>(context);
+    bool _goDisabled = bloc.substitutions != null;
+    bool _showGo =
+        widget.inSetup || _keepHarmonicFunction == bloc.keepHarmonicFunction;
     return SizedBox(
       height: 25,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
-            width: 750,
+            width: 725,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 ViewTypeSelector(
                   tight: true,
-                  onPressed: (newType) =>
+                  startOnChords:
+                      BlocProvider.of<SubstitutionHandlerBloc>(context).type ==
+                          ProgressionType.chords,
+                  enabled: !widget.inSetup,
+                  onPressed: (newType) {
+                    if (newType == ProgressionType.romanNumerals ||
+                        BlocProvider.of<ProgressionHandlerBloc>(context)
+                                .currentScale !=
+                            null) {
                       BlocProvider.of<SubstitutionHandlerBloc>(context)
-                          .add(SwitchSubType(newType)),
+                          .add(SwitchSubType(newType));
+                      return true;
+                    }
+                    return false;
+                  },
                 ),
                 Row(
                   children: [
@@ -179,6 +282,7 @@ class SubstitutionButtonBar extends StatelessWidget {
                       child: Text('Sound:'),
                     ),
                     TSelector(
+                      tight: true,
                       values: const ['Classical', 'Both', 'Exotic'],
                       value: 'Classical',
                       onPressed: (index) => true,
@@ -192,17 +296,33 @@ class SubstitutionButtonBar extends StatelessWidget {
                       child: Text('Keep Harmonic Function:'),
                     ),
                     TSelector(
-                      values: const ['low', 'med', 'high'],
-                      value: 'low',
-                      onPressed: (index) => true,
+                      tight: true,
+                      values: amountNames,
+                      value: _keepHarmonicFunction.name,
+                      onPressed: (index) {
+                        KeepHarmonicFunctionAmount amount = keepAmounts[index];
+                        if (_keepHarmonicFunction != amount) {
+                          setState(() {
+                            _keepHarmonicFunction = amount;
+                          });
+                        }
+                        return true;
+                      },
                     ),
                   ],
                 ),
                 TButton(
-                  label: 'Go!',
+                  label: _showGo ? 'Go!' : 'Refresh',
                   tight: true,
-                  iconData: Icons.arrow_right_alt_rounded,
-                  onPressed: () {},
+                  iconData: _showGo
+                      ? Icons.arrow_right_alt_rounded
+                      : Icons.refresh_rounded,
+                  onPressed: _showGo && _goDisabled
+                      ? null
+                      : () => setState(() {
+                            bloc.add(ReharmonizeSubs(
+                                keepHarmonicFunction: _keepHarmonicFunction));
+                          }),
                 ),
               ],
             ),
@@ -211,7 +331,10 @@ class SubstitutionButtonBar extends StatelessWidget {
             label: 'Cancel',
             tight: true,
             iconData: Icons.cancel_rounded,
-            onPressed: () {},
+            onPressed: () {
+              BlocProvider.of<SubstitutionHandlerBloc>(context)
+                  .add(ClearSubstitutions());
+            },
           ),
         ],
       ),
@@ -228,14 +351,16 @@ class SubstitutionBottomButtonBar extends StatelessWidget {
     required this.apply,
     required this.currentPage,
     required this.pages,
+    this.playing = false,
   }) : super(key: key);
 
   final void Function()? previous;
   final void Function()? next;
-  final void Function() play;
+  final void Function()? play;
   final void Function() apply;
   final int currentPage;
   final int pages;
+  final bool playing;
 
   @override
   Widget build(BuildContext context) {
@@ -259,8 +384,9 @@ class SubstitutionBottomButtonBar extends StatelessWidget {
                   onPressed: next,
                 ),
                 TButton(
-                  label: 'Play',
-                  iconData: Icons.play_arrow_rounded,
+                  label: playing ? 'Pause' : 'Play',
+                  iconData:
+                      playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
                   onPressed: play,
                 ),
                 TButton(
@@ -282,18 +408,19 @@ class SubstitutionView extends StatelessWidget {
   const SubstitutionView({
     Key? key,
     required this.index,
+    required this.substitution,
   }) : super(key: key);
 
   final int index;
+  final Substitution substitution;
 
   @override
   Widget build(BuildContext context) {
-    SubstitutionHandlerBloc bloc =
+    final SubstitutionHandlerBloc bloc =
         BlocProvider.of<SubstitutionHandlerBloc>(context);
-    Substitution substitution = bloc.substitutions![index];
-    PitchScale scale =
-        BlocProvider.of<ProgressionHandlerBloc>(context).currentScale!;
-    SubstitutionMatch match = bloc.substitutions![index].match!;
+    final PitchScale? scale =
+        BlocProvider.of<ProgressionHandlerBloc>(context).currentScale;
+    final SubstitutionMatch match = substitution.match;
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,29 +429,46 @@ class SubstitutionView extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
-              'From "My Other Song" (${match.type.name})',
+            Text.rich(
+              TextSpan(
+                text: 'From ',
+                children: [
+                  TextSpan(
+                      text: '"${substitution.title}" ',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  TextSpan(
+                      text: match.type.name,
+                      style: const TextStyle(
+                          fontStyle: FontStyle.italic,
+                          fontSize: Constants.measurePatternFontSize * 0.75)),
+                  WidgetSpan(
+                    baseline: TextBaseline.ideographic,
+                    alignment: PlaceholderAlignment.aboveBaseline,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4.0),
+                      child: TIconButton(
+                        iconData: Icons.notes_rounded,
+                        size: Constants.measurePatternFontSize * 0.8,
+                        onPressed: () {
+                          showGeneralDialog(
+                            context: context,
+                            barrierDismissible: true,
+                            barrierLabel: 'Details',
+                            pageBuilder: (context, _, __) => GeneralDialogPage(
+                              title: 'Details',
+                              child: Expanded(
+                                  child: WeightsPreview(
+                                      score: substitution.score)),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               style:
                   const TextStyle(fontSize: Constants.measurePatternFontSize),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 4.0),
-              child: TIconButton(
-                iconData: Icons.notes_rounded,
-                size: Constants.measurePatternFontSize * 1.2,
-                onPressed: () {
-                  showGeneralDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    barrierLabel: 'Details',
-                    pageBuilder: (context, _, __) => GeneralDialogPage(
-                      title: 'Details',
-                      child: Expanded(
-                          child: WeightsPreview(score: substitution.score)),
-                    ),
-                  );
-                },
-              ),
             ),
           ],
         ),
@@ -338,6 +482,7 @@ class SubstitutionView extends StatelessWidget {
           fromChord: substitution.firstChangedIndex,
           toChord: substitution.lastChangedIndex,
           startAt: substitution.firstChangedIndex,
+          startDur: substitution.match.baseOffset,
           progression: bloc.getSubstitutedBase(scale, index),
         ),
       ],

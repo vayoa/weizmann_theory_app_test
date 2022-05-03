@@ -7,6 +7,25 @@ abstract class SubstitutionHandlerEvent extends Equatable {
   const SubstitutionHandlerEvent();
 }
 
+class SetupReharmonization extends SubstitutionHandlerEvent {
+  final ScaleDegreeProgression progression;
+  final int fromChord;
+  final int toChord;
+  final double startDur;
+  final double endDur;
+
+  @override
+  List<Object?> get props => [progression, fromChord, toChord];
+
+  const SetupReharmonization({
+    required this.progression,
+    required this.fromChord,
+    required this.toChord,
+    this.startDur = 0.0,
+    required this.endDur,
+  });
+}
+
 class SwitchSubType extends SubstitutionHandlerEvent {
   final ProgressionType progressionType;
 
@@ -17,17 +36,12 @@ class SwitchSubType extends SubstitutionHandlerEvent {
 }
 
 class ReharmonizeSubs extends SubstitutionHandlerEvent {
-  final ScaleDegreeProgression progression;
-  final int fromChord;
-  final int toChord;
+  final KeepHarmonicFunctionAmount? keepHarmonicFunction;
 
   @override
-  List<Object?> get props => [progression, fromChord, toChord];
+  List<Object?> get props => [keepHarmonicFunction];
 
-  const ReharmonizeSubs(
-      {required this.progression,
-      required this.fromChord,
-      required this.toChord});
+  const ReharmonizeSubs({this.keepHarmonicFunction});
 }
 
 class SurpriseMeSubs extends SubstitutionHandlerEvent {
@@ -41,3 +55,12 @@ class SurpriseMeSubs extends SubstitutionHandlerEvent {
 }
 
 class ClearSubstitutions extends SubstitutionHandlerEvent {}
+
+class SetKeepHarmonicFunction extends SubstitutionHandlerEvent {
+  final KeepHarmonicFunctionAmount keepHarmonicFunction;
+
+  @override
+  List<Object?> get props => [keepHarmonicFunction];
+
+  const SetKeepHarmonicFunction(this.keepHarmonicFunction);
+}

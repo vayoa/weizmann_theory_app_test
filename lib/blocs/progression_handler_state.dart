@@ -29,17 +29,6 @@ class TypeChanged extends ProgressionHandlerState {
   }) : super(progression);
 }
 
-class RecalculatedScales extends ProgressionHandlerState {
-  final PitchScale scale;
-
-  @override
-  List<Object?> get props => [...super.props, scale];
-
-  const RecalculatedScales(
-      {required Progression progression, required this.scale})
-      : super(progression);
-}
-
 class ScaleChanged extends ProgressionHandlerState {
   final PitchScale scale;
 
@@ -51,17 +40,30 @@ class ScaleChanged extends ProgressionHandlerState {
 }
 
 class RangeChanged extends ProgressionHandlerState {
-  final int newFromChord;
-  final int newToChord;
+  final bool rangeDisabled;
+  final int? newFromChord;
+  final int? newToChord;
+  final double startDur;
+  final double? endDur;
 
   @override
-  List<Object?> get props => [...super.props, newFromChord, newToChord];
+  List<Object?> get props => [
+        ...super.props,
+        newFromChord,
+        newToChord,
+        startDur,
+        endDur,
+        rangeDisabled,
+      ];
 
-  const RangeChanged(
-      {required Progression progression,
-      required this.newToChord,
-      required this.newFromChord})
-      : super(progression);
+  const RangeChanged({
+    required Progression progression,
+    required this.rangeDisabled,
+    this.newToChord,
+    this.newFromChord,
+    this.startDur = 0.0,
+    this.endDur,
+  }) : super(progression);
 }
 
 class InvalidInputReceived extends ProgressionHandlerState {

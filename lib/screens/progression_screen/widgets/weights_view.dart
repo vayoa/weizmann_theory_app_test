@@ -16,6 +16,9 @@ class WeightsPreview extends StatelessWidget {
       itemBuilder: (context, index) {
         MapEntry<String, Score> detail = score.details.entries.elementAt(index);
         Weight? weight = SubstitutionHandler.weightsMap[detail.key];
+        if (detail.key == SubstitutionHandler.keepHarmonicFunction.name) {
+          weight = SubstitutionHandler.keepHarmonicFunction;
+        }
         return ExpansionTile(
           title: Row(
             children: [

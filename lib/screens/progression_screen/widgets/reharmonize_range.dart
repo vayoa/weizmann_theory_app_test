@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:thoery_test/modals/progression.dart';
+import 'package:thoery_test/modals/time_signature.dart';
+import 'package:weizmann_theory_app_test/utilities.dart';
 
 import '../../../blocs/progression_handler_bloc.dart';
 import '../../../constants.dart';
@@ -15,10 +18,23 @@ class ReharmonizeRange extends StatefulWidget {
 }
 
 class _ReharmonizeRangeState extends State<ReharmonizeRange> {
-  final RegExp validInput = RegExp(r"[0-9 -]"),
-      validSubmit = RegExp(r"^[0-9]+ ?- ?[0-9]+");
+  final RegExp validInput = RegExp(r"[\d -.]"),
+      validSubmit = RegExp(r"^ *[\d]*.?[\d]+ *-* *[\d]*.{1}[\d]+ *$");
+  late TextStyle style;
 
   TextEditingController controller = TextEditingController();
+
+  @override
+  void initState() {
+    style = TextStyle(fontSize: widget.textSize - 2);
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant ReharmonizeRange oldWidget) {
+    style = TextStyle(fontSize: widget.textSize - 2);
+    super.didUpdateWidget(oldWidget);
+  }
 
   @override
   void dispose() {
@@ -31,18 +47,19 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
     return BlocBuilder<ProgressionHandlerBloc, ProgressionHandlerState>(
       buildWhen: (_, state) => state is RangeChanged,
       builder: (context, state) {
-        TextStyle style = TextStyle(fontSize: widget.textSize);
         ProgressionHandlerBloc bloc =
             BlocProvider.of<ProgressionHandlerBloc>(context);
         return SizedBox(
-          width: widget.textSize * 3.8,
+          width: widget.textSize * 4.8,
           child: TextField(
             controller: controller,
             inputFormatters: [FilteringTextInputFormatter.allow(validInput)],
             enableInteractiveSelection: false,
             enableSuggestions: false,
             decoration: InputDecoration(
-              hintText: '${bloc.fromChord} - ${bloc.toChord}',
+              hintText: bloc.rangeDisabled
+                  ? '...'
+                  : '${bloc.fromDur} - ${bloc.toDur}',
               hintStyle: style,
               border: const UnderlineInputBorder(
                   borderRadius: BorderRadius.horizontal(
@@ -51,19 +68,33 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
               fillColor: Constants.rangeSelectTransparentColor,
               filled: true,
               isDense: true,
+              contentPadding: const EdgeInsets.symmetric(vertical: 8),
             ),
             style: style,
             textAlign: TextAlign.center,
             autocorrect: false,
             onSubmitted: (input) {
               input = input.trim();
+              bool showSnackBar = true;
               if (validSubmit.hasMatch(input)) {
                 List<String> values = input.split('-');
-                int from = int.parse(values[0].trim());
-                int to = int.parse(values.last.trim());
-                bloc.add(ChangeRange(fromChord: from, toChord: to));
+                double start = double.parse(values[0].trim());
+                double end = double.parse(values.last.trim());
+                Progression prog = bloc.currentlyViewedProgression;
+                TimeSignature ts = prog.timeSignature;
+                if (start >= 0.0 &&
+                    end <= prog.duration &&
+                    start < end &&
+                    ts.validDuration(start % ts.decimal) &&
+                    ts.validDuration(end % ts.decimal)) {
+                  showSnackBar = false;
+                  bloc.add(ChangeRangeDuration(start: start, end: end));
+                }
               }
               controller.clear();
+              if (showSnackBar) {
+                Utilities.showSnackBar(context, "Invalid range inputted.");
+              }
             },
           ),
         );

@@ -18,9 +18,14 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   static const int defaultNoteOctave = 4;
   static const int defaultNoteOctaves = defaultNoteOctave * 12;
   static const int maxMelody = 71; // B4.
-  static const int maxBass = 62; // D4.
-  static const int minBass = 40; // E2.
+  static const int minBass = 31; // G2.
+  bool _baseControl = true;
   bool _playing = false;
+
+  bool get baseControl => _baseControl;
+
+  bool get playing => _playing;
+
   List<Progression<Chord>>? _currentMeasures;
 
   // Current measure.
@@ -33,53 +38,65 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
 
   int get currentChord => _cC;
 
+  int _bpm = 60;
+
+  int get bpm => _bpm;
+  static const int maxBPM = 70;
+  static const int minBPM = 30;
+
   AudioPlayerBloc() : super(Idle()) {
     for (int i = 0; i < maxPlayers; i++) {
       _players.add(Player(id: i, commandlineArguments: ['--no-video']));
     }
     on<Play>((event, emit) async {
+      if (_playing || event.basePlaying != _baseControl) {
+        reset(emit);
+      }
+      _baseControl = event.basePlaying;
       _playing = true;
       if (_currentMeasures == null) {
         _currentMeasures = event.measures;
         _cM = 0;
         _cC = 0;
       }
-      emit(Playing());
+      emit(Playing(_baseControl));
       await _play(emit: emit);
-      if (_playing) {
-        add(const Reset());
-      }
-    });
-    on<PlayChord>((event, emit) {
-      _playing = true;
-      emit(Playing());
-      _playChord(event.chord);
-      if (_playing) {
-        _playing = false;
-        emit(Idle());
+      if (playing) {
+        reset(emit);
       }
     });
     on<Pause>((event, emit) {
       _playing = false;
-      emit(Paused());
+      emit(Paused(_baseControl));
       // TODO: Implement this.
     });
     on<Reset>((event, emit) {
-      _playing = false;
-      _currentMeasures = null;
-      _cM = 0;
-      _cC = 0;
-      emit(Idle());
+      reset(emit);
     });
+    on<ChangeBPM>((event, emit) {
+      _bpm = event.newBPM;
+      emit(ChangedBPM(_bpm));
+    });
+  }
+
+  void reset(Emitter<AudioPlayerState> emit) {
+    _playing = false;
+    _baseControl = true;
+    _currentMeasures = null;
+    _cM = 0;
+    _cC = 0;
+    emit(Idle());
   }
 
   // TODO: Load the first chord before the rest.
   Future<void> _play({
     required Emitter<AudioPlayerState> emit,
     bool arpeggio = false,
-    int mult = 6000,
   }) async {
     if (_currentMeasures != null) {
+      double millisecondsPerBeat = (60 / _bpm) * 1000;
+      double mult =
+          millisecondsPerBeat * _currentMeasures![0].timeSignature.denominator;
       List<Pitch>? prevPitches;
       for (_cM;
           _currentMeasures != null && _cM < _currentMeasures!.length;
@@ -88,7 +105,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
         for (_cC;
             _currentMeasures != null && _cC < _currentMeasures![_cM].length;
             _cC++) {
-          if (_playing) {
+          if (playing) {
             Duration duration =
                 Duration(milliseconds: (prog.durations[_cC] * mult).toInt());
             if (prog[_cC] != null) {
@@ -145,14 +162,21 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     }
   }
 
+  Pitch getBase(Pitch pitch) {
+    int note = pitch.midiNumber % 12;
+    int minBassNote = minBass % 12;
+    if (note < minBassNote) {
+      return Pitch.fromMidiNumber(((12 - minBassNote) % 12) + minBass + note);
+    }
+    return Pitch.fromMidiNumber(minBass + note - minBassNote);
+  }
+
   // TODO: Actually implement this...
   List<Pitch> _walk(Chord chord, [List<Pitch>? previous]) {
     List<Pitch> cPitches = chord.pitches;
-    List<Pitch> pitches = [
-      /* TODO: Since the chord could be in any pitch find a consistent way of
-                calculating it's pitch. */
-      Pitch.fromMidiNumber(calcNote(cPitches.first.midiNumber, minBass + 12))
-    ];
+    /* TODO: Since the chord could be in any pitch find a consistent way of
+             calculating it's pitch. */
+    List<Pitch> pitches = [getBase(cPitches[0])];
     previous?.removeAt(0);
     int found = -1;
     // First search for equal pitch classes...

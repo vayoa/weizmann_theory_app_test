@@ -1,15 +1,16 @@
 import 'package:dart_vlc/dart_vlc.dart';
-import 'package:flutter/material.dart' hide Interval;
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/modals/scale_degree_progression.dart';
-import 'package:weizmann_theory_app_test/blocs/progression_handler_bloc.dart';
-import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/progression_screen.dart';
+import 'package:weizmann_theory_app_test/blocs/bank/bank_bloc.dart';
+import 'package:weizmann_theory_app_test/screens/library_screen/library_screen.dart';
+import 'package:window_manager/window_manager.dart';
 
-import 'blocs/audio_player/audio_player_bloc.dart';
 import 'constants.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await windowManager.ensureInitialized();
+  windowManager.setMinimumSize(Constants.minimumWindowSize);
   DartVLC.initialize();
   runApp(const MyApp());
 }
@@ -73,41 +74,29 @@ class _MyAppState extends State<MyApp> {
           selectedColor: Colors.black,
           fillColor: Constants.selectedColor,
         ),
+        tooltipTheme: TooltipThemeData(
+          decoration: BoxDecoration(
+              color: Constants.selectedColor,
+              borderRadius: BorderRadius.circular(Constants.borderRadius)),
+          textStyle: const TextStyle(fontSize: 12, color: Colors.black),
+        ),
       ),
-      home: MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (_) => SubstitutionHandlerBloc()),
-          BlocProvider(
-            create: (context) => ProgressionHandlerBloc(
-                BlocProvider.of<SubstitutionHandlerBloc>(context)),
-          ),
-          BlocProvider(create: (_) => AudioPlayerBloc()),
-        ],
-        child: const MyHomePage(title: 'Flutter Demo Home Page'),
-      ),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends StatelessWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  void initState() {
-    BlocProvider.of<ProgressionHandlerBloc>(context)
-        .add(OverrideProgression(ScaleDegreeProgression.empty(inMinor: false)));
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return const ProgressionScreen();
+    return BlocProvider(
+      // Instantiate the bloc and call the initial event.
+      create: (_) => BankBloc()..add(LoadInitialBank()),
+      child: const LibraryScreen(),
+    );
   }
 }

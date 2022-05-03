@@ -4,25 +4,32 @@ import '../../../modals/progression_type.dart';
 import '../../../widgets/TSelector.dart';
 
 class ViewTypeSelector extends StatelessWidget {
-  const ViewTypeSelector(
-      {Key? key, required this.onPressed, this.tight = false})
-      : super(key: key);
+  const ViewTypeSelector({
+    Key? key,
+    required this.onPressed,
+    this.enabled = true,
+    this.tight = false,
+    this.startOnChords = true,
+  }) : super(key: key);
 
+  final bool enabled;
   final bool tight;
-  final void Function(ProgressionType newType) onPressed;
+  final bool startOnChords;
+  final bool Function(ProgressionType newType) onPressed;
 
   @override
   Widget build(BuildContext context) {
     return TSelector(
-      value: 'Chords',
+      value: startOnChords ? 'Chords' : 'Roman Numerals',
       values: const ['Chords', 'Roman Numerals'],
       tight: tight,
-      onPressed: (index) {
-        onPressed.call(index == 0
-            ? ProgressionType.chords
-            : ProgressionType.romanNumerals);
-        return true;
-      },
+      onPressed: enabled
+          ? (index) {
+              return onPressed.call(index == 0
+                  ? ProgressionType.chords
+                  : ProgressionType.romanNumerals);
+            }
+          : (i) => false,
     );
   }
 }

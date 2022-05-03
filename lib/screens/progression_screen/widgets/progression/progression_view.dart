@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,14 +31,56 @@ class ProgressionView<T> extends StatefulWidget {
 }
 
 class _ProgressionViewState<T> extends State<ProgressionView<T>> {
+  late double stepW;
+  late double minSelectDur;
   int editedMeasure = -1;
   int hoveredMeasure = -1;
+  int hoveredPos = -1;
+  double startHold = -1;
+  int holdMeasure = -1;
+  int holdPos = -1;
+  late double maxDur;
+
+  static const double max =
+      Constants.measureWidth - 2 * Constants.measurePadding;
 
   int _getIndexFromPosition(Offset localPosition) =>
       (localPosition.dx ~/ Constants.measureWidth) +
       (widget.measuresInLine *
           (localPosition.dy ~/
               (Constants.measureHeight + Constants.measureSpacing)));
+
+  int _getMeasureDur(Offset localPosition) {
+    double x =
+        (localPosition.dx % Constants.measureWidth) - Constants.measurePadding;
+    return x >= 0 && x <= max ? x ~/ stepW : -1;
+  }
+
+  double _calcPosDur(int measure, int duration) =>
+      measure != -1 && widget.measures.length > measure && duration != -1
+          ? (measure * widget.measures[0].timeSignature.decimal) +
+              (duration * widget.measures[0].timeSignature.step)
+          : -1;
+
+  _setup() {
+    stepW = max / widget.measures[0].timeSignature.denominator;
+    minSelectDur = widget.measures[0].timeSignature.step * 2;
+    maxDur = math.max(widget.measures.length - 1, 0) *
+            widget.measures[0].timeSignature.decimal +
+        (widget.measures.last.duration);
+  }
+
+  @override
+  void initState() {
+    _setup();
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant ProgressionView<T> oldWidget) {
+    _setup();
+    super.didUpdateWidget(oldWidget);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,11 +90,64 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
     int startIndex = bloc.startIndex;
     int endMeasure = bloc.endMeasure;
     int endIndex = bloc.endIndex;
+    double startDur = 0.0;
+    double endDur = 0.0;
+    bool disabled = bloc.rangeDisabled;
+    if (!disabled && startMeasure != -1 && endMeasure != -1) {
+      startDur = bloc.fromDur;
+      if (startDur != 0) {
+        double durBefore =
+            widget.measures[0].timeSignature.decimal * startMeasure;
+        durBefore += widget.measures[startMeasure].durations.real(startIndex) -
+            widget.measures[startMeasure].durations[startIndex];
+        startDur -= durBefore;
+      }
+      endDur = bloc.toDur;
+      double durBefore = widget.measures[0].timeSignature.decimal * endMeasure;
+      durBefore += widget.measures[endMeasure].durations.real(endIndex) -
+          widget.measures[endMeasure].durations[endIndex];
+      endDur -= durBefore;
+    }
     return SizedBox(
       width: widget.measuresInLine * Constants.measureWidth,
       child: Listener(
+        onPointerMove: (event) {
+          if (event.buttons == kPrimaryButton) {
+            if (holdMeasure != -1 && holdPos != -1) {
+              int measureDur = _getMeasureDur(event.localPosition);
+              int measure = _getIndexFromPosition(event.localPosition);
+              if (measure != -1 && measureDur != -1) {
+                double selectorEndDur, selectorStartDur;
+                if (holdMeasure > measure ||
+                    (holdMeasure == measure && holdPos > measureDur)) {
+                  selectorEndDur = _calcPosDur(holdMeasure, holdPos + 1);
+                  selectorStartDur = _calcPosDur(measure, measureDur);
+                } else {
+                  selectorEndDur = _calcPosDur(measure, measureDur + 1);
+                  selectorStartDur = startHold;
+                }
+                if (selectorEndDur > 0 &&
+                    selectorEndDur <= maxDur &&
+                    selectorStartDur >= 0 &&
+                    selectorStartDur < maxDur) {
+                  if (selectorEndDur - selectorStartDur >= minSelectDur) {
+                    BlocProvider.of<ProgressionHandlerBloc>(context).add(
+                        ChangeRangeDuration(
+                            start: selectorStartDur, end: selectorEndDur));
+                  } else {
+                    BlocProvider.of<ProgressionHandlerBloc>(context)
+                        .add(const DisableRange(disable: true));
+                  }
+                }
+              }
+            }
+          }
+        },
         onPointerHover: (event) {
           int index = _getIndexFromPosition(event.localPosition);
+          setState(() {
+            hoveredPos = _getMeasureDur(event.localPosition);
+          });
           if (index != hoveredMeasure) {
             setState(() {
               hoveredMeasure = index;
@@ -58,7 +155,16 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
           }
         },
         onPointerDown: (event) {
-          if (event.buttons == kSecondaryButton) {
+          if (event.buttons == kPrimaryButton) {
+            double hold = _calcPosDur(hoveredMeasure, hoveredPos);
+            if (hold >= 0 && hold <= maxDur) {
+              setState(() {
+                holdMeasure = hoveredMeasure;
+                holdPos = hoveredPos;
+                startHold = hold;
+              });
+            }
+          } else if (event.buttons == kSecondaryButton) {
             int index = _getIndexFromPosition(event.localPosition);
             setState(() {
               editedMeasure = index;
@@ -76,7 +182,7 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
             ),
             itemBuilder: (context, index) {
               bool shouldPaint = index >= startMeasure && index <= endMeasure;
-              //TODO: Fix this weird case...
+              // TODO: Fix this weird case...
               bool last = (index == widget.measures.length - 1) ||
                   (index + 1) % widget.measuresInLine == 0;
               int? fromChord =
@@ -84,14 +190,14 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
               int? toChord = shouldPaint
                   ? (index == endMeasure
                       ? endIndex
-                      : widget.measures[index].length)
+                      : widget.measures[index].length - 1)
                   : null;
+              double paintStartDur = index == startMeasure ? startDur : 0.0;
+              double? paintEndDur = index == endMeasure ? endDur : null;
               if (index == editedMeasure) {
                 return EditedMeasure(
                   measure: widget.measures[index],
                   last: last,
-                  fromChord: fromChord,
-                  toChord: toChord,
                   onDone: (bool rebuild, List<String> values) {
                     setState(() {
                       if (rebuild) {
@@ -103,12 +209,19 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
                   },
                 );
               }
+              final bool editable = index == hoveredMeasure;
               return MeasureView(
                 measure: widget.measures[index],
                 last: last,
                 fromChord: fromChord,
+                startDur: paintStartDur,
                 toChord: toChord,
-                editable: index == hoveredMeasure,
+                endDur: paintEndDur,
+                editable: editable,
+                disabled: disabled,
+                cursorPos: editable && hoveredPos != -1 ? hoveredPos : null,
+                selectorStart: index == startMeasure,
+                selectorEnd: index == endMeasure,
                 onEdit: () {
                   setState(() {
                     editedMeasure = index;
@@ -127,7 +240,9 @@ class HorizontalProgressionView extends StatefulWidget {
     required this.progression,
     this.measures,
     this.fromChord,
+    this.startDur = 0.0,
     this.toChord,
+    this.endDur,
     this.startAt,
     this.editable = false,
   }) : super(key: key);
@@ -135,7 +250,9 @@ class HorizontalProgressionView extends StatefulWidget {
   final Progression progression;
   final List<Progression>? measures;
   final int? fromChord;
+  final double startDur;
   final int? toChord;
+  final double? endDur;
   final int? startAt;
   final bool editable;
 
@@ -149,6 +266,9 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
   late List<Progression> _measures;
   int startMeasure = -1, startIndex = -1;
   int endMeasure = -1, endIndex = -1;
+  double startDur = 0.0;
+  double endDur = 0.0;
+  bool _canPaint = false;
 
   @override
   void initState() {
@@ -173,17 +293,46 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
 
   void _updateMeasures() {
     _measures = widget.measures ?? widget.progression.splitToMeasures();
+    final Progression prog = widget.progression;
     if (widget.fromChord != null && widget.toChord != null) {
+      int toChord = widget.toChord!;
       List<int> results = Utilities.calculateRangePositions(
-          progression: widget.progression,
-          measures: _measures,
-          fromChord: widget.fromChord!,
-          toChord: widget.toChord!);
+        progression: widget.progression,
+        measures: _measures,
+        fromChord: widget.fromChord!,
+        startDur: widget.startDur,
+        toChord: toChord,
+        endDur: widget.endDur,
+      );
       startMeasure = results[0];
       startIndex = results[1];
       endMeasure = results[2];
       endIndex = results[3];
+      startDur = 0.0;
+      endDur = 0.0;
+      if (startMeasure != -1 && endMeasure != -1) {
+        startDur = prog.isEmpty
+            ? 0.0
+            : prog.durations.real(widget.fromChord!) -
+                prog.durations[widget.fromChord!] +
+                widget.startDur;
+        if (startDur != 0) {
+          double durBefore = _measures[0].timeSignature.decimal * startMeasure;
+          durBefore += _measures[startMeasure].durations.real(startIndex) -
+              _measures[startMeasure].durations[startIndex];
+          startDur -= durBefore;
+        }
+        endDur = prog.isEmpty ? 0.0 : prog.durations.real(toChord);
+        if (widget.endDur != null) {
+          endDur += widget.endDur! - prog.durations[toChord];
+        }
+        double durBefore = _measures[0].timeSignature.decimal * endMeasure;
+        durBefore += _measures[endMeasure].durations.real(endIndex) -
+            _measures[endMeasure].durations[endIndex];
+        endDur -= durBefore;
+      }
     }
+    _canPaint = widget.fromChord != null && widget.toChord != null;
   }
 
   void _updateController() =>
@@ -205,9 +354,9 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
           dragDevices: {PointerDeviceKind.mouse},
           platform: TargetPlatform.windows,
         ),
-        // TODO: Figure out how to show the scrollbar
         child: Scrollbar(
           scrollbarOrientation: ScrollbarOrientation.bottom,
+          controller: _controller,
           interactive: true,
           child: ListView.builder(
               controller: _controller,
@@ -215,21 +364,37 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
               itemCount: _measures.length,
               shrinkWrap: true,
               itemBuilder: (context, index) {
-                bool shouldPaint = widget.fromChord != null &&
-                    widget.toChord != null &&
-                    index >= startMeasure &&
-                    index <= endMeasure;
+                bool shouldPaint =
+                    _canPaint && index >= startMeasure && index <= endMeasure;
+                bool start = index == startMeasure;
+                bool end = index == endMeasure;
+                int? fromChord, toChord;
+                double? _startDur, _endDur;
+                if (shouldPaint) {
+                  if (start) {
+                    fromChord = startIndex;
+                    _startDur = startDur;
+                  } else {
+                    fromChord = 0;
+                    _startDur = 0.0;
+                  }
+                  if (end) {
+                    toChord = endIndex;
+                    _endDur = endDur;
+                  } else {
+                    toChord = _measures[index].length - 1;
+                    _endDur = _measures[index].durations[toChord];
+                  }
+                }
                 return MeasureView(
                   measure: _measures[index],
                   last: index == _measures.length - 1,
-                  fromChord: shouldPaint
-                      ? (index == startMeasure ? startIndex : 0)
-                      : null,
-                  toChord: shouldPaint
-                      ? (index == endMeasure
-                          ? endIndex
-                          : _measures[index].length)
-                      : null,
+                  fromChord: fromChord,
+                  startDur: _startDur,
+                  toChord: toChord,
+                  endDur: _endDur,
+                  selectorStart: start,
+                  selectorEnd: end,
                   editable: widget.editable,
                   onEdit: () {},
                 );

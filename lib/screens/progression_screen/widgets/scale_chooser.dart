@@ -17,17 +17,37 @@ class ScaleChooser extends StatefulWidget {
 }
 
 class _ScaleChooserState extends State<ScaleChooser> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    _controller = TextEditingController();
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        _controller.text = '';
+      }
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProgressionHandlerBloc, ProgressionHandlerState>(
-        buildWhen: (context, state) =>
-            state is ScaleChanged || state is RecalculatedScales,
+        buildWhen: (context, state) => state is ScaleChanged,
         builder: (context, state) {
           ProgressionHandlerBloc bloc =
               BlocProvider.of<ProgressionHandlerBloc>(context);
           if (bloc.currentScale == null) {
             return TButton(
-              label: 'Calculate Scale',
+              label: 'Guess Scale',
               iconData: Icons.piano_rounded,
               onPressed: () => setState(() {
                 bloc.add(CalculateScale());
@@ -51,18 +71,21 @@ class _ScaleChooserState extends State<ScaleChooser> {
                     children: [
                       Flexible(
                         child: TextField(
-                          style: const TextStyle(fontSize: 14.0),
+                          controller: _controller,
+                          focusNode: _focusNode,
+                          style: const TextStyle(
+                              fontSize: 14.0, color: Colors.blue),
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
-                                RegExp('[a-gA-G#b]')),
+                                RegExp('[a-gA-G#b♯♭]')),
                             LengthLimitingTextInputFormatter(2),
                           ],
                           decoration: InputDecoration(
                             contentPadding: EdgeInsets.zero,
                             border: InputBorder.none,
-                            hintText: currentTonicName,
-                            hintStyle: const TextStyle(fontSize: 15.0),
                             isDense: true,
+                            hintText: currentTonicName,
+                            hintStyle: const TextStyle(fontSize: 14.0),
                           ),
                           onSubmitted: (newTonic) {
                             String prev = newTonic;
@@ -75,13 +98,9 @@ class _ScaleChooserState extends State<ScaleChooser> {
                           },
                         ),
                       ),
-                      OutlinedButton(
+                      TextButton(
                         child: Text(minor ? 'Minor' : 'Major'),
-                        style: OutlinedButton.styleFrom(
-                          primary: Colors.black,
-                          padding: EdgeInsets.zero,
-                          backgroundColor: Constants.buttonBackgroundColor,
-                          side: BorderSide.none,
+                        style: TextButton.styleFrom(
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.horizontal(
                                 right: Radius.circular(Constants.borderRadius)),

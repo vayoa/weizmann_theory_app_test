@@ -6,11 +6,13 @@ class LibraryEntry extends StatelessWidget {
   const LibraryEntry({
     Key? key,
     required this.title,
+    required this.builtIn,
     required this.onOpen,
     required this.onDelete,
   }) : super(key: key);
 
   final String title;
+  final bool builtIn;
   final void Function() onOpen;
   final void Function() onDelete;
 
@@ -30,12 +32,25 @@ class LibraryEntry extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Flexible(
-                child: Text(
-                  title,
-                  style: const TextStyle(fontSize: 16.0),
-                  overflow: TextOverflow.ellipsis,
+                child: Row(
+                  children: [
+                    (builtIn
+                        ? const Padding(
+                            padding: EdgeInsets.only(right: 3.0),
+                            child: Icon(Constants.builtInIcon, size: 12),
+                          )
+                        : const SizedBox()),
+                    Flexible(
+                      child: Text(
+                        title,
+                        style: const TextStyle(fontSize: 16.0),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(width: 4),
               Row(
                 children: [
                   TButton(
