@@ -49,45 +49,17 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
     if (_isPreventClose) {
       final bool? r = await showDialog<bool>(
         context: context,
-        builder: (_) {
-          return GeneralDialog(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                const Text(
-                  'Save before closing?',
-                  style: Constants.valuePatternTextStyle,
-                ),
-                SizedBox(
-                  width: 280,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      TButton(
-                        label: 'Back',
-                        iconData: Constants.backIcon,
-                        tight: true,
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      TButton(
-                        label: 'Quit',
-                        iconData: Icons.close,
-                        tight: true,
-                        onPressed: () => Navigator.pop(context, false),
-                      ),
-                      TButton(
-                        label: 'Save & Quit',
-                        iconData: Constants.saveIcon,
-                        tight: true,
-                        onPressed: () => Navigator.pop(context, true),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+        builder: (_) => GeneralThreeChoiceDialog(
+          title: const Text(
+            'Save before closing?',
+            style: Constants.valuePatternTextStyle,
+          ),
+          yesButtonLabel: 'Save & Quit',
+          yesButtonIconData: Constants.saveIcon,
+          noButtonLabel: 'Quit',
+          cancelButtonLabel: 'Back',
+          onPressed: (choice) => Navigator.pop(context, choice),
+        ),
       );
       if (r != null) {
         if (r) {
@@ -174,29 +146,29 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                               barrierDismissible: true,
                               pageBuilder: (context, _, __) =>
                                   GeneralDialogTextField(
-                                    title: const Text(
-                                      'Create a new entry named...',
-                                      style: Constants.valuePatternTextStyle,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    autoFocus: true,
-                                    submitButtonName: 'Create',
-                                    onCancelled: (text) => Navigator.pop(context),
-                                    onSubmitted: (text) {
-                                      /* TODO: Choose what characters are illegal in a title
+                                title: const Text(
+                                  'Create a new entry named...',
+                                  style: Constants.valuePatternTextStyle,
+                                  textAlign: TextAlign.center,
+                                ),
+                                autoFocus: true,
+                                submitButtonName: 'Create',
+                                onCancelled: (text) => Navigator.pop(context),
+                                onSubmitted: (text) {
+                                  /* TODO: Choose what characters are illegal in a title
                                             and block them here. */
-                                      if (text.isEmpty ||
-                                          RegExp(r'^\s*$').hasMatch(text)) {
-                                        return "Entry titles can't be empty.";
-                                      } else if (ProgressionBank.bank
-                                          .containsKey(text)) {
-                                        return 'Title already exists in bank.';
-                                      } else {
-                                        Navigator.pop(context, text);
-                                        return null;
-                                      }
-                                    },
-                                  ),
+                                  if (text.isEmpty ||
+                                      RegExp(r'^\s*$').hasMatch(text)) {
+                                    return "Entry titles can't be empty.";
+                                  } else if (ProgressionBank.bank
+                                      .containsKey(text)) {
+                                    return 'Title already exists in bank.';
+                                  } else {
+                                    Navigator.pop(context, text);
+                                    return null;
+                                  }
+                                },
+                              ),
                             );
                             if (_title != null) {
                               BlocProvider.of<BankBloc>(context)
@@ -231,18 +203,18 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                       TextSpan(
                                           text:
                                               '\n(delete everything and revert to the '
-                                                  'built-in bank)'),
-                                        ],
-                                      ),
-                                      style: Constants.valuePatternTextStyle,
-                                      textAlign: TextAlign.center,
-                                      maxLines: 2,
-                                    ),
-                                    onPressed: (choice) =>
-                                        Navigator.pop(context, choice),
-                                    yesButtonName: 'REVERT',
-                                    noButtonName: 'Cancel',
+                                              'built-in bank)'),
+                                    ],
                                   ),
+                                  style: Constants.valuePatternTextStyle,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                ),
+                                onPressed: (choice) =>
+                                    Navigator.pop(context, choice),
+                                yesButtonName: 'REVERT',
+                                noButtonName: 'Cancel',
+                              ),
                             );
 
                             // Again, done in this weird way since it can be null...
@@ -251,19 +223,19 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                 context: context,
                                 pageBuilder: (context, _, __) =>
                                     GeneralDialogChoice(
-                                      widthFactor: 0.3,
-                                      heightFactor: 0.15,
-                                      title: const Text(
-                                        'Are you sure?',
-                                        style:
+                                  widthFactor: 0.3,
+                                  heightFactor: 0.15,
+                                  title: const Text(
+                                    'Are you sure?',
+                                    style:
                                         Constants.boldedValuePatternTextStyle,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      onPressed: (choice) =>
-                                          Navigator.pop(context, choice),
-                                      yesButtonName: 'REVERT',
-                                      noButtonName: 'Cancel',
-                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  onPressed: (choice) =>
+                                      Navigator.pop(context, choice),
+                                  yesButtonName: 'REVERT',
+                                  noButtonName: 'Cancel',
+                                ),
                               );
                               if (_result!) {
                                 BlocProvider.of<BankBloc>(context)
@@ -323,8 +295,8 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                     Constants.libraryEntryHeight,
                                 crossAxisSpacing:
                                     Constants.libraryEntryWidth * 0.1,
-                            mainAxisSpacing:
-                            Constants.libraryEntryHeight * 0.8),
+                                mainAxisSpacing:
+                                    Constants.libraryEntryHeight * 0.8),
                         itemBuilder: (context, index) {
                           String currentTitle =
                               titles[titles.length - index - 1];
@@ -337,36 +309,36 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                               onDelete: () async {
                                 final bool? _result =
                                     await showGeneralDialog<bool>(
-                                  context: context,
+                                      context: context,
                                   barrierDismissible: true,
                                   barrierLabel: 'Details',
                                   pageBuilder: (context, _, __) =>
                                       GeneralDialogChoice(
-                                        title: Text.rich(
-                                          TextSpan(
-                                            text:
+                                    title: Text.rich(
+                                      TextSpan(
+                                        text:
                                             'Are you sure you want to permanently '
-                                                'delete "',
-                                            children: [
-                                              TextSpan(
-                                                text: currentTitle,
-                                                style: Constants
-                                                    .boldedValuePatternTextStyle,
-                                              ),
-                                              const TextSpan(text: '"?'),
-                                            ],
+                                            'delete "',
+                                        children: [
+                                          TextSpan(
+                                            text: currentTitle,
+                                            style: Constants
+                                                .boldedValuePatternTextStyle,
                                           ),
-                                          style: Constants.valuePatternTextStyle,
-                                          textAlign: TextAlign.center,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 3,
-                                          softWrap: true,
-                                        ),
-                                        onPressed: (deleted) =>
-                                            Navigator.pop(context, deleted),
-                                        noButtonName: 'Cancel',
-                                        yesButtonName: 'DELETE!',
+                                          const TextSpan(text: '"?'),
+                                        ],
                                       ),
+                                      style: Constants.valuePatternTextStyle,
+                                      textAlign: TextAlign.center,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 3,
+                                      softWrap: true,
+                                    ),
+                                    onPressed: (deleted) =>
+                                        Navigator.pop(context, deleted),
+                                    noButtonName: 'Cancel',
+                                    yesButtonName: 'DELETE!',
+                                  ),
                                 );
                                 // When a choice was made...
                                 // This is done like this (and not "if (_result) ..."
@@ -399,7 +371,8 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
     );
   }
 
-  Future<void> _pushProgressionPage(BuildContext context, String currentTitle) async {
+  Future<void> _pushProgressionPage(
+      BuildContext context, String currentTitle) async {
     BankBloc bloc = BlocProvider.of<BankBloc>(context);
     await Navigator.push(
       context,
@@ -408,7 +381,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
           bankBloc: bloc,
           title: currentTitle,
           initiallyBanked:
-          ProgressionBank.bank[currentTitle]!.usedInSubstitutions,
+              ProgressionBank.bank[currentTitle]!.usedInSubstitutions,
           entry: ProgressionBank.bank[currentTitle]!,
           builtIn: ProgressionBank.bank[currentTitle]!.builtIn,
         ),

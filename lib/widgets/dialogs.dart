@@ -112,13 +112,13 @@ class GeneralDialogChoice extends StatelessWidget {
               children: [
                 TButton(
                   label: noButtonName,
-                  iconData: Icons.close,
+                  iconData: Icons.close_rounded,
                   tight: true,
                   onPressed: () => onPressed(false),
                 ),
                 TButton(
                   label: yesButtonName,
-                  iconData: Icons.check,
+                  iconData: Icons.check_rounded,
                   tight: true,
                   onPressed: () => onPressed(true),
                 ),
@@ -217,5 +217,66 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
     } else if (errorMessage != null) {
       setState(() => errorMessage = null);
     }
+  }
+}
+
+class GeneralThreeChoiceDialog extends StatelessWidget {
+  const GeneralThreeChoiceDialog({
+    Key? key,
+    required this.title,
+    required this.onPressed,
+    this.yesButtonLabel = 'Yes',
+    this.yesButtonIconData = Icons.check_rounded,
+    this.noButtonLabel = 'No',
+    this.noButtonIconData = Icons.close_rounded,
+    this.cancelButtonLabel = 'Cancel',
+    this.cancelButtonIconData = Constants.backIcon,
+  }) : super(key: key);
+
+  final Widget title;
+  final Function(bool?) onPressed;
+  final String yesButtonLabel;
+  final IconData yesButtonIconData;
+  final String noButtonLabel;
+  final IconData noButtonIconData;
+  final String cancelButtonLabel;
+  final IconData cancelButtonIconData;
+
+  @override
+  Widget build(BuildContext context) {
+    return GeneralDialog(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          title,
+          SizedBox(
+            width: 280,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TButton(
+                  label: cancelButtonLabel,
+                  iconData: cancelButtonIconData,
+                  tight: true,
+                  onPressed: () => onPressed(null),
+                ),
+                TButton(
+                  label: noButtonLabel,
+                  iconData: noButtonIconData,
+                  tight: true,
+                  onPressed: () => onPressed(false),
+                ),
+                TButton(
+                  label: yesButtonLabel,
+                  iconData: yesButtonIconData,
+                  tight: true,
+                  onPressed: () => onPressed(true),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
