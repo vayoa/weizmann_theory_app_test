@@ -19,9 +19,13 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   static const int defaultNoteOctaves = defaultNoteOctave * 12;
   static const int maxMelody = 71; // B4.
   static const int minBass = 31; // G2.
+  bool _baseControl = true;
   bool _playing = false;
 
+  bool get baseControl => _baseControl;
+
   bool get playing => _playing;
+
   List<Progression<Chord>>? _currentMeasures;
 
   // Current measure.
@@ -45,43 +49,43 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
       _players.add(Player(id: i, commandlineArguments: ['--no-video']));
     }
     on<Play>((event, emit) async {
+      if (_playing || event.basePlaying != _baseControl) {
+        reset(emit);
+      }
+      _baseControl = event.basePlaying;
       _playing = true;
       if (_currentMeasures == null) {
         _currentMeasures = event.measures;
         _cM = 0;
         _cC = 0;
       }
-      emit(Playing());
+      emit(Playing(_baseControl));
       await _play(emit: emit);
-      if (_playing) {
-        add(const Reset());
-      }
-    });
-    on<PlayChord>((event, emit) {
-      _playing = true;
-      emit(Playing());
-      _playChord(event.chord);
-      if (_playing) {
-        _playing = false;
-        emit(Idle());
+      if (playing) {
+        reset(emit);
       }
     });
     on<Pause>((event, emit) {
       _playing = false;
-      emit(Paused());
+      emit(Paused(_baseControl));
       // TODO: Implement this.
     });
     on<Reset>((event, emit) {
-      _playing = false;
-      _currentMeasures = null;
-      _cM = 0;
-      _cC = 0;
-      emit(Idle());
+      reset(emit);
     });
     on<ChangeBPM>((event, emit) {
       _bpm = event.newBPM;
       emit(ChangedBPM(_bpm));
     });
+  }
+
+  void reset(Emitter<AudioPlayerState> emit) {
+    _playing = false;
+    _baseControl = true;
+    _currentMeasures = null;
+    _cM = 0;
+    _cC = 0;
+    emit(Idle());
   }
 
   // TODO: Load the first chord before the rest.
@@ -101,7 +105,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
         for (_cC;
             _currentMeasures != null && _cC < _currentMeasures![_cM].length;
             _cC++) {
-          if (_playing) {
+          if (playing) {
             Duration duration =
                 Duration(milliseconds: (prog.durations[_cC] * mult).toInt());
             if (prog[_cC] != null) {
@@ -111,7 +115,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
                     chord: prog[_cC]!,
                     duration: duration,
                     noteLength:
-                    Duration(milliseconds: ((0.125 / 2) * mult).toInt()));
+                        Duration(milliseconds: ((0.125 / 2) * mult).toInt()));
               } else {
                 prevPitches = _playChord(prog[_cC]!, prevPitches);
               }

@@ -10,13 +10,21 @@ class Idle extends AudioPlayerState {
 }
 
 class Playing extends AudioPlayerState {
+  final bool baseControl;
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [baseControl];
+
+  const Playing(this.baseControl);
 }
 
 class Paused extends AudioPlayerState {
+  final bool baseControl;
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [baseControl];
+
+  const Paused(this.baseControl);
 }
 
 class ChangedBPM extends AudioPlayerState {

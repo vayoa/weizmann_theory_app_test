@@ -150,13 +150,16 @@ class ProgressionScreenUI extends StatelessWidget {
                                 // TODO: Find a better place for this.
                                 ignoring:
                                     BlocProvider.of<ProgressionHandlerBloc>(
-                                            context,
-                                            listen: true)
-                                        .progressionEmpty,
+                                                context,
+                                                listen: true)
+                                            .progressionEmpty ||
+                                        (state is Playing &&
+                                            !state.baseControl),
                                 child: Row(
                                   children: [
                                     TIconButton(
-                                      iconData: state is Playing
+                                      iconData: (state is Playing &&
+                                              state.baseControl)
                                           ? Icons.pause_rounded
                                           : Icons.play_arrow_rounded,
                                       size: 32,
@@ -174,7 +177,10 @@ class ProgressionScreenUI extends StatelessWidget {
                                                       context)
                                                   .chordMeasures;
                                           print(chords);
-                                          bloc.add(Play(chords));
+                                          bloc.add(Play(
+                                            measures: chords,
+                                            basePlaying: true,
+                                          ));
                                         }
                                       },
                                     ),

@@ -6,20 +6,12 @@ abstract class AudioPlayerEvent extends Equatable {
 
 class Play extends AudioPlayerEvent {
   final List<Progression<Chord>> measures;
+  final bool basePlaying;
 
   @override
-  List<Object?> get props => [measures];
+  List<Object?> get props => [measures, basePlaying];
 
-  const Play(this.measures);
-}
-
-class PlayChord extends AudioPlayerEvent {
-  final Chord chord;
-
-  @override
-  List<Object?> get props => [chord];
-
-  const PlayChord(this.chord);
+  const Play({required this.measures, required this.basePlaying});
 }
 
 class Pause extends AudioPlayerEvent {

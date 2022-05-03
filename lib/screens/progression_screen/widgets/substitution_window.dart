@@ -15,6 +15,7 @@ import 'package:weizmann_theory_app_test/widgets/TSelector.dart';
 import 'package:weizmann_theory_app_test/widgets/dialogs.dart';
 import 'package:weizmann_theory_app_test/widgets/t_icon_button.dart';
 
+import '../../../blocs/audio_player/audio_player_bloc.dart';
 import '../../../blocs/progression_handler_bloc.dart';
 import '../../../constants.dart';
 
@@ -160,23 +161,44 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                   ),
                 ),
                 const Divider(),
-                SubstitutionBottomButtonBar(
-                  currentPage: _currentIndex + 1,
-                  pages: subBloc.substitutions!.length,
-                  previous: _currentIndex == 0
-                      ? null
-                      : () => _controller.previousPage(
-                            duration: widget.pageSwitchDuration,
-                            curve: _scrollCurve,
-                          ),
-                  next: _currentIndex == subBloc.substitutions!.length - 1
-                      ? null
-                      : () => _controller.nextPage(
-                          duration: widget.pageSwitchDuration,
-                          curve: _scrollCurve),
-                  play: () {},
-                  apply: () => progressionBloc.add(
-                      ApplySubstitution(subBloc.substitutions![_currentIndex])),
+                BlocBuilder<AudioPlayerBloc, AudioPlayerState>(
+                  builder: (context, state) {
+                    PitchScale? blocScale =
+                        BlocProvider.of<ProgressionHandlerBloc>(context)
+                            .currentScale;
+                    return SubstitutionBottomButtonBar(
+                      currentPage: _currentIndex + 1,
+                      pages: subBloc.substitutions!.length,
+                      previous: _currentIndex == 0
+                          ? null
+                          : () => _controller.previousPage(
+                                duration: widget.pageSwitchDuration,
+                                curve: _scrollCurve,
+                              ),
+                      next: _currentIndex == subBloc.substitutions!.length - 1
+                          ? null
+                          : () => _controller.nextPage(
+                              duration: widget.pageSwitchDuration,
+                              curve: _scrollCurve),
+                      playing: state is Playing && !state.baseControl,
+                      play: ((state is Playing && state.baseControl) ||
+                              blocScale == null)
+                          ? null
+                          : () => BlocProvider.of<AudioPlayerBloc>(context).add(
+                                state is Playing
+                                    ? const Pause()
+                                    : Play(
+                                        basePlaying: false,
+                                        measures: subBloc
+                                            .getChordProgression(
+                                                blocScale, _currentIndex)
+                                            .splitToMeasures(),
+                                      ),
+                              ),
+                      apply: () => progressionBloc.add(ApplySubstitution(
+                          subBloc.substitutions![_currentIndex])),
+                    );
+                  },
                 ),
               ],
             ),
@@ -329,14 +351,16 @@ class SubstitutionBottomButtonBar extends StatelessWidget {
     required this.apply,
     required this.currentPage,
     required this.pages,
+    this.playing = false,
   }) : super(key: key);
 
   final void Function()? previous;
   final void Function()? next;
-  final void Function() play;
+  final void Function()? play;
   final void Function() apply;
   final int currentPage;
   final int pages;
+  final bool playing;
 
   @override
   Widget build(BuildContext context) {
@@ -360,8 +384,9 @@ class SubstitutionBottomButtonBar extends StatelessWidget {
                   onPressed: next,
                 ),
                 TButton(
-                  label: 'Play',
-                  iconData: Icons.play_arrow_rounded,
+                  label: playing ? 'Pause' : 'Play',
+                  iconData:
+                      playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
                   onPressed: play,
                 ),
                 TButton(
@@ -404,29 +429,46 @@ class SubstitutionView extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
-              'From "${substitution.title}" (${match.type.name})',
+            Text.rich(
+              TextSpan(
+                text: 'From ',
+                children: [
+                  TextSpan(
+                      text: '"${substitution.title}" ',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  TextSpan(
+                      text: match.type.name,
+                      style: const TextStyle(
+                          fontStyle: FontStyle.italic,
+                          fontSize: Constants.measurePatternFontSize * 0.75)),
+                  WidgetSpan(
+                    baseline: TextBaseline.ideographic,
+                    alignment: PlaceholderAlignment.aboveBaseline,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4.0),
+                      child: TIconButton(
+                        iconData: Icons.notes_rounded,
+                        size: Constants.measurePatternFontSize * 0.8,
+                        onPressed: () {
+                          showGeneralDialog(
+                            context: context,
+                            barrierDismissible: true,
+                            barrierLabel: 'Details',
+                            pageBuilder: (context, _, __) => GeneralDialogPage(
+                              title: 'Details',
+                              child: Expanded(
+                                  child: WeightsPreview(
+                                      score: substitution.score)),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               style:
                   const TextStyle(fontSize: Constants.measurePatternFontSize),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 4.0),
-              child: TIconButton(
-                iconData: Icons.notes_rounded,
-                size: Constants.measurePatternFontSize * 1.2,
-                onPressed: () {
-                  showGeneralDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    barrierLabel: 'Details',
-                    pageBuilder: (context, _, __) => GeneralDialogPage(
-                      title: 'Details',
-                      child: Expanded(
-                          child: WeightsPreview(score: substitution.score)),
-                    ),
-                  );
-                },
-              ),
             ),
           ],
         ),
