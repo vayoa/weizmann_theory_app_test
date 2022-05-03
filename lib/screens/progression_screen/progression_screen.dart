@@ -191,8 +191,9 @@ class ProgressionScreenUI extends StatelessWidget {
                               );
                             },
                           ),
+                          const SizedBox(width: 6),
                           const Text(
-                            " 00 / 34s  BPM: ",
+                            "BPM: ",
                             style: TextStyle(fontSize: 16),
                           ),
                           const BPMInput(),
