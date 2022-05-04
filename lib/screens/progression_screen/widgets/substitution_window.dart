@@ -83,7 +83,15 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
     return BlocConsumer<SubstitutionHandlerBloc, SubstitutionHandlerState>(
       listener: (_, state) {
         if (state is CalculatedSubstitutions) {
-          setState(() => _currentIndex = 0);
+          setState(() {
+            // TODO: This throws an error but still works...
+            WidgetsBinding.instance?.addPostFrameCallback((_) {
+              if (_controller.hasClients) {
+                _controller.jumpToPage(0);
+              }
+            });
+            _currentIndex = 0;
+          });
         }
       },
       builder: (context, state) {
@@ -119,6 +127,8 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
             ],
           ));
         } else {
+          final bool _surpriseMe =
+              BlocProvider.of<SubstitutionHandlerBloc>(context).surpriseMe;
           return SubstitutionWindowCover(
             child: Column(
               children: [
@@ -129,32 +139,34 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                 SizedBox(
                   height: 200,
                   child: Listener(
-                    onPointerSignal: (signal) {
-                      if (_controller.page != null &&
-                          _controller.page! % 1 == 0 &&
-                          signal is PointerScrollEvent) {
-                        if (signal.scrollDelta.dy > 0) {
-                          _controller.nextPage(
-                              duration: widget.pageSwitchDuration,
-                              curve: _scrollCurve);
-                        } else {
-                          _controller.previousPage(
-                              duration: widget.pageSwitchDuration,
-                              curve: _scrollCurve);
-                        }
-                      }
-                    },
+                    onPointerSignal: _surpriseMe
+                        ? null
+                        : (signal) {
+                            if (_controller.page != null &&
+                                _controller.page! % 1 == 0 &&
+                                signal is PointerScrollEvent) {
+                              if (signal.scrollDelta.dy > 0) {
+                                _controller.nextPage(
+                                    duration: widget.pageSwitchDuration,
+                                    curve: _scrollCurve);
+                              } else {
+                                _controller.previousPage(
+                                    duration: widget.pageSwitchDuration,
+                                    curve: _scrollCurve);
+                              }
+                            }
+                          },
                     child: PageView.builder(
                       controller: _controller,
                       scrollDirection: Axis.vertical,
                       itemCount: subBloc.substitutions!.length,
-                      // TODO: Figure out a way to scroll with the mouse wheel
                       physics: const NeverScrollableScrollPhysics(),
                       onPageChanged: (newIndex) =>
                           setState(() => _currentIndex = newIndex),
                       itemBuilder: (BuildContext context, int index) =>
                           SubstitutionView(
                         index: index,
+                        surpriseMe: _surpriseMe,
                         substitution: subBloc.substitutions![index],
                       ),
                     ),
@@ -172,29 +184,29 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                       previous: _currentIndex == 0
                           ? null
                           : () => _controller.previousPage(
-                                duration: widget.pageSwitchDuration,
-                                curve: _scrollCurve,
-                              ),
+                        duration: widget.pageSwitchDuration,
+                        curve: _scrollCurve,
+                      ),
                       next: _currentIndex == subBloc.substitutions!.length - 1
                           ? null
                           : () => _controller.nextPage(
-                              duration: widget.pageSwitchDuration,
-                              curve: _scrollCurve),
+                          duration: widget.pageSwitchDuration,
+                          curve: _scrollCurve),
                       playing: state is Playing && !state.baseControl,
                       play: ((state is Playing && state.baseControl) ||
-                              blocScale == null)
+                          blocScale == null)
                           ? null
                           : () => BlocProvider.of<AudioPlayerBloc>(context).add(
-                                state is Playing
-                                    ? const Pause()
-                                    : Play(
-                                        basePlaying: false,
-                                        measures: subBloc
-                                            .getChordProgression(
-                                                blocScale, _currentIndex)
-                                            .splitToMeasures(),
-                                      ),
-                              ),
+                        state is Playing
+                            ? const Pause()
+                            : Play(
+                          basePlaying: false,
+                          measures: subBloc
+                              .getChordProgression(
+                              blocScale, _currentIndex)
+                              .splitToMeasures(),
+                        ),
+                      ),
                       apply: () => progressionBloc.add(ApplySubstitution(
                           subBloc.substitutions![_currentIndex])),
                     );
@@ -320,7 +332,7 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
                   onPressed: _showGo && _goDisabled
                       ? null
                       : () => setState(() {
-                            bloc.add(ReharmonizeSubs(
+                    bloc.add(CalculateSubstitutions(
                                 keepHarmonicFunction: _keepHarmonicFunction));
                           }),
                 ),
@@ -409,10 +421,12 @@ class SubstitutionView extends StatelessWidget {
     Key? key,
     required this.index,
     required this.substitution,
+    required this.surpriseMe,
   }) : super(key: key);
 
   final int index;
   final Substitution substitution;
+  final bool surpriseMe;
 
   @override
   Widget build(BuildContext context) {
@@ -422,70 +436,77 @@ class SubstitutionView extends StatelessWidget {
         BlocProvider.of<ProgressionHandlerBloc>(context).currentScale;
     final SubstitutionMatch match = substitution.match;
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment:
+          surpriseMe ? MainAxisAlignment.center : MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.max,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text.rich(
+        Text.rich(
+          TextSpan(
+            text: surpriseMe ? '' : 'From ',
+            children: [
               TextSpan(
-                text: 'From ',
-                children: [
-                  TextSpan(
-                      text: '"${substitution.title}" ',
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  TextSpan(
-                      text: match.type.name,
-                      style: const TextStyle(
-                          fontStyle: FontStyle.italic,
-                          fontSize: Constants.measurePatternFontSize * 0.75)),
-                  WidgetSpan(
-                    baseline: TextBaseline.ideographic,
-                    alignment: PlaceholderAlignment.aboveBaseline,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 4.0),
-                      child: TIconButton(
-                        iconData: Icons.notes_rounded,
-                        size: Constants.measurePatternFontSize * 0.8,
-                        onPressed: () {
-                          showGeneralDialog(
-                            context: context,
-                            barrierDismissible: true,
-                            barrierLabel: 'Details',
-                            pageBuilder: (context, _, __) => GeneralDialogPage(
-                              title: 'Details',
-                              child: Expanded(
-                                  child: WeightsPreview(
-                                      score: substitution.score)),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ],
+                  text: surpriseMe
+                      ? 'Final Substitution'
+                      : '"${substitution.title}" ',
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              TextSpan(
+                  text: surpriseMe ? '' : match.type.name,
+                  style: const TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontSize: Constants.measurePatternFontSize * 0.75)),
+              WidgetSpan(
+                baseline: TextBaseline.ideographic,
+                alignment: PlaceholderAlignment.aboveBaseline,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 4.0),
+                  child: WeightPreviewButton(substitution: substitution),
+                ),
               ),
-              style:
-                  const TextStyle(fontSize: Constants.measurePatternFontSize),
-            ),
-          ],
+            ],
+          ),
+          style: const TextStyle(fontSize: Constants.measurePatternFontSize),
         ),
-        Row(
-          children: [
-            HorizontalProgressionView(
-                progression: bloc.getOriginalSubstitution(scale, index)),
-          ],
-        ),
+        (surpriseMe
+            ? const SizedBox()
+            : HorizontalProgressionView(
+                progression: bloc.getOriginalSubstitution(scale, index))),
         HorizontalProgressionView(
-          fromChord: substitution.firstChangedIndex,
-          toChord: substitution.lastChangedIndex,
-          startAt: substitution.firstChangedIndex,
-          startDur: substitution.match.baseOffset,
+          fromChord: surpriseMe ? null : substitution.firstChangedIndex,
+          toChord: surpriseMe ? null : substitution.lastChangedIndex,
+          startAt: surpriseMe ? null : substitution.firstChangedIndex,
+          startDur: surpriseMe ? 0.0 : substitution.match.baseOffset,
           progression: bloc.getSubstitutedBase(scale, index),
         ),
       ],
+    );
+  }
+}
+
+class WeightPreviewButton extends StatelessWidget {
+  const WeightPreviewButton({
+    Key? key,
+    required this.substitution,
+  }) : super(key: key);
+
+  final Substitution substitution;
+
+  @override
+  Widget build(BuildContext context) {
+    return TIconButton(
+      iconData: Icons.notes_rounded,
+      size: Constants.measurePatternFontSize * 0.8,
+      onPressed: () {
+        showGeneralDialog(
+          context: context,
+          barrierDismissible: true,
+          barrierLabel: 'Details',
+          pageBuilder: (context, _, __) => GeneralDialogPage(
+            title: 'Details',
+            child: Expanded(child: WeightsPreview(score: substitution.score)),
+          ),
+        );
+      },
     );
   }
 }

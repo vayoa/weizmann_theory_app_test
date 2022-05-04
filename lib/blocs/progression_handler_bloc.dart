@@ -231,8 +231,9 @@ class ProgressionHandlerBloc
     });
     on<Reharmonize>((event, emit) {
       if (!rangeDisabled) {
-        _substitutionHandlerBloc.add(SetupReharmonization(
+        _substitutionHandlerBloc.add(OpenSetupPage(
           progression: currentProgression,
+          surpriseMe: false,
           fromChord: fromChord,
           toChord: toChord,
           startDur: startDur,
@@ -241,8 +242,10 @@ class ProgressionHandlerBloc
       }
     });
     on<SurpriseMe>(
-      (event, emit) => _substitutionHandlerBloc.add(
-          SurpriseMeSubs(progression: currentChords, scale: currentScale!)),
+      (event, emit) => _substitutionHandlerBloc.add(OpenSetupPage(
+        progression: currentProgression,
+        surpriseMe: true,
+      )),
     );
     on<ApplySubstitution>(
       (event, emit) =>

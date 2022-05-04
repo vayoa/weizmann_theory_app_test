@@ -22,6 +22,10 @@ class SubstitutionHandlerBloc
 
   bool get inSetup => _inSetup;
 
+  bool _surpriseMe = false;
+
+  bool get surpriseMe => _surpriseMe;
+
   ScaleDegreeProgression? _currentProgression;
   int _fromChord = 0, _toChord = 0;
   double _startDur = 0.0;
@@ -37,64 +41,61 @@ class SubstitutionHandlerBloc
 
   List<Substitution>? get substitutions => _substitutions;
 
+  bool get showingWindow => _substitutions != null || _inSetup;
+
   SubstitutionHandlerBloc() : super(SubstitutionHandlerInitial()) {
-    on<SetupReharmonization>((event, emit) {
+    on<OpenSetupPage>((event, emit) {
       _currentProgression = event.progression;
       _fromChord = event.fromChord;
-      _toChord = event.toChord;
+      _toChord = event.toChord ?? event.progression.length - 1;
       _startDur = event.startDur;
       _endDur = event.endDur;
       _inSetup = true;
-      emit(SetupPage());
+      _surpriseMe = event.surpriseMe;
+      return emit(SetupPage(surpriseMe: event.surpriseMe));
     });
     on<SwitchSubType>((event, emit) {
       type = event.progressionType;
       return emit(TypeChanged(type));
     });
-    on<ReharmonizeSubs>((event, emit) {
-      bool changedSettings = event.keepHarmonicFunction != null &&
+    on<CalculateSubstitutions>((event, emit) {
+      bool changedSettings =
           event.keepHarmonicFunction != _keepHarmonicFunction;
       if ((_substitutions == null && _currentProgression != null) ||
           changedSettings) {
         if (changedSettings) {
-          _keepHarmonicFunction = event.keepHarmonicFunction!;
+          _keepHarmonicFunction = event.keepHarmonicFunction;
           emit(ChangedSubstitutionSettings());
         }
         emit(
             CalculatingSubstitutions(fromChord: _fromChord, toChord: _toChord));
-        _substitutions = SubstitutionHandler.getRatedSubstitutions(
-          _currentProgression!,
-          keepAmount: _keepHarmonicFunction,
-          start: _fromChord,
-          startDur: _startDur,
-          end: _toChord + 1,
-          endDur: _endDur,
-        );
+        if (_surpriseMe) {
+          _substitutions = [
+            SubstitutionHandler.substituteBy(
+              base: _currentProgression!,
+              maxIterations: 50,
+              keepHarmonicFunction: _keepHarmonicFunction,
+            )
+          ];
+        } else {
+          _substitutions = SubstitutionHandler.getRatedSubstitutions(
+            _currentProgression!,
+            keepAmount: _keepHarmonicFunction,
+            start: _fromChord,
+            startDur: _startDur,
+            end: _toChord + 1,
+            endDur: _endDur,
+          );
+        }
         _chordProgressions =
             List.generate(_substitutions!.length, (index) => null);
         _originalSubs = List.generate(_substitutions!.length, (index) => null);
         _inSetup = false;
-        return emit(CalculatedSubstitutions(substitutions!));
+        return emit(CalculatedSubstitutions(
+          substitutions: substitutions!,
+          surpriseMe: _surpriseMe,
+        ));
       }
-    });
-    on<SurpriseMeSubs>((event, emit) {
-      emit(CalculatingSubstitutions(
-        fromChord: 0,
-        toChord: event.progression.length - 1,
-      ));
-      // TODO: Give it a scaleDegreeProgression instead...
-      _substitutions = [
-        SubstitutionHandler.substituteBy(
-          base: event.progression,
-          maxIterations: 50,
-          scale: event.scale,
-        )
-      ];
-      _chordProgressions =
-          List.generate(_substitutions!.length, (index) => null);
-      _originalSubs = List.generate(_substitutions!.length, (index) => null);
-      _inSetup = false;
-      return emit(CalculatedSubstitutions(substitutions!));
     });
     on<ClearSubstitutions>((event, emit) {
       _substitutions = null;
@@ -122,10 +123,10 @@ class SubstitutionHandlerBloc
     }
   }
 
+  // TODO: Decide whether you want to show chords...
   Progression getOriginalSubstitution(PitchScale? scale, int index) {
-    if (scale == null || type == ProgressionType.romanNumerals) {
-      return _substitutions![index].originalSubstitution;
-    } else {
+    return _substitutions![index].originalSubstitution;
+    if (scale == null || type == ProgressionType.romanNumerals) {} else {
       return getOriginalSubChords(scale, index);
     }
   }

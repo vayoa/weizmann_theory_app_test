@@ -13,8 +13,12 @@ class SubstitutionHandlerInitial extends SubstitutionHandlerState {
 }
 
 class SetupPage extends SubstitutionHandlerState {
+  final bool surpriseMe;
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [surpriseMe];
+
+  const SetupPage({required this.surpriseMe});
 }
 
 class TypeChanged extends SubstitutionHandlerState {
@@ -36,11 +40,15 @@ class CalculatingSubstitutions extends SubstitutionHandlerState {
 
 class CalculatedSubstitutions extends SubstitutionHandlerState {
   final List<Substitution> substitutions;
+  final bool surpriseMe;
 
   @override
-  List<Object?> get props => [substitutions];
+  List<Object?> get props => [substitutions, surpriseMe];
 
-  const CalculatedSubstitutions(this.substitutions);
+  const CalculatedSubstitutions({
+    required this.substitutions,
+    required this.surpriseMe,
+  });
 }
 
 class ClearedSubstitutions extends SubstitutionHandlerState {

@@ -8,7 +8,9 @@ import '../../../blocs/progression_handler_bloc.dart';
 import '../../../widgets/TButton.dart';
 
 class ReharmonizeBar extends StatelessWidget {
-  const ReharmonizeBar({Key? key}) : super(key: key);
+  const ReharmonizeBar({Key? key, this.enabled = true}) : super(key: key);
+
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -19,18 +21,20 @@ class ReharmonizeBar extends StatelessWidget {
           iconData: Icons.bubble_chart_rounded,
           borderRadius: const BorderRadius.horizontal(
               left: Radius.circular(Constants.borderRadius)),
-          onPressed: () {
-            ProgressionHandlerBloc bloc =
-                BlocProvider.of<ProgressionHandlerBloc>(context);
-            if (bloc.rangeDisabled) {
-              Utilities.showSnackBar(
-                  context, "Can't reharmonize with no range selected.");
-            } else {
-              bloc.add(Reharmonize());
-            }
-          },
+          onPressed: enabled
+              ? () {
+                  ProgressionHandlerBloc bloc =
+                      BlocProvider.of<ProgressionHandlerBloc>(context);
+                  if (bloc.rangeDisabled) {
+                    Utilities.showSnackBar(
+                        context, "Can't reharmonize with no range selected.");
+                  } else {
+                    bloc.add(const Reharmonize());
+                  }
+                }
+              : null,
         ),
-        const ReharmonizeRange(),
+        ReharmonizeRange(enabled: enabled),
       ],
     );
   }

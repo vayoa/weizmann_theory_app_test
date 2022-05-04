@@ -9,9 +9,14 @@ import '../../../blocs/progression_handler_bloc.dart';
 import '../../../constants.dart';
 
 class ReharmonizeRange extends StatefulWidget {
-  const ReharmonizeRange({Key? key, this.textSize = 14}) : super(key: key);
+  const ReharmonizeRange({
+    Key? key,
+    this.textSize = 14,
+    this.enabled = true,
+  }) : super(key: key);
 
   final double textSize;
+  final bool enabled;
 
   @override
   State<ReharmonizeRange> createState() => _ReharmonizeRangeState();
@@ -53,6 +58,7 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
           width: widget.textSize * 4.8,
           child: TextField(
             controller: controller,
+            enabled: widget.enabled,
             inputFormatters: [FilteringTextInputFormatter.allow(validInput)],
             enableInteractiveSelection: false,
             enableSuggestions: false,

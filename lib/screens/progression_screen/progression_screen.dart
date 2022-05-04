@@ -232,10 +232,15 @@ class ProgressionScreenUI extends StatelessWidget {
                                   padding: EdgeInsets.zero,
                                   backgroundColor: Colors.transparent,
                                 ),
-                                onPressed: () =>
-                                    BlocProvider.of<ProgressionHandlerBloc>(
-                                            context)
-                                        .add(const ChangeTimeSignature()),
+                                onPressed:
+                                    BlocProvider.of<SubstitutionHandlerBloc>(
+                                                context,
+                                                listen: true)
+                                            .showingWindow
+                                        ? null
+                                        : () => BlocProvider.of<
+                                                ProgressionHandlerBloc>(context)
+                                            .add(const ChangeTimeSignature()),
                               );
                             },
                           )
@@ -275,14 +280,24 @@ class ProgressionScreenUI extends StatelessWidget {
                               },
                             ),
                             const ScaleChooser(),
-                            const ReharmonizeBar(),
+                            ReharmonizeBar(
+                                enabled:
+                                    !BlocProvider.of<SubstitutionHandlerBloc>(
+                                            context,
+                                            listen: true)
+                                        .showingWindow),
                             TButton(
                               label: 'Surprise Me',
                               iconData: Icons.lightbulb,
-                              onPressed: () =>
-                                  BlocProvider.of<ProgressionHandlerBloc>(
-                                          context)
-                                      .add(SurpriseMe()),
+                              onPressed:
+                                  BlocProvider.of<SubstitutionHandlerBloc>(
+                                              context,
+                                              listen: true)
+                                          .showingWindow
+                                      ? null
+                                      : () => BlocProvider.of<
+                                              ProgressionHandlerBloc>(context)
+                                          .add(const SurpriseMe()),
                             ),
                           ],
                         ),

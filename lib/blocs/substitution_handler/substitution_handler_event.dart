@@ -7,23 +7,25 @@ abstract class SubstitutionHandlerEvent extends Equatable {
   const SubstitutionHandlerEvent();
 }
 
-class SetupReharmonization extends SubstitutionHandlerEvent {
+class OpenSetupPage extends SubstitutionHandlerEvent {
   final ScaleDegreeProgression progression;
   final int fromChord;
-  final int toChord;
+  final int? toChord;
   final double startDur;
-  final double endDur;
+  final double? endDur;
+  final bool surpriseMe;
 
   @override
-  List<Object?> get props => [progression, fromChord, toChord];
+  List<Object?> get props => [progression, fromChord, toChord, surpriseMe];
 
-  const SetupReharmonization({
+  const OpenSetupPage({
     required this.progression,
-    required this.fromChord,
-    required this.toChord,
+    required this.surpriseMe,
+    this.fromChord = 0,
+    this.toChord,
     this.startDur = 0.0,
-    required this.endDur,
-  });
+    this.endDur,
+  }) : assert(surpriseMe || (toChord != null && endDur != null));
 }
 
 class SwitchSubType extends SubstitutionHandlerEvent {
@@ -35,23 +37,13 @@ class SwitchSubType extends SubstitutionHandlerEvent {
   const SwitchSubType(this.progressionType);
 }
 
-class ReharmonizeSubs extends SubstitutionHandlerEvent {
-  final KeepHarmonicFunctionAmount? keepHarmonicFunction;
+class CalculateSubstitutions extends SubstitutionHandlerEvent {
+  final KeepHarmonicFunctionAmount keepHarmonicFunction;
 
   @override
   List<Object?> get props => [keepHarmonicFunction];
 
-  const ReharmonizeSubs({this.keepHarmonicFunction});
-}
-
-class SurpriseMeSubs extends SubstitutionHandlerEvent {
-  final ChordProgression progression;
-  final PitchScale scale;
-
-  @override
-  List<Object?> get props => [progression, scale];
-
-  const SurpriseMeSubs({required this.progression, required this.scale});
+  const CalculateSubstitutions({required this.keepHarmonicFunction});
 }
 
 class ClearSubstitutions extends SubstitutionHandlerEvent {}
