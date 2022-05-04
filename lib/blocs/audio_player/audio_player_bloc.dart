@@ -239,8 +239,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     return minI;
   }
 
-  String pitchFileName(Pitch pitch) =>
-      r'C:\Users\ew0nd\StudioProjects\weizmann_theory_app_test\assets\piano-mp3\'
+  String pitchFileName(Pitch pitch) => r'assets/piano-mp3/'
       '${fileAcceptable(pitch).toString().replaceFirst('♭', 'b')}.mp3';
 
   Pitch fileAcceptable(Pitch pitch) {
