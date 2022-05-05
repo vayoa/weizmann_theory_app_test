@@ -86,6 +86,7 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
   Widget build(BuildContext context) {
     ProgressionHandlerBloc bloc =
         BlocProvider.of<ProgressionHandlerBloc>(context);
+    final Progression _prog = bloc.currentlyViewedProgression;
     int startMeasure = bloc.startMeasure;
     int startIndex = bloc.startIndex;
     int endMeasure = bloc.endMeasure;
@@ -112,7 +113,7 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
       width: widget.measuresInLine * Constants.measureWidth,
       child: Listener(
         onPointerMove: (event) {
-          if (event.buttons == kPrimaryButton) {
+          if (editedMeasure == -1 && event.buttons == kPrimaryButton) {
             if (holdMeasure != -1 && holdPos != -1) {
               int measureDur = _getMeasureDur(event.localPosition);
               int measure = _getIndexFromPosition(event.localPosition);

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/exceptions.dart';
 import 'package:thoery_test/modals/progression.dart';
+import 'package:thoery_test/modals/scale_degree_chord.dart';
 import 'package:thoery_test/state/progression_bank_entry.dart';
 import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/blocs/bank/bank_bloc.dart';
@@ -324,7 +325,7 @@ class ProgressionScreenUI extends StatelessWidget {
                             state.exception as NonValidDuration;
                         String value = e.value is Chord
                             ? (e.value as Chord).commonName
-                            : e.value;
+                            : (e.value as ScaleDegreeChord).toString();
                         message = 'An invalid duration was inputted:'
                             '\nA value of $value in a duration of '
                             '${(e.duration * e.timeSignature.denominator).toInt()}'

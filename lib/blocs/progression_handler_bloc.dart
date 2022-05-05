@@ -194,7 +194,7 @@ class ProgressionHandlerBloc
             progression: currentlyViewedProgression, newType: newType));
       }
       // If we're here then the input was valid...
-      if (progression.isEmpty || type == ProgressionType.chords) {
+      if (type == ProgressionType.chords) {
         if (_currentScale == null) {
           _currentScale = ChordProgression.fromProgression(
                   progression as Progression<Chord>)
