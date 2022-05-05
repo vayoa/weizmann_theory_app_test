@@ -22,7 +22,11 @@ class WeightsPreview extends StatelessWidget {
         return ExpansionTile(
           title: Row(
             children: [
-              Text('${detail.key}:'),
+              Text(
+                '${detail.key}:',
+                style:
+                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+              ),
               Flexible(
                 child: SliderTheme(
                   data: const SliderThemeData(
@@ -42,15 +46,22 @@ class WeightsPreview extends StatelessWidget {
                 ),
               ),
               Text(
-                  '${detail.value.score.toStringAsFixed(2)} / ${weight.importance}'),
+                '${detail.value.score.toStringAsFixed(2)} / ${weight.importance}',
+                style:
+                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+              ),
             ],
+          ),
+          subtitle: Text(
+            weight.description,
+            style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
           ),
           expandedAlignment: Alignment.topLeft,
           childrenPadding: const EdgeInsets.only(left: 22.0),
           children: [
             Text(
               detail.value.details,
-              style: const TextStyle(fontSize: 15),
+              style: const TextStyle(fontSize: 12),
             )
           ],
         );
