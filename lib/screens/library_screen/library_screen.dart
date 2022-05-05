@@ -190,7 +190,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                               barrierDismissible: true,
                               pageBuilder: (context, _, __) =>
                                   GeneralDialogChoice(
-                                    widthFactor: 0.45,
+                                widthFactor: 0.45,
                                 title: const Text.rich(
                                   TextSpan(
                                     text: 'Permanently ',
@@ -255,7 +255,8 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
           Expanded(
             child: BlocConsumer<BankBloc, BankState>(
               listenWhen: (previous, state) =>
-                  state is! BankLoading && state is! BankInitial,
+                  state is ClosingWindow ||
+                  (state is! BankLoading && state is! BankInitial),
               listener: (context, state) async {
                 if (state is ClosingWindow) {
                   await windowManager.destroy();
