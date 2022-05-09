@@ -280,7 +280,12 @@ class ProgressionScreenUI extends StatelessWidget {
                                 );
                               },
                             ),
-                            const ScaleChooser(),
+                            ScaleChooser(
+                                enabled:
+                                    !BlocProvider.of<SubstitutionHandlerBloc>(
+                                            context,
+                                            listen: true)
+                                        .showingWindow),
                             ReharmonizeBar(
                                 enabled:
                                     !BlocProvider.of<SubstitutionHandlerBloc>(

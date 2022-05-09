@@ -10,7 +10,9 @@ import '../../../Constants.dart';
 import '../../../blocs/progression_handler_bloc.dart';
 
 class ScaleChooser extends StatefulWidget {
-  const ScaleChooser({Key? key}) : super(key: key);
+  const ScaleChooser({Key? key, this.enabled = true}) : super(key: key);
+
+  final bool enabled;
 
   @override
   State<ScaleChooser> createState() => _ScaleChooserState();
@@ -49,9 +51,11 @@ class _ScaleChooserState extends State<ScaleChooser> {
             return TButton(
               label: 'Guess Scale',
               iconData: Icons.piano_rounded,
-              onPressed: () => setState(() {
-                bloc.add(CalculateScale());
-              }),
+              onPressed: widget.enabled
+                  ? () => setState(() {
+                        bloc.add(CalculateScale());
+                      })
+                  : null,
             );
           }
           PitchScale current = bloc.currentScale!;
@@ -73,6 +77,7 @@ class _ScaleChooserState extends State<ScaleChooser> {
                         child: TextField(
                           controller: _controller,
                           focusNode: _focusNode,
+                          enabled: widget.enabled,
                           style: const TextStyle(
                               fontSize: 14.0, color: Colors.blue),
                           inputFormatters: [
@@ -106,8 +111,9 @@ class _ScaleChooserState extends State<ScaleChooser> {
                                 right: Radius.circular(Constants.borderRadius)),
                           ),
                         ),
-                        onPressed: () =>
-                            bloc.add(ChangeScale(current.switchPattern)),
+                        onPressed: widget.enabled
+                            ? () => bloc.add(ChangeScale(current.switchPattern))
+                            : null,
                       ),
                     ],
                   ),
