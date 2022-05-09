@@ -35,16 +35,16 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   flutter_bloc: ^8.0.1
-  dart_vlc: ^0.1.8
-#  tonic: ^0.2.4
   thoery_test:
     git:
       url: https://github.com/vayoa/theory_test.git
+      ref: feat/cut-subs
   menu_button: ^1.4.2+1
   fluent_ui: ^3.9.0
   equatable: ^2.0.3
   path_provider: ^2.0.9
   window_manager: ^0.2.2
+  dart_vlc: ^0.2.0
 
 dev_dependencies:
   flutter_test:

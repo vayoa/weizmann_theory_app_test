@@ -39,11 +39,15 @@ class SwitchSubType extends SubstitutionHandlerEvent {
 
 class CalculateSubstitutions extends SubstitutionHandlerEvent {
   final KeepHarmonicFunctionAmount keepHarmonicFunction;
+  final Sound sound;
 
   @override
-  List<Object?> get props => [keepHarmonicFunction];
+  List<Object?> get props => [keepHarmonicFunction, sound];
 
-  const CalculateSubstitutions({required this.keepHarmonicFunction});
+  const CalculateSubstitutions({
+    required this.keepHarmonicFunction,
+    required this.sound,
+  });
 }
 
 class ClearSubstitutions extends SubstitutionHandlerEvent {}

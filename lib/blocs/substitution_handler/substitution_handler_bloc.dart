@@ -8,6 +8,7 @@ import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/modals/substitution.dart';
 import 'package:thoery_test/modals/substitution_match.dart';
 import 'package:thoery_test/modals/weights/keep_harmonic_function_weight.dart';
+import 'package:thoery_test/modals/weights/weight.dart';
 import 'package:thoery_test/state/substitution_handler.dart';
 import 'package:weizmann_theory_app_test/modals/progression_type.dart';
 
@@ -35,6 +36,10 @@ class SubstitutionHandlerBloc
 
   KeepHarmonicFunctionAmount get keepHarmonicFunction => _keepHarmonicFunction;
 
+  Sound _sound = Sound.both;
+
+  Sound get sound => _sound;
+
   // If we calculate a ChordProgression for a substitution we save it here.
   List<ChordProgression?>? _chordProgressions;
   List<ChordProgression?>? _originalSubs;
@@ -60,26 +65,31 @@ class SubstitutionHandlerBloc
     });
     on<CalculateSubstitutions>((event, emit) {
       bool changedSettings =
-          event.keepHarmonicFunction != _keepHarmonicFunction;
+          event.keepHarmonicFunction != _keepHarmonicFunction ||
+              event.sound != _sound;
       if ((_substitutions == null && _currentProgression != null) ||
           changedSettings) {
         if (changedSettings) {
           _keepHarmonicFunction = event.keepHarmonicFunction;
+          _sound = event.sound;
           emit(ChangedSubstitutionSettings());
         }
         emit(
             CalculatingSubstitutions(fromChord: _fromChord, toChord: _toChord));
+        print(_sound);
         if (_surpriseMe) {
           _substitutions = [
             SubstitutionHandler.substituteBy(
               base: _currentProgression!,
               maxIterations: 50,
+              sound: _sound,
               keepHarmonicFunction: _keepHarmonicFunction,
             )
           ];
         } else {
           _substitutions = SubstitutionHandler.getRatedSubstitutions(
             _currentProgression!,
+            sound: _sound,
             keepAmount: _keepHarmonicFunction,
             start: _fromChord,
             startDur: _startDur,

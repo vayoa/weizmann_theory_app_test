@@ -5,6 +5,7 @@ import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/substitution.dart';
 import 'package:thoery_test/modals/substitution_match.dart';
 import 'package:thoery_test/modals/weights/keep_harmonic_function_weight.dart';
+import 'package:thoery_test/modals/weights/weight.dart';
 import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
 import 'package:weizmann_theory_app_test/modals/progression_type.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_view.dart';
@@ -100,8 +101,23 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
         ProgressionHandlerBloc progressionBloc =
             BlocProvider.of<ProgressionHandlerBloc>(context);
         if (state is CalculatingSubstitutions) {
-          return const SubstitutionWindowCover(
-            child: CircularProgressIndicator(),
+          return SubstitutionWindowCover(
+            child: Column(
+              children: [
+                const Align(
+                  alignment: Alignment.topRight,
+                  child: _CancelButton(),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    CircularProgressIndicator(),
+                    SizedBox(width: 20),
+                    Text('Loading...'),
+                  ],
+                ),
+              ],
+            ),
           );
         } else if (subBloc.inSetup) {
           return const SubstitutionWindowCover(
@@ -184,29 +200,29 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                       previous: _currentIndex == 0
                           ? null
                           : () => _controller.previousPage(
-                        duration: widget.pageSwitchDuration,
-                        curve: _scrollCurve,
-                      ),
+                                duration: widget.pageSwitchDuration,
+                                curve: _scrollCurve,
+                              ),
                       next: _currentIndex == subBloc.substitutions!.length - 1
                           ? null
                           : () => _controller.nextPage(
-                          duration: widget.pageSwitchDuration,
-                          curve: _scrollCurve),
+                              duration: widget.pageSwitchDuration,
+                              curve: _scrollCurve),
                       playing: state is Playing && !state.baseControl,
                       play: ((state is Playing && state.baseControl) ||
-                          blocScale == null)
+                              blocScale == null)
                           ? null
                           : () => BlocProvider.of<AudioPlayerBloc>(context).add(
-                        state is Playing
-                            ? const Pause()
-                            : Play(
-                          basePlaying: false,
-                          measures: subBloc
-                              .getChordProgression(
-                              blocScale, _currentIndex)
-                              .splitToMeasures(),
-                        ),
-                      ),
+                                state is Playing
+                                    ? const Pause()
+                                    : Play(
+                                        basePlaying: false,
+                                        measures: subBloc
+                                            .getChordProgression(
+                                                blocScale, _currentIndex)
+                                            .splitToMeasures(),
+                                      ),
+                              ),
                       apply: () => progressionBloc.add(ApplySubstitution(
                           subBloc.substitutions![_currentIndex])),
                     );
@@ -235,20 +251,20 @@ class SubstitutionButtonBar extends StatefulWidget {
 
 class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
   late KeepHarmonicFunctionAmount _keepHarmonicFunction;
-  static const keepAmounts = [
-    KeepHarmonicFunctionAmount.low,
-    KeepHarmonicFunctionAmount.med,
-    KeepHarmonicFunctionAmount.high,
-  ];
+  late Sound _sound;
 
   static final amountNames = [
-    for (KeepHarmonicFunctionAmount amount in keepAmounts) amount.name
+    for (KeepHarmonicFunctionAmount amount in KeepHarmonicFunctionAmount.values)
+      amount.name
   ];
+
+  static final soundNames = [for (Sound sound in Sound.values) sound.name];
 
   @override
   void initState() {
     _keepHarmonicFunction =
         BlocProvider.of<SubstitutionHandlerBloc>(context).keepHarmonicFunction;
+    _sound = BlocProvider.of<SubstitutionHandlerBloc>(context).sound;
     super.initState();
   }
 
@@ -257,8 +273,9 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
     SubstitutionHandlerBloc bloc =
         BlocProvider.of<SubstitutionHandlerBloc>(context);
     bool _goDisabled = bloc.substitutions != null;
-    bool _showGo =
-        widget.inSetup || _keepHarmonicFunction == bloc.keepHarmonicFunction;
+    bool _showGo = widget.inSetup ||
+        (_keepHarmonicFunction == bloc.keepHarmonicFunction &&
+            _sound == bloc.sound);
     return SizedBox(
       height: 25,
       child: Row(
@@ -295,9 +312,17 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
                     ),
                     TSelector(
                       tight: true,
-                      values: const ['Classical', 'Both', 'Exotic'],
-                      value: 'Classical',
-                      onPressed: (index) => true,
+                      values: soundNames,
+                      value: _sound.name,
+                      onPressed: (index) {
+                        Sound newSound = Sound.values[index];
+                        if (_sound != newSound) {
+                          setState(() {
+                            _sound = newSound;
+                          });
+                        }
+                        return true;
+                      },
                     ),
                   ],
                 ),
@@ -312,7 +337,8 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
                       values: amountNames,
                       value: _keepHarmonicFunction.name,
                       onPressed: (index) {
-                        KeepHarmonicFunctionAmount amount = keepAmounts[index];
+                        KeepHarmonicFunctionAmount amount =
+                            KeepHarmonicFunctionAmount.values[index];
                         if (_keepHarmonicFunction != amount) {
                           setState(() {
                             _keepHarmonicFunction = amount;
@@ -332,24 +358,37 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
                   onPressed: _showGo && _goDisabled
                       ? null
                       : () => setState(() {
-                    bloc.add(CalculateSubstitutions(
-                                keepHarmonicFunction: _keepHarmonicFunction));
+                            bloc.add(CalculateSubstitutions(
+                              sound: _sound,
+                              keepHarmonicFunction: _keepHarmonicFunction,
+                            ));
                           }),
                 ),
               ],
             ),
           ),
-          TButton(
-            label: 'Cancel',
-            tight: true,
-            iconData: Icons.cancel_rounded,
-            onPressed: () {
-              BlocProvider.of<SubstitutionHandlerBloc>(context)
-                  .add(ClearSubstitutions());
-            },
-          ),
+          const _CancelButton(),
         ],
       ),
+    );
+  }
+}
+
+class _CancelButton extends StatelessWidget {
+  const _CancelButton({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return TButton(
+      label: 'Cancel',
+      tight: true,
+      iconData: Icons.cancel_rounded,
+      onPressed: () {
+        BlocProvider.of<SubstitutionHandlerBloc>(context)
+            .add(ClearSubstitutions());
+      },
     );
   }
 }
