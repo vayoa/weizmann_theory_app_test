@@ -1,3 +1,5 @@
+import 'dart:isolate';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +11,7 @@ import 'package:thoery_test/modals/substitution.dart';
 import 'package:thoery_test/modals/substitution_match.dart';
 import 'package:thoery_test/modals/weights/keep_harmonic_function_weight.dart';
 import 'package:thoery_test/modals/weights/weight.dart';
+import 'package:thoery_test/state/progression_bank.dart';
 import 'package:thoery_test/state/substitution_handler.dart';
 import 'package:weizmann_theory_app_test/modals/progression_type.dart';
 
@@ -40,6 +43,8 @@ class SubstitutionHandlerBloc
 
   Sound get sound => _sound;
 
+  Isolate? _substituteByIsolate;
+
   // If we calculate a ChordProgression for a substitution we save it here.
   List<ChordProgression?>? _chordProgressions;
   List<ChordProgression?>? _originalSubs;
@@ -63,7 +68,7 @@ class SubstitutionHandlerBloc
       type = event.progressionType;
       return emit(TypeChanged(type));
     });
-    on<CalculateSubstitutions>((event, emit) {
+    on<CalculateSubstitutions>((event, emit) async {
       bool changedSettings =
           event.keepHarmonicFunction != _keepHarmonicFunction ||
               event.sound != _sound;
@@ -76,16 +81,10 @@ class SubstitutionHandlerBloc
         }
         emit(
             CalculatingSubstitutions(fromChord: _fromChord, toChord: _toChord));
-        print(_sound);
         if (_surpriseMe) {
-          _substitutions = [
-            SubstitutionHandler.substituteBy(
-              base: _currentProgression!,
-              maxIterations: 50,
-              sound: _sound,
-              keepHarmonicFunction: _keepHarmonicFunction,
-            )
-          ];
+          _substitutions = [await _isolateSubstituteBy(50)];
+          _handleCalculatedSubstitutions(emit);
+          SubstitutionHandler.keepAmount = _keepHarmonicFunction;
         } else {
           _substitutions = SubstitutionHandler.getRatedSubstitutions(
             _currentProgression!,
@@ -96,15 +95,8 @@ class SubstitutionHandlerBloc
             end: _toChord + 1,
             endDur: _endDur,
           );
+          return _handleCalculatedSubstitutions(emit);
         }
-        _chordProgressions =
-            List.generate(_substitutions!.length, (index) => null);
-        _originalSubs = List.generate(_substitutions!.length, (index) => null);
-        _inSetup = false;
-        return emit(CalculatedSubstitutions(
-          substitutions: substitutions!,
-          surpriseMe: _surpriseMe,
-        ));
       }
     });
     on<ClearSubstitutions>((event, emit) {
@@ -117,12 +109,26 @@ class SubstitutionHandlerBloc
       _chordProgressions = null;
       _originalSubs = null;
       _inSetup = false;
+      if (_substituteByIsolate != null) {
+        _substituteByIsolate!.kill(priority: Isolate.immediate);
+        _substituteByIsolate = null;
+      }
       return emit(const ClearedSubstitutions());
     });
     on<SetKeepHarmonicFunction>((event, emit) {
       _keepHarmonicFunction = event.keepHarmonicFunction;
       return emit(ChangedSubstitutionSettings());
     });
+  }
+
+  void _handleCalculatedSubstitutions(Emitter<SubstitutionHandlerState> emit) {
+    _chordProgressions = List.generate(_substitutions!.length, (index) => null);
+    _originalSubs = List.generate(_substitutions!.length, (index) => null);
+    _inSetup = false;
+    return emit(CalculatedSubstitutions(
+      substitutions: substitutions!,
+      surpriseMe: _surpriseMe,
+    ));
   }
 
   Progression getSubstitutedBase(PitchScale? scale, int index) {
@@ -136,7 +142,8 @@ class SubstitutionHandlerBloc
   // TODO: Decide whether you want to show chords...
   Progression getOriginalSubstitution(PitchScale? scale, int index) {
     return _substitutions![index].originalSubstitution;
-    if (scale == null || type == ProgressionType.romanNumerals) {} else {
+    if (scale == null || type == ProgressionType.romanNumerals) {
+    } else {
       return getOriginalSubChords(scale, index);
     }
   }
@@ -165,4 +172,59 @@ class SubstitutionHandlerBloc
     }
     return _originalSubs![index]!;
   }
+
+  /// Creates an [Isolate] to compute the substitution. The isolate will be
+  /// saved in [_substituteByIsolate] until it is complete.
+  Future<Substitution> _isolateSubstituteBy(int iterations) async {
+    // Receive port for result
+    ReceivePort port = ReceivePort("SubstituteByPort");
+
+    _SubstituteByComputeModal modal = _SubstituteByComputeModal(
+      base: _currentProgression!,
+      iterations: iterations,
+      sound: _sound,
+      keepAmount: _keepHarmonicFunction,
+      computePass: ProgressionBank.createComputePass(),
+    );
+
+    // Spawn the isolate, pass the sendPort to our port.
+    _substituteByIsolate = await Isolate.spawn<List<dynamic>>(
+        _substituteByEntryPoint, [port.sendPort, modal]);
+
+    // await the result
+    final result = await port.first;
+    _substituteByIsolate!.kill(priority: Isolate.immediate);
+    _substituteByIsolate = null;
+    return result;
+  }
+
+  /// First element of [values] should be the desired [SendPort] and the second
+  /// the relevant [_SubstituteByComputeModal].
+  static void _substituteByEntryPoint(List<dynamic> values) {
+    SendPort sendPort = values[0];
+    _SubstituteByComputeModal modal = values[1];
+    ProgressionBank.initializeFromComputePass(modal.computePass);
+    sendPort.send(SubstitutionHandler.substituteBy(
+      base: modal.base,
+      maxIterations: modal.iterations,
+      sound: modal.sound,
+      keepHarmonicFunction: modal.keepAmount,
+    ));
+  }
+}
+
+class _SubstituteByComputeModal {
+  final Sound sound;
+  final KeepHarmonicFunctionAmount keepAmount;
+  final ScaleDegreeProgression base;
+  final int iterations;
+  final ProgressionBankComputePass computePass;
+
+  const _SubstituteByComputeModal({
+    required this.base,
+    required this.iterations,
+    required this.sound,
+    required this.keepAmount,
+    required this.computePass,
+  });
 }
