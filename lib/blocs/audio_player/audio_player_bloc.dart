@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:bloc/bloc.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/services.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:tonic/tonic.dart';
 
@@ -79,6 +80,14 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     });
   }
 
+  @override
+  Future<void> close() {
+    for (Player player in _players) {
+      player.dispose();
+    }
+    return super.close();
+  }
+
   void reset(Emitter<AudioPlayerState> emit) {
     _playing = false;
     _baseControl = true;
@@ -102,6 +111,11 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
           _currentMeasures != null && _cM < _currentMeasures!.length;
           _cM++) {
         Progression<Chord> prog = _currentMeasures![_cM];
+        // First, load the first pitches.
+        List<Pitch> _loadedP = _walk(prog[_cC]!);
+        for (var p in _loadedP) {
+          await rootBundle.load(pitchFileName(p));
+        }
         for (_cC;
             _currentMeasures != null && _cC < _currentMeasures![_cM].length;
             _cC++) {
