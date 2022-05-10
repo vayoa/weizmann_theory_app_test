@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:weizmann_theory_app_test/constants.dart';
-import 'package:weizmann_theory_app_test/widgets/TButton.dart';
+import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 
 class LibraryEntry extends StatelessWidget {
   const LibraryEntry({
@@ -53,14 +53,14 @@ class LibraryEntry extends StatelessWidget {
               const SizedBox(width: 4),
               Row(
                 children: [
-                  TButton(
+                  CustomButton(
                     label: 'Delete',
                     iconData: Icons.delete,
                     tight: true,
                     onPressed: onDelete,
                   ),
                   const SizedBox(width: 10),
-                  TButton(
+                  CustomButton(
                     label: 'Open',
                     iconData: Icons.edit,
                     tight: true,

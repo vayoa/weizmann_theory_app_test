@@ -4,7 +4,7 @@ import 'package:thoery_test/modals/progression.dart';
 import 'package:weizmann_theory_app_test/constants.dart';
 
 import '../../../../utilities.dart';
-import '../../../../widgets/TButton.dart';
+import '../../../../widgets/custom_button.dart';
 import 'progression_value_view.dart';
 
 class Measure extends StatelessWidget {
@@ -225,7 +225,7 @@ class MeasureView<T> extends StatelessWidget {
             alignment: Alignment.bottomRight,
             child: Padding(
               padding: const EdgeInsets.only(right: 3, bottom: 3),
-              child: TButton(
+              child: CustomButton(
                 label: 'Edit',
                 iconData: Icons.edit_rounded,
                 onPressed: editable ? onEdit : () {},
@@ -354,7 +354,7 @@ class _EditedMeasureState<T> extends State<EditedMeasure<T>> {
           alignment: Alignment.bottomRight,
           child: Padding(
             padding: const EdgeInsets.only(right: 3, bottom: 3),
-            child: TButton(
+            child: CustomButton(
               label: 'Done',
               iconData: Icons.check_rounded,
               onPressed: _submit,

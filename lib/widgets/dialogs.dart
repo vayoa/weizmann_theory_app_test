@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants.dart';
-import 'TButton.dart';
+import 'custom_button.dart';
 
 class GeneralDialog extends StatelessWidget {
   static const double defaultWidthFactor = 0.4;
@@ -55,7 +55,7 @@ class GeneralDialogPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              TButton(
+              CustomButton(
                 label: 'Back',
                 tight: true,
                 iconData: Icons.arrow_back_rounded,
@@ -110,13 +110,13 @@ class GeneralDialogChoice extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                TButton(
+                CustomButton(
                   label: noButtonName,
                   iconData: Icons.close_rounded,
                   tight: true,
                   onPressed: () => onPressed(false),
                 ),
-                TButton(
+                CustomButton(
                   label: yesButtonName,
                   iconData: Icons.check_rounded,
                   tight: true,
@@ -254,19 +254,19 @@ class GeneralThreeChoiceDialog extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                TButton(
+                CustomButton(
                   label: cancelButtonLabel,
                   iconData: cancelButtonIconData,
                   tight: true,
                   onPressed: () => onPressed(null),
                 ),
-                TButton(
+                CustomButton(
                   label: noButtonLabel,
                   iconData: noButtonIconData,
                   tight: true,
                   onPressed: () => onPressed(false),
                 ),
-                TButton(
+                CustomButton(
                   label: yesButtonLabel,
                   iconData: yesButtonIconData,
                   tight: true,

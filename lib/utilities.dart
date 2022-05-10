@@ -45,7 +45,6 @@ abstract class Utilities {
     }
   }
 
-  // TODO: Optimize this...
   /// returns [sM, sI, eM, eI]
   static List<int> calculateRangePositions({
     required Progression progression,

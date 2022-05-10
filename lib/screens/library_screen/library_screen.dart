@@ -5,7 +5,7 @@ import 'package:thoery_test/state/progression_bank.dart';
 import 'package:weizmann_theory_app_test/constants.dart';
 import 'package:weizmann_theory_app_test/screens/library_screen/widgets/library_entry.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/progression_screen.dart';
-import 'package:weizmann_theory_app_test/widgets/TButton.dart';
+import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../blocs/bank/bank_bloc.dart';
@@ -135,7 +135,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                        child: TButton(
+                        child: CustomButton(
                           label: 'Create New',
                           iconData: Icons.add,
                           tight: true,
@@ -155,8 +155,6 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                 submitButtonName: 'Create',
                                 onCancelled: (text) => Navigator.pop(context),
                                 onSubmitted: (text) {
-                                  /* TODO: Choose what characters are illegal in a title
-                                            and block them here. */
                                   if (text.isEmpty ||
                                       RegExp(r'^\s*$').hasMatch(text)) {
                                     return "Entry titles can't be empty.";
@@ -179,7 +177,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                        child: TButton(
+                        child: CustomButton(
                           label: 'Revert All',
                           iconData: Icons.restart_alt_rounded,
                           tight: true,

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../constants.dart';
 
-class TButton extends StatelessWidget {
-  const TButton({
+class CustomButton extends StatelessWidget {
+  const CustomButton({
     Key? key,
     required this.label,
     required this.iconData,

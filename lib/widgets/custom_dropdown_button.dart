@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../constants.dart';
 
-class TDropdownButton<T> extends StatelessWidget {
-  const TDropdownButton({
+class CustomDropdownButton<T> extends StatelessWidget {
+  const CustomDropdownButton({
     Key? key,
     required this.value,
     this.expandIconData = Icons.expand_more_rounded,

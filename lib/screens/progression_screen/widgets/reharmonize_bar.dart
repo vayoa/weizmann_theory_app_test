@@ -5,7 +5,7 @@ import 'package:weizmann_theory_app_test/utilities.dart';
 
 import '../../../Constants.dart';
 import '../../../blocs/progression_handler_bloc.dart';
-import '../../../widgets/TButton.dart';
+import '../../../widgets/custom_button.dart';
 
 class ReharmonizeBar extends StatelessWidget {
   const ReharmonizeBar({Key? key, this.enabled = true}) : super(key: key);
@@ -16,7 +16,7 @@ class ReharmonizeBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        TButton(
+        CustomButton(
           label: 'Reharmonize!',
           iconData: Icons.bubble_chart_rounded,
           borderRadius: const BorderRadius.horizontal(

@@ -98,3 +98,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+msix_config:
+  display_name: Weizman Theory App
+  msix_version: 1.0.0.0
+  languages: en-us
+  publisher: CN=PublisherName, O=Msix Testing... # required
+  sign_msix: false

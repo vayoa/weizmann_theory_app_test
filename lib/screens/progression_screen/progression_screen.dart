@@ -7,7 +7,7 @@ import 'package:thoery_test/modals/scale_degree_chord.dart';
 import 'package:thoery_test/state/progression_bank_entry.dart';
 import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/blocs/bank/bank_bloc.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/BankProgressionButton.dart';
+import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/bank_progression_button.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/bpm_input.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression_title.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/reharmonize_bar.dart';
@@ -19,8 +19,8 @@ import '../../blocs/progression_handler_bloc.dart';
 import '../../blocs/substitution_handler/substitution_handler_bloc.dart'
     hide TypeChanged;
 import '../../modals/progression_type.dart';
-import '../../widgets/TButton.dart';
-import '../../widgets/t_icon_button.dart';
+import '../../widgets/custom_button.dart';
+import '../../widgets/custom_icon_button.dart';
 import 'widgets/progression/selectable_progression_view.dart';
 import 'widgets/scale_chooser.dart';
 import 'widgets/view_type_selector.dart';
@@ -100,7 +100,7 @@ class ProgressionScreenUI extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          TButton(
+                          CustomButton(
                             label: 'Back',
                             tight: true,
                             size: 12,
@@ -111,7 +111,7 @@ class ProgressionScreenUI extends StatelessWidget {
                           BlocBuilder<BankBloc, BankState>(
                             builder: (context, state) {
                               final bool loading = state is BankLoading;
-                              return TButton(
+                              return CustomButton(
                                 label: loading ? 'Saving...' : 'Save',
                                 tight: true,
                                 size: 12,
@@ -148,7 +148,6 @@ class ProgressionScreenUI extends StatelessWidget {
                           BlocBuilder<AudioPlayerBloc, AudioPlayerState>(
                             builder: (context, state) {
                               return IgnorePointer(
-                                // TODO: Find a better place for this.
                                 ignoring:
                                     BlocProvider.of<ProgressionHandlerBloc>(
                                                 context,
@@ -182,7 +181,6 @@ class ProgressionScreenUI extends StatelessWidget {
                                                           ProgressionHandlerBloc>(
                                                       context)
                                                   .chordMeasures;
-                                          print(chords);
                                           bloc.add(Play(
                                             measures: chords,
                                             basePlaying: true,
@@ -292,7 +290,7 @@ class ProgressionScreenUI extends StatelessWidget {
                                             context,
                                             listen: true)
                                         .showingWindow),
-                            TButton(
+                            CustomButton(
                               label: 'Surprise Me',
                               iconData: Icons.lightbulb,
                               onPressed:

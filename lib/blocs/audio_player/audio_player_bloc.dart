@@ -68,15 +68,14 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     });
     on<Pause>((event, emit) {
       _playing = false;
-      emit(Paused(_baseControl));
-      // TODO: Implement this.
+      return emit(Paused(_baseControl));
     });
     on<Reset>((event, emit) {
       reset(emit);
     });
     on<ChangeBPM>((event, emit) {
       _bpm = event.newBPM;
-      emit(ChangedBPM(_bpm));
+      return emit(ChangedBPM(_bpm));
     });
   }
 
@@ -97,7 +96,6 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     emit(Idle());
   }
 
-  // TODO: Load the first chord before the rest.
   Future<void> _play({
     required Emitter<AudioPlayerState> emit,
     bool arpeggio = false,
@@ -123,7 +121,6 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
             Duration duration =
                 Duration(milliseconds: (prog.durations[_cC] * mult).toInt());
             if (prog[_cC] != null) {
-              print(prog[_cC]);
               if (arpeggio) {
                 _playChordArpeggio(
                     chord: prog[_cC]!,
@@ -150,7 +147,6 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
       try {
         _players[i].open(Media.asset(pitchFileName(pitches[i])));
       } catch (e) {
-        print('Faild to play ${pitches[i]} from $chord');
         rethrow;
       }
     }
@@ -170,7 +166,6 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
         _players[i].play();
         await Future.delayed(noteLength);
       } catch (e) {
-        print('Faild to play ${pitches[i]} from $chord');
         rethrow;
       }
     }
@@ -214,7 +209,6 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
         if (previous != null) {
           int closest = fixedClosest(previous, cPitches[i]);
           note = calcNote(note, previous[closest].midiNumber);
-          // TODO: Find a better way other then removing...
           previous.removeAt(closest);
         } else {
           note = calcNote(note, maxMelody - 12);
@@ -222,7 +216,6 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
         pitches.add(Pitch.fromMidiNumber(note));
       }
     }
-    print(pitches);
     return pitches;
   }
 

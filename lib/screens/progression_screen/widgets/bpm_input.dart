@@ -50,7 +50,6 @@ class _BPMInputState extends State<BPMInput> {
           }
         },
         child: IgnorePointer(
-          // TODO: Improve the way this is written...
           ignoring:
               BlocProvider.of<AudioPlayerBloc>(context, listen: true).playing,
           child: Listener(

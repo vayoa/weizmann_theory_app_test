@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../constants.dart';
 
-class TSuggestionFrame extends StatelessWidget {
-  const TSuggestionFrame({Key? key}) : super(key: key);
+class SuggestionFrame extends StatelessWidget {
+  const SuggestionFrame({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

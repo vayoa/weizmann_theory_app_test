@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../modals/progression_type.dart';
-import '../../../widgets/TSelector.dart';
+import '../../../widgets/custom_selector.dart';
 
 class ViewTypeSelector extends StatelessWidget {
   const ViewTypeSelector({
@@ -19,7 +19,7 @@ class ViewTypeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TSelector(
+    return CustomSelector(
       value: startOnChords ? 'Chords' : 'Roman Numerals',
       values: const ['Chords', 'Roman Numerals'],
       tight: tight,

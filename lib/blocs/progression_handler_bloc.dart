@@ -315,7 +315,6 @@ class ProgressionHandlerBloc
       fromDur < currentlyViewedProgression.length &&
       toChord < currentlyViewedProgression.length;
 
-  // TODO: Optimize this.
   void _calculateRangePositions() {
     List<int> results = Utilities.calculateRangePositions(
       progression: currentlyViewedProgression,
@@ -361,7 +360,6 @@ class ProgressionHandlerBloc
 
   Progression<T> _parseInputs<T>(
       List<String> inputs, T Function(String input) parse) {
-    // TODO: Make a delete measure method instead...
     if (inputs.length == 1 && inputs[0].isEmpty) {
       return Progression.empty();
     }

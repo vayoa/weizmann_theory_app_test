@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/extensions/pitch_extension.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:tonic/tonic.dart';
-import 'package:weizmann_theory_app_test/widgets/TButton.dart';
+import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 
 import '../../../Constants.dart';
 import '../../../blocs/progression_handler_bloc.dart';
@@ -48,7 +48,7 @@ class _ScaleChooserState extends State<ScaleChooser> {
           ProgressionHandlerBloc bloc =
               BlocProvider.of<ProgressionHandlerBloc>(context);
           if (bloc.currentScale == null) {
-            return TButton(
+            return CustomButton(
               label: 'Guess Scale',
               iconData: Icons.piano_rounded,
               onPressed: widget.enabled

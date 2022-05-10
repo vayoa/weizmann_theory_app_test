@@ -86,7 +86,6 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
   Widget build(BuildContext context) {
     ProgressionHandlerBloc bloc =
         BlocProvider.of<ProgressionHandlerBloc>(context);
-    final Progression _prog = bloc.currentlyViewedProgression;
     int startMeasure = bloc.startMeasure;
     int startIndex = bloc.startIndex;
     int endMeasure = bloc.endMeasure;
@@ -183,7 +182,6 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
             ),
             itemBuilder: (context, index) {
               bool shouldPaint = index >= startMeasure && index <= endMeasure;
-              // TODO: Fix this weird case...
               bool last = (index == widget.measures.length - 1) ||
                   (index + 1) % widget.measuresInLine == 0;
               int? fromChord =
@@ -342,7 +340,6 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
           _controller.animateTo(widget.startAt! * Constants.measureWidth,
               duration: const Duration(milliseconds: 400),
               curve: Curves.easeInOut);
-          // TODO: Give the widget a measure to scroll to...
         }
       });
 

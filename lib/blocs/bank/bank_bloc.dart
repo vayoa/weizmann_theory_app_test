@@ -22,7 +22,6 @@ class BankBloc extends Bloc<BankEvent, BankState> {
 
   List<String> get titles => _titles;
 
-  // TODO: Some events here don't emit any state, decide if that's ok...
   BankBloc() : super(const BankInitial()) {
     // --- Initial Load Event ---
     on<LoadInitialBank>((event, emit) async {
@@ -115,14 +114,10 @@ class BankBloc extends Bloc<BankEvent, BankState> {
         await jsonFile.create(recursive: true);
         await jsonFile.writeAsString(jsonEncode(ProgressionBank.toJson()));
       } catch (e) {
-        // TODO: Handle case...
         rethrow;
       }
     }
   }
-
-  /* TODO: Maybe instead of always re-creating the file, remove only what's
-          necessary. */
 
   /// Overrides the current data if present. If not re-creates the json file.
   Future<void> _saveBankData() async {

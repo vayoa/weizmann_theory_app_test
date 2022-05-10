@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../constants.dart';
 
-class TSelector extends StatefulWidget {
-  const TSelector({
+class CustomSelector extends StatefulWidget {
+  const CustomSelector({
     Key? key,
     required this.values,
     required this.value,
@@ -17,10 +17,10 @@ class TSelector extends StatefulWidget {
   final bool Function(int) onPressed;
 
   @override
-  State<TSelector> createState() => _TSelectorState();
+  State<CustomSelector> createState() => _CustomSelectorState();
 }
 
-class _TSelectorState extends State<TSelector> {
+class _CustomSelectorState extends State<CustomSelector> {
   late final List<bool> _selected;
   int _selectedIndex = 0;
 
@@ -42,7 +42,7 @@ class _TSelectorState extends State<TSelector> {
   }
 
   @override
-  void didUpdateWidget(covariant TSelector oldWidget) {
+  void didUpdateWidget(covariant CustomSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value) {
       _selected[_selectedIndex] = false;

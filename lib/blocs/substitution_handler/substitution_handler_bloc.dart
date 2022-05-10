@@ -139,14 +139,8 @@ class SubstitutionHandlerBloc
     }
   }
 
-  // TODO: Decide whether you want to show chords...
-  Progression getOriginalSubstitution(PitchScale? scale, int index) {
-    return _substitutions![index].originalSubstitution;
-    if (scale == null || type == ProgressionType.romanNumerals) {
-    } else {
-      return getOriginalSubChords(scale, index);
-    }
-  }
+  Progression getOriginalSubstitution(PitchScale? scale, int index) =>
+      _substitutions![index].originalSubstitution;
 
   ChordProgression getChordProgression(PitchScale scale, int index) {
     assert(index >= 0 && index < _chordProgressions!.length);
@@ -164,7 +158,6 @@ class SubstitutionHandlerBloc
           _substitutions![index].originalSubstitution;
       SubstitutionMatch match = _substitutions![index].match;
       if (match.type == SubstitutionMatchType.tonicization) {
-        // TODO: Optimize.
         originalSub = originalSub.tonicizedFor(
             _substitutions![index].substitutedBase[match.baseIndex]!);
       }

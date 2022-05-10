@@ -11,10 +11,10 @@ import 'package:weizmann_theory_app_test/modals/progression_type.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_view.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/view_type_selector.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/weights_view.dart';
-import 'package:weizmann_theory_app_test/widgets/TButton.dart';
-import 'package:weizmann_theory_app_test/widgets/TSelector.dart';
+import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
+import 'package:weizmann_theory_app_test/widgets/custom_icon_button.dart';
+import 'package:weizmann_theory_app_test/widgets/custom_selector.dart';
 import 'package:weizmann_theory_app_test/widgets/dialogs.dart';
-import 'package:weizmann_theory_app_test/widgets/t_icon_button.dart';
 
 import '../../../blocs/audio_player/audio_player_bloc.dart';
 import '../../../blocs/progression_handler_bloc.dart';
@@ -310,7 +310,7 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
                       padding: EdgeInsets.only(right: 8.0),
                       child: Text('Sound:'),
                     ),
-                    TSelector(
+                    CustomSelector(
                       tight: true,
                       values: soundNames,
                       value: _sound.name,
@@ -332,7 +332,7 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
                       padding: EdgeInsets.only(right: 8.0),
                       child: Text('Keep Harmonic Function:'),
                     ),
-                    TSelector(
+                    CustomSelector(
                       tight: true,
                       values: amountNames,
                       value: _keepHarmonicFunction.name,
@@ -349,7 +349,7 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
                     ),
                   ],
                 ),
-                TButton(
+                CustomButton(
                   label: _showGo ? 'Go!' : 'Refresh',
                   tight: true,
                   iconData: _showGo
@@ -381,7 +381,7 @@ class _CancelButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TButton(
+    return CustomButton(
       label: 'Cancel',
       tight: true,
       iconData: Icons.cancel_rounded,
@@ -424,23 +424,23 @@ class SubstitutionBottomButtonBar extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                TButton(
+                CustomButton(
                   label: 'Previous',
                   iconData: Icons.arrow_upward_rounded,
                   onPressed: previous,
                 ),
-                TButton(
+                CustomButton(
                   label: 'Next',
                   iconData: Icons.arrow_downward_rounded,
                   onPressed: next,
                 ),
-                TButton(
+                CustomButton(
                   label: playing ? 'Pause' : 'Play',
                   iconData:
                       playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
                   onPressed: play,
                 ),
-                TButton(
+                CustomButton(
                   label: 'Apply',
                   iconData: Icons.check_rounded,
                   onPressed: apply,
