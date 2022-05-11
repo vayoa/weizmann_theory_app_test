@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 abstract class Constants {
-  static const Size minimumWindowSize = Size(855, 200);
+  static const Size minimumWindowSize = Size(855, 378);
 
   static const Color titleBarColor = Color.fromARGB(255, 196, 196, 196);
   static const Color buttonBackgroundColor = Color.fromARGB(255, 227, 227, 227);
