@@ -176,6 +176,9 @@ class ProgressionHandlerBloc
         progression = chords
             ? _parseChordInputs(event.inputs)
             : _parseScaleDegreeInputs(event.inputs);
+      } on NonValidDuration catch (e) {
+        return emit(InvalidInputReceived(
+            progression: currentlyViewedProgression, exception: e));
       } on Exception catch (firstError) {
         try {
           progression = chords
@@ -366,7 +369,6 @@ class ProgressionHandlerBloc
     List<double> durations = [];
     final TimeSignature ts = currentProgression.timeSignature;
     final double step = ts.step;
-    final double decimal = ts.decimal;
     double duration = 0.0;
     List<T?> newValues = [];
     bool hasNull = false;
@@ -383,19 +385,15 @@ class ProgressionHandlerBloc
           } else {
             newValues.add(parse.call(value));
           }
-          double dur = duration % decimal;
-          double overallDur = 0.0;
+          double dur = duration;
           if (durations.isNotEmpty) {
-            dur = (duration - durations.last) % decimal;
-            overallDur = dur;
+            dur = duration - durations.last;
           }
-          if (dur < 0) {
-            throw NonPositiveDuration(value, duration);
-          } else if ((overallDur % decimal) + duration <= decimal) {
-            if (!currentProgression.timeSignature.validDuration(dur)) {
-              throw NonValidDuration(
-                  value: value, duration: duration, timeSignature: ts);
-            }
+          if (dur <= 0) {
+            throw NonPositiveDuration(value, dur);
+          } else if (!currentProgression.timeSignature.validDuration(dur)) {
+            throw NonValidDuration(
+                value: value, duration: dur, timeSignature: ts);
           }
           durations.add(duration);
         }

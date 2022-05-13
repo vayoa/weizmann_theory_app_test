@@ -326,9 +326,11 @@ class ProgressionScreenUI extends StatelessWidget {
                       if (state.exception is NonValidDuration) {
                         NonValidDuration e =
                             state.exception as NonValidDuration;
-                        String value = e.value is Chord
-                            ? (e.value as Chord).commonName
-                            : (e.value as ScaleDegreeChord).toString();
+                        String value = e.value is String
+                            ? e.value
+                            : (e.value is Chord
+                                ? (e.value as Chord).commonName
+                                : (e.value as ScaleDegreeChord).toString());
                         message = 'An invalid duration was inputted:'
                             '\nA value of $value in a duration of '
                             '${(e.duration * e.timeSignature.denominator).toInt()}'
