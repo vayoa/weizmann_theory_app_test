@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/modals/progression.dart';
-import 'package:thoery_test/modals/time_signature.dart';
 import 'package:weizmann_theory_app_test/utilities.dart';
 
 import '../../../blocs/progression_handler_bloc.dart';
@@ -87,12 +86,11 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
                 double start = double.parse(values[0].trim());
                 double end = double.parse(values.last.trim());
                 Progression prog = bloc.currentlyViewedProgression;
-                TimeSignature ts = prog.timeSignature;
-                if (start >= 0.0 &&
-                    end <= prog.duration &&
-                    start < end &&
-                    ts.validDuration(start % ts.decimal) &&
-                    ts.validDuration(end % ts.decimal)) {
+                if (start >= 0.0 && end <= prog.duration && start < end) {
+                  final double step = prog.timeSignature.step;
+                  // round both numbers according to step;
+                  start = (start / step).ceil() * step;
+                  end = (end / step).ceil() * step;
                   showSnackBar = false;
                   bloc.add(ChangeRangeDuration(start: start, end: end));
                 }
