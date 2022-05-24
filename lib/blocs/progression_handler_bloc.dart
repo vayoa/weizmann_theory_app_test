@@ -391,7 +391,8 @@ class ProgressionHandlerBloc
           }
           if (dur <= 0) {
             throw NonPositiveDuration(value, dur);
-          } else if (!currentProgression.timeSignature.validDuration(dur)) {
+          } else if (!currentProgression.timeSignature
+              .validDurationPos(dur, duration - dur)) {
             throw NonValidDuration(
                 value: value, duration: dur, timeSignature: ts);
           }
