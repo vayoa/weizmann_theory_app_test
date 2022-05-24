@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 abstract class Constants {
   static const Size minimumWindowSize = Size(855, 378);
-
-  static const Color titleBarColor = Color.fromARGB(255, 196, 196, 196);
   static const Color buttonBackgroundColor = Color.fromARGB(255, 227, 227, 227);
   static const Color buttonUnfocusedColor = Color.fromARGB(255, 192, 192, 192);
   static const Color buttonUnfocusedTextColor =
@@ -13,7 +11,6 @@ abstract class Constants {
       Color.fromARGB(100, 206, 206, 206);
   static const Color selectedColor = Color.fromARGB(255, 187, 187, 187);
   static const Color measureColor = Color.fromARGB(255, 171, 171, 171);
-  static const Color playedValueColor = Colors.blue;
   static const double measureWidth = 315;
   static const double measureHeight = 66;
   static const double measureSpacing = measureHeight / 2;

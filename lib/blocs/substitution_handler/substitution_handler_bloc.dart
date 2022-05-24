@@ -8,7 +8,6 @@ import 'package:thoery_test/modals/pitch_scale.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/modals/substitution.dart';
-import 'package:thoery_test/modals/substitution_match.dart';
 import 'package:thoery_test/modals/weights/keep_harmonic_function_weight.dart';
 import 'package:thoery_test/modals/weights/weight.dart';
 import 'package:thoery_test/state/progression_bank.dart';
@@ -149,21 +148,6 @@ class SubstitutionHandlerBloc
           _substitutions![index].substitutedBase.inScale(scale);
     }
     return _chordProgressions![index]!;
-  }
-
-  ChordProgression getOriginalSubChords(PitchScale scale, int index) {
-    assert(index >= 0 && index < _originalSubs!.length);
-    if (_originalSubs![index] == null) {
-      ScaleDegreeProgression originalSub =
-          _substitutions![index].originalSubstitution;
-      SubstitutionMatch match = _substitutions![index].match;
-      if (match.type == SubstitutionMatchType.tonicization) {
-        originalSub = originalSub.tonicizedFor(
-            _substitutions![index].substitutedBase[match.baseIndex]!);
-      }
-      _originalSubs![index] = originalSub.inScale(scale);
-    }
-    return _originalSubs![index]!;
   }
 
   /// Creates an [Isolate] to compute the substitution. The isolate will be

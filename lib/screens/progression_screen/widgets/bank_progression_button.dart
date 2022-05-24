@@ -42,7 +42,7 @@ class _BankProgressionButtonState extends State<BankProgressionButton> {
     int id = _bloc.currentProgression.id;
     if (ProgressionBank.idFreeInSubs(_bloc.title, id)) {
       if (!ProgressionBank.canBeSubstitution(_bloc.currentProgression)) {
-        _error = 'Progression is does not consist of 2 - 8 chords';
+        _error = 'Progression does not consist of 2 - 8 chords';
       }
     } else {
       String title =

@@ -14,10 +14,6 @@ part 'audio_player_state.dart';
 class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   static const maxPlayers = 4;
   final List<Player> _players = [];
-  static const int defaultBassOctave = 2;
-  static const int defaultBassOctaves = defaultBassOctave * 12;
-  static const int defaultNoteOctave = 4;
-  static const int defaultNoteOctaves = defaultNoteOctave * 12;
   static const int maxMelody = 71; // B4.
   static const int minBass = 31; // G2.
   bool _baseControl = true;
@@ -96,10 +92,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     emit(Idle());
   }
 
-  Future<void> _play({
-    required Emitter<AudioPlayerState> emit,
-    bool arpeggio = false,
-  }) async {
+  Future<void> _play({required Emitter<AudioPlayerState> emit}) async {
     if (_currentMeasures != null) {
       double millisecondsPerBeat = (60 / _bpm) * 1000;
       double mult =
@@ -121,15 +114,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
             Duration duration =
                 Duration(milliseconds: (prog.durations[_cC] * mult).toInt());
             if (prog[_cC] != null) {
-              if (arpeggio) {
-                _playChordArpeggio(
-                    chord: prog[_cC]!,
-                    duration: duration,
-                    noteLength:
-                        Duration(milliseconds: ((0.125 / 2) * mult).toInt()));
-              } else {
-                prevPitches = _playChord(prog[_cC]!, prevPitches);
-              }
+              prevPitches = _playChord(prog[_cC]!, prevPitches);
             }
             await Future.delayed(duration);
           } else {
@@ -151,24 +136,6 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
       }
     }
     return pitches;
-  }
-
-  void _playChordArpeggio({
-    required Chord chord,
-    required Duration duration,
-    required Duration noteLength,
-  }) async {
-    int times = duration.inMilliseconds ~/ noteLength.inMilliseconds;
-    List<Pitch> pitches = _walk(chord);
-    for (int i = 0; i < times; i++) {
-      try {
-        _players[i].open(Media.asset(pitchFileName(pitches[i % maxPlayers])));
-        _players[i].play();
-        await Future.delayed(noteLength);
-      } catch (e) {
-        rethrow;
-      }
-    }
   }
 
   Pitch getBase(Pitch pitch) {
