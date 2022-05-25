@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
-import 'package:thoery_test/modals/absolute_durations.dart';
 import 'package:thoery_test/modals/chord_progression.dart';
 import 'package:thoery_test/modals/exceptions.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
@@ -361,6 +360,13 @@ class ProgressionHandlerBloc
     return false;
   }
 
+  bool _valueIsNull(String value) =>
+      value == '/' || value == '//' || value == 'null';
+
+  bool _adjacentValuesEqual(String val, String next) =>
+      Progression.adjacentValuesEqual(val, next) ||
+      (_valueIsNull(val) && _valueIsNull(next));
+
   Progression<T> _parseInputs<T>(
       List<String> inputs, T Function(String input) parse) {
     if (inputs.length == 1 && inputs[0].isEmpty) {
@@ -371,16 +377,14 @@ class ProgressionHandlerBloc
     final double step = ts.step;
     double duration = 0.0;
     List<T?> newValues = [];
-    bool hasNull = false;
     for (int i = 0; i < inputs.length; i++) {
       if (inputs.isEmpty || inputs[i].isNotEmpty) {
         duration += step;
         if (i >= inputs.length - 1 ||
             inputs.isEmpty ||
-            inputs[i] != inputs[i + 1]) {
+            !_adjacentValuesEqual(inputs[i], inputs[i + 1])) {
           String value = inputs[i];
           if (value == '/' || value == '//' || value == 'null') {
-            hasNull = true;
             newValues.add(null);
           } else {
             newValues.add(parse.call(value));
@@ -400,11 +404,12 @@ class ProgressionHandlerBloc
         }
       }
     }
-    return Progression.raw(
-      values: newValues,
-      durations: AbsoluteDurations(durations),
+    // Since the names can be different, we pass through again to conjoin
+    // adjacent elements...
+    return Progression.absolute(
+      newValues,
+      durations,
       timeSignature: currentlyViewedProgression.timeSignature,
-      hasNull: hasNull,
     );
   }
 }
