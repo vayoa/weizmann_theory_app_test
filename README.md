@@ -5,7 +5,7 @@ Weizmann Theory App Test.
 ## Video Guide
 [![VideoThumbnail](https://img.youtube.com/vi/eUNX8s5Csc8/0.jpg)](https://www.youtube.com/watch?v=eUNX8s5Csc8)
 
-The video guide: https://img.youtube.com/vi/eUNX8s5Csc8/0.jpg)](https://www.youtube.com/watch?v=eUNX8s5Csc8.
+The video guide: https://www.youtube.com/watch?v=eUNX8s5Csc8.
 
 ## Getting Started
 
