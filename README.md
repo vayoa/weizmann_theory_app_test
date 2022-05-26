@@ -24,8 +24,8 @@ The video guide can be found here: https://www.youtube.com/watch?v=eUNX8s5Csc8.
 - [ ] Melody support.
 
 ### Community Related
-- [ ] Written Wiki.
-- [ ] Full Video Guide In English.
+- [ ] Written wiki.
+- [ ] Full video guide in english.
 
 ### Also Possible
 - [ ] Lyrics support.
