@@ -19,6 +19,7 @@ import 'package:weizmann_theory_app_test/widgets/dialogs.dart';
 import '../../../blocs/audio_player/audio_player_bloc.dart';
 import '../../../blocs/progression_handler_bloc.dart';
 import '../../../constants.dart';
+import '../../../utilities.dart';
 
 class SubstitutionWindowCover extends StatelessWidget {
   const SubstitutionWindowCover({
@@ -474,6 +475,18 @@ class SubstitutionView extends StatelessWidget {
     final PitchScale? scale =
         BlocProvider.of<ProgressionHandlerBloc>(context).currentScale;
     final SubstitutionMatch match = substitution.match;
+    /* TODO: This could probably be optimized, since we kinda calculate the
+             duration again in horizontal progression view to show the
+             selector...
+     */
+    List<double> results = Utilities.calculateDurationPositions(
+        substitution.substitutedBase,
+        substitution.changedStart,
+        substitution.changedEnd)!;
+    int fromChord = results[0].toInt();
+    double startDur = results[1];
+    int toChord = results[2].toInt();
+    double endDur = results[3];
     return Column(
       mainAxisAlignment:
           surpriseMe ? MainAxisAlignment.center : MainAxisAlignment.spaceEvenly,
@@ -511,10 +524,11 @@ class SubstitutionView extends StatelessWidget {
             : HorizontalProgressionView(
                 progression: bloc.getOriginalSubstitution(scale, index))),
         HorizontalProgressionView(
-          fromChord: surpriseMe ? null : substitution.firstChangedIndex,
-          toChord: surpriseMe ? null : substitution.lastChangedIndex,
-          startAt: surpriseMe ? null : substitution.firstChangedIndex,
-          startDur: surpriseMe ? 0.0 : substitution.match.baseOffset,
+          fromChord: surpriseMe ? null : fromChord,
+          startAt: surpriseMe ? null : fromChord,
+          startDur: surpriseMe ? 0.0 : startDur,
+          toChord: surpriseMe ? null : toChord,
+          endDur: endDur,
           progression: bloc.getSubstitutedBase(scale, index),
         ),
       ],

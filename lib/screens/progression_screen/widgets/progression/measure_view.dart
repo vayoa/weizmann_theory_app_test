@@ -114,7 +114,6 @@ class Selector extends StatelessWidget {
   }
 
   List<Widget> buildSelector() {
-    final List<Widget> widgets = [];
     final double step = measure.timeSignature.step;
     final double startVal =
         measure.durations.real(fromChord!) - measure.durations[fromChord!];
@@ -126,34 +125,27 @@ class Selector extends StatelessWidget {
     final double endSpace =
         measure.timeSignature.decimal - measure.durations.real(toChord!);
     final bool weakLeft = startDur != 0, weakRight = endOffset > 0;
-    if (startVal != 0.0) {
-      widgets.add(Spacer(flex: startVal ~/ step));
-    }
-    if (weakLeft) {
-      widgets.add(
+    return [
+      if (startVal != 0.0) Spacer(flex: startVal ~/ step),
+      if (weakLeft)
         SelectorBloc(
           flex: startDur! ~/ step,
           weak: true,
           roundLeft: selectorStart,
         ),
-      );
-    }
-    widgets.add(SelectorBloc(
-      flex: dur ~/ step,
-      roundLeft: !weakLeft && selectorStart,
-      roundRight: !weakRight && selectorEnd,
-    ));
-    if (weakRight) {
-      widgets.add(SelectorBloc(
-        flex: endOffset ~/ step,
-        weak: true,
-        roundRight: selectorEnd,
-      ));
-    }
-    if (endSpace != 0) {
-      widgets.add(Spacer(flex: endSpace ~/ step));
-    }
-    return widgets;
+      SelectorBloc(
+        flex: dur ~/ step,
+        roundLeft: !weakLeft && selectorStart,
+        roundRight: !weakRight && selectorEnd,
+      ),
+      if (weakRight)
+        SelectorBloc(
+          flex: endOffset ~/ step,
+          weak: true,
+          roundRight: selectorEnd,
+        ),
+      if (endSpace != 0) Spacer(flex: endSpace ~/ step),
+    ];
   }
 }
 
@@ -196,17 +188,16 @@ class MeasureView<T> extends StatelessWidget {
           child: Stack(
             alignment: Alignment.centerLeft,
             children: [
-              (disabled
-                  ? const SizedBox()
-                  : Selector(
-                      measure: measure,
-                      fromChord: fromChord,
-                      startDur: startDur,
-                      toChord: toChord,
-                      endDur: endDur,
-                      selectorStart: selectorStart,
-                      selectorEnd: selectorEnd,
-                    )),
+              if (!disabled)
+                Selector(
+                  measure: measure,
+                  fromChord: fromChord,
+                  startDur: startDur,
+                  toChord: toChord,
+                  endDur: endDur,
+                  selectorStart: selectorStart,
+                  selectorEnd: selectorEnd,
+                ),
               Row(
                 children: buildList(),
               ),

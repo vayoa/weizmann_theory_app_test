@@ -61,7 +61,9 @@ class ProgressionHandlerBloc
       _chordMeasures = null;
       _progressionMeasures = null;
       if (!event.newProgression.isEmpty) {
-        if (event.newProgression[0] is Chord) {
+        if (event.newProgression is ChordProgression ||
+            event.newProgression is Progression<Chord> ||
+            event.newProgression[0] is Chord) {
           bool scaleChanged = _currentScale == null;
           if (scaleChanged) _calculateScales();
           currentChords = ChordProgression.fromProgression(
@@ -136,16 +138,13 @@ class ProgressionHandlerBloc
       if (event.start >= 0.0 &&
           event.end <= prog.duration &&
           event.start < event.end) {
-        double realEnd = event.end - (prog.timeSignature.step / 2);
-        int newFromChord = prog.getPlayingIndex(event.start),
-            newToChord = prog.getPlayingIndex(realEnd);
-        if (newToChord >= newFromChord) {
-          fromChord = newFromChord;
-          toChord = newToChord;
-          startDur = event.start -
-              (prog.durations.real(fromChord) - prog.durations[fromChord]);
-          endDur = event.end -
-              (prog.durations.real(toChord) - prog.durations[toChord]);
+        List<double>? results =
+            Utilities.calculateDurationPositions(prog, event.start, event.end);
+        if (results != null) {
+          fromChord = results[0].toInt();
+          startDur = results[1];
+          toChord = results[2].toInt();
+          endDur = results[3];
           _calculateRangePositions();
           rangeDisabled = false;
           return emit(RangeChanged(

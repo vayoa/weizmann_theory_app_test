@@ -103,9 +103,14 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
           _cM++) {
         Progression<Chord> prog = _currentMeasures![_cM];
         // First, load the first pitches.
-        List<Pitch> _loadedP = _walk(prog[_cC]!);
-        for (var p in _loadedP) {
-          await rootBundle.load(pitchFileName(p));
+        /* TODO: Load the first one, and if it's null load the first not null
+                 one (currently we just don't load anything if it's null...).
+         */
+        if (prog[_cC] != null) {
+          List<Pitch> _loadedP = _walk(prog[_cC]!);
+          for (var p in _loadedP) {
+            await rootBundle.load(pitchFileName(p));
+          }
         }
         for (_cC;
             _currentMeasures != null && _cC < _currentMeasures![_cM].length;

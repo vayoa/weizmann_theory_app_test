@@ -77,6 +77,28 @@ abstract class Utilities {
     return [startMeasure, startIndex, endMeasure, endIndex];
   }
 
+  /// Gets [prog], [start] as the start duration of the range and [end] as the
+  /// end duration of the range.
+  ///
+  /// Returns the range positions as [fromChord, startDur, toChord, endDur].
+  static List<double>? calculateDurationPositions(
+      Progression prog, double start, double end) {
+    assert(start >= 0.0 && end <= prog.duration && start < end);
+    double realEnd = end - (prog.timeSignature.step / 2);
+    int newFromChord = prog.getPlayingIndex(start),
+        newToChord = prog.getPlayingIndex(realEnd);
+    if (newToChord >= newFromChord) {
+      int fromChord = newFromChord;
+      int toChord = newToChord;
+      double startDur =
+          start - (prog.durations.real(fromChord) - prog.durations[fromChord]);
+      double endDur =
+          end - (prog.durations.real(toChord) - prog.durations[toChord]);
+      return [fromChord.toDouble(), startDur, toChord.toDouble(), endDur];
+    }
+    return null;
+  }
+
   static void showSnackBar(BuildContext context, String text) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(behavior: SnackBarBehavior.floating, content: Text(text)),
