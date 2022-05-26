@@ -1,12 +1,10 @@
 # Weizmann Theory
-Weizmann Theory is a companion app for songwriters, made specifically to improve or show substitutions to your chord progressions!
-
-It's main feature is to easily and efficiently present to you chords from other songs / chord progressions you've saved in your own chord progressions.
+Weizmann Theory is a companion app for songwriters and musicians that uses your liked songs / chord progressions to improve or show substitutions to your own chord progressions!
 
 ## Features
 - An easy-to-use interface to write chord progressions (roman numerals or chords).
 - Automatic roman numeral conversion.
-- Library base chord substitution:
+- Library based chord substitutions:
 	- Tonicizations.
 	- Null Chords (or rests) - the app can write progressions for you.
 - Chord progressions audio player.
