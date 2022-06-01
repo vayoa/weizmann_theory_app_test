@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
@@ -18,8 +20,7 @@ import '../modals/progression_type.dart';
 part 'progression_handler_event.dart';
 part 'progression_handler_state.dart';
 
-class ProgressionHandlerBloc
-    extends Bloc<ProgressionHandlerEvent, ProgressionHandlerState> {
+class ProgressionHandlerBloc extends Bloc<ProgressionHandlerEvent, ProgressionHandlerState> {
   late final SubstitutionHandlerBloc _substitutionHandlerBloc;
   String title;
   PitchScale? _currentScale;
@@ -36,19 +37,19 @@ class ProgressionHandlerBloc
   bool rangeDisabled = true;
 
   static final PitchScale defaultScale =
-      PitchScale.common(tonic: Pitch.parse('C'));
+  PitchScale.common(tonic: Pitch.parse('C'));
 
   double get fromDur => currentlyViewedProgression.isEmpty
       ? 0.0
       : currentlyViewedProgression.durations.real(fromChord) -
-          currentlyViewedProgression.durations[fromChord] +
-          startDur;
+      currentlyViewedProgression.durations[fromChord] +
+      startDur;
 
   double get toDur => currentlyViewedProgression.isEmpty
       ? 0.0
       : currentlyViewedProgression.durations.real(toChord) -
-          currentlyViewedProgression.durations[toChord] +
-          endDur;
+      currentlyViewedProgression.durations[toChord] +
+      endDur;
 
   ProgressionHandlerBloc({
     required SubstitutionHandlerBloc substitutionHandlerBloc,
@@ -93,10 +94,26 @@ class ProgressionHandlerBloc
       }
       _substitutionHandlerBloc.add(ClearSubstitutions());
       emit(ProgressionChanged(currentlyViewedProgression));
-      if (!_rangeValid() || !_recalculateRangePositions(fromDur, toDur)) {
-        rangeDisabled = true;
-        fromChord = -1;
-        toChord = -1;
+      final bool rangeValid = _rangeValid();
+      if (!rangeDisabled &&
+          (!rangeValid || !_recalculateRangePositions(fromDur, toDur))) {
+        if (rangeValid) {
+          final double step = currentProgression.timeSignature.step;
+          final double newFrom =
+              min(fromDur, currentProgression.duration - step);
+          final double newTo = min(toDur, currentProgression.duration);
+          if (newTo - newFrom >= 2 * step) {
+            _recalculateRangePositions(newFrom, newTo);
+          } else {
+            rangeDisabled = true;
+            fromChord = -1;
+            toChord = -1;
+          }
+        } else {
+          rangeDisabled = true;
+          fromChord = -1;
+          toChord = -1;
+        }
       }
       return emit(RangeChanged(
         progression: currentlyViewedProgression,
@@ -139,7 +156,7 @@ class ProgressionHandlerBloc
           event.end <= prog.duration &&
           event.start < event.end) {
         List<double>? results =
-            Utilities.calculateDurationPositions(prog, event.start, event.end);
+        Utilities.calculateDurationPositions(prog, event.start, event.end);
         if (results != null) {
           fromChord = results[0].toInt();
           startDur = results[1];
@@ -183,7 +200,7 @@ class ProgressionHandlerBloc
               ? _parseScaleDegreeInputs(event.inputs)
               : _parseChordInputs(event.inputs);
           newType =
-              chords ? ProgressionType.romanNumerals : ProgressionType.chords;
+          chords ? ProgressionType.romanNumerals : ProgressionType.chords;
         } on Exception catch (_) {
           return emit(InvalidInputReceived(
               progression: currentlyViewedProgression, exception: firstError));
@@ -198,7 +215,7 @@ class ProgressionHandlerBloc
       if (type == ProgressionType.chords) {
         if (_currentScale == null) {
           _currentScale = ChordProgression.fromProgression(
-                  progression as Progression<Chord>)
+              progression as Progression<Chord>)
               .krumhanslSchmucklerScales
               .first;
           emit(ScaleChanged(
@@ -243,13 +260,13 @@ class ProgressionHandlerBloc
       }
     });
     on<SurpriseMe>(
-      (event, emit) => _substitutionHandlerBloc.add(OpenSetupPage(
+          (event, emit) => _substitutionHandlerBloc.add(OpenSetupPage(
         progression: currentProgression,
         surpriseMe: true,
       )),
     );
     on<ApplySubstitution>(
-      (event, emit) =>
+          (event, emit) =>
           add(OverrideProgression(event.substitution.substitutedBase)),
     );
     on<ChangeTimeSignature>((event, emit) {
@@ -313,7 +330,7 @@ class ProgressionHandlerBloc
   bool _rangeValid() =>
       fromChord >= 0 &&
       toChord >= 0 &&
-      fromDur < currentlyViewedProgression.length &&
+      fromChord < currentlyViewedProgression.length &&
       toChord < currentlyViewedProgression.length;
 
   void _calculateRangePositions() {
@@ -332,31 +349,24 @@ class ProgressionHandlerBloc
   }
 
   bool _recalculateRangePositions(double start, double end) {
-    Progression prog = currentlyViewedProgression;
-    if (start >= 0.0 && end <= prog.duration && start < end) {
-      double realEnd = end - (prog.timeSignature.step / 2);
-      int newFromChord = prog.getPlayingIndex(start),
-          newToChord = prog.getPlayingIndex(realEnd);
-      if (newToChord >= newFromChord) {
-        int _fromChord = newFromChord;
-        int _toChord = newToChord;
-        double _startDur = start -
-            (prog.durations.real(_fromChord) - prog.durations[_fromChord]);
-        double _endDur =
-            end - (prog.durations.real(_toChord) - prog.durations[_toChord]);
-        if (prog.timeSignature.validDuration(_startDur) &&
-            prog.timeSignature.validDuration(_endDur)) {
-          fromChord = _fromChord;
-          toChord = _toChord;
-          startDur = _startDur;
-          endDur = _endDur;
-          _calculateRangePositions();
-          rangeDisabled = false;
-          return true;
-        }
-      }
+    if (start < 0.0 ||
+        end > currentlyViewedProgression.duration ||
+        start >= end) {
+      return false;
     }
-    return false;
+    List<double>? results = Utilities.calculateDurationPositions(
+        currentlyViewedProgression, start, end);
+    if (results == null) {
+      return false;
+    } else {
+      fromChord = results[0].toInt();
+      startDur = results[1];
+      toChord = results[2].toInt();
+      endDur = results[3];
+      _calculateRangePositions();
+      rangeDisabled = false;
+      return true;
+    }
   }
 
   bool _valueIsNull(String value) =>
@@ -364,10 +374,9 @@ class ProgressionHandlerBloc
 
   bool _adjacentValuesEqual(String val, String next) =>
       Progression.adjacentValuesEqual(val, next) ||
-      (_valueIsNull(val) && _valueIsNull(next));
+          (_valueIsNull(val) && _valueIsNull(next));
 
-  Progression<T> _parseInputs<T>(
-      List<String> inputs, T Function(String input) parse) {
+  Progression<T> _parseInputs<T>(List<String> inputs, T Function(String input) parse) {
     if (inputs.length == 1 && inputs[0].isEmpty) {
       return Progression.empty();
     }
