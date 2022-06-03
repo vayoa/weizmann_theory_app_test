@@ -46,7 +46,6 @@ class SubstitutionHandlerBloc
 
   // If we calculate a ChordProgression for a substitution we save it here.
   List<ChordProgression?>? _chordProgressions;
-  List<ChordProgression?>? _originalSubs;
 
   List<Substitution>? get substitutions => _substitutions;
 
@@ -106,7 +105,6 @@ class SubstitutionHandlerBloc
       _startDur = 0.0;
       _endDur = null;
       _chordProgressions = null;
-      _originalSubs = null;
       _inSetup = false;
       if (_substituteByIsolate != null) {
         _substituteByIsolate!.kill(priority: Isolate.immediate);
@@ -122,7 +120,6 @@ class SubstitutionHandlerBloc
 
   void _handleCalculatedSubstitutions(Emitter<SubstitutionHandlerState> emit) {
     _chordProgressions = List.generate(_substitutions!.length, (index) => null);
-    _originalSubs = List.generate(_substitutions!.length, (index) => null);
     _inSetup = false;
     return emit(CalculatedSubstitutions(
       substitutions: substitutions!,
