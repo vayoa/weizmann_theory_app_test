@@ -336,7 +336,10 @@ class _EditedMeasureState<T> extends State<EditedMeasure<T>> {
               FilteringTextInputFormatter.allow(
                   RegExp(r"[\w\d, /+°øØ#b♯♭𝄪𝄫]"))
             ],
-            decoration: InputDecoration(hintText: initial),
+            decoration: InputDecoration(
+              hintText: initial,
+              contentPadding: EdgeInsets.zero,
+            ),
             style: Constants.valueTextStyle,
             onSubmitted: (input) => _submit(),
           ),
