@@ -163,13 +163,9 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                                 _controller.page! % 1 == 0 &&
                                 signal is PointerScrollEvent) {
                               if (signal.scrollDelta.dy > 0) {
-                                _controller.nextPage(
-                                    duration: widget.pageSwitchDuration,
-                                    curve: _scrollCurve);
+                                _nextPage(context);
                               } else {
-                                _controller.previousPage(
-                                    duration: widget.pageSwitchDuration,
-                                    curve: _scrollCurve);
+                                _previousPage(context);
                               }
                             }
                           },
@@ -200,15 +196,10 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                       pages: subBloc.substitutions!.length,
                       previous: _currentIndex == 0
                           ? null
-                          : () => _controller.previousPage(
-                                duration: widget.pageSwitchDuration,
-                                curve: _scrollCurve,
-                              ),
+                          : () => _previousPage(context),
                       next: _currentIndex == subBloc.substitutions!.length - 1
                           ? null
-                          : () => _controller.nextPage(
-                              duration: widget.pageSwitchDuration,
-                              curve: _scrollCurve),
+                          : () => _nextPage(context),
                       playing: state is Playing && !state.baseControl,
                       play: ((state is Playing && state.baseControl) ||
                               blocScale == null)
@@ -235,6 +226,23 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
         }
       },
     );
+  }
+
+  _resetAudio(BuildContext context) {
+    AudioPlayerBloc bloc = BlocProvider.of<AudioPlayerBloc>(context);
+    if (!bloc.baseControl) bloc.add(const Reset());
+  }
+
+  Future<void> _previousPage(BuildContext context) {
+    _resetAudio(context);
+    return _controller.previousPage(
+        duration: widget.pageSwitchDuration, curve: _scrollCurve);
+  }
+
+  Future<void> _nextPage(BuildContext context) {
+    _resetAudio(context);
+    return _controller.nextPage(
+        duration: widget.pageSwitchDuration, curve: _scrollCurve);
   }
 }
 
