@@ -243,7 +243,7 @@ class ProgressionHandlerBloc
       }
     });
     on<SurpriseMe>(
-          (event, emit) => _substitutionHandlerBloc.add(OpenSetupPage(
+      (event, emit) => _substitutionHandlerBloc.add(OpenSetupPage(
         progression: currentProgression,
         surpriseMe: true,
       )),
@@ -393,12 +393,16 @@ class ProgressionHandlerBloc
     bool hasNull = false;
     List<T?> newValues = [];
     for (int i = 0; i < inputs.length; i++) {
-      if (inputs.isEmpty || inputs[i].isNotEmpty) {
-        duration += step;
+      if (inputs[i].isNotEmpty) {
+        List<String> parts = inputs[i].split(' ');
+        String value = parts[0];
+        int addTimes = 1;
+        if (parts.length == 2) {
+          addTimes = max(addTimes, int.tryParse(parts[1]) ?? addTimes);
+        }
+        duration += step + ((addTimes - 1) * step);
         if (i >= inputs.length - 1 ||
-            inputs.isEmpty ||
-            !_adjacentValuesEqual(inputs[i], inputs[i + 1])) {
-          String value = inputs[i];
+            !_adjacentValuesEqual(value, inputs[i + 1].split(' ')[0])) {
           if (value == '/' || value == '//' || value == 'null') {
             newValues.add(null);
             hasNull = true;

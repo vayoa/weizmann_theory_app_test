@@ -359,19 +359,18 @@ class _EditedMeasureState<T> extends State<EditedMeasure<T>> {
   }
 
   String text() {
+    const String sep = ',    ';
     initial = '';
     final double step = widget.measure.timeSignature.step;
     for (int i = 0; i < widget.measure.length; i++) {
-      final String value =
-          Utilities.progressionValueToString(widget.measure[i]);
-      double duration = widget.measure.durations[i];
-      while (duration > 0) {
-        duration -= step;
-        initial += value +
-            (duration <= 0 && i == widget.measure.length - 1 ? '' : ',    ');
-      }
+      initial += Utilities.progressionValueToString(widget.measure[i]);
+      int times = widget.measure.durations[i] ~/ step;
+      if (times > 1) initial += ' $times';
+      initial += sep;
     }
-    return initial;
+    return initial.isEmpty
+        ? ''
+        : initial.substring(0, initial.length - sep.length);
   }
 
   void _submit() {
