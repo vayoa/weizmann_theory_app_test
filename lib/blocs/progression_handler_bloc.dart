@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
+import 'package:thoery_test/modals/absolute_durations.dart';
 import 'package:thoery_test/modals/chord_progression.dart';
 import 'package:thoery_test/modals/exceptions.dart';
 import 'package:thoery_test/modals/pitch_scale.dart';
@@ -20,7 +21,8 @@ import '../modals/progression_type.dart';
 part 'progression_handler_event.dart';
 part 'progression_handler_state.dart';
 
-class ProgressionHandlerBloc extends Bloc<ProgressionHandlerEvent, ProgressionHandlerState> {
+class ProgressionHandlerBloc
+    extends Bloc<ProgressionHandlerEvent, ProgressionHandlerState> {
   late final SubstitutionHandlerBloc _substitutionHandlerBloc;
   String title;
   PitchScale? _currentScale;
@@ -37,19 +39,19 @@ class ProgressionHandlerBloc extends Bloc<ProgressionHandlerEvent, ProgressionHa
   bool rangeDisabled = true;
 
   static final PitchScale defaultScale =
-  PitchScale.common(tonic: Pitch.parse('C'));
+      PitchScale.common(tonic: Pitch.parse('C'));
 
   double get fromDur => currentlyViewedProgression.isEmpty
       ? 0.0
       : currentlyViewedProgression.durations.real(fromChord) -
-      currentlyViewedProgression.durations[fromChord] +
-      startDur;
+          currentlyViewedProgression.durations[fromChord] +
+          startDur;
 
   double get toDur => currentlyViewedProgression.isEmpty
       ? 0.0
       : currentlyViewedProgression.durations.real(toChord) -
-      currentlyViewedProgression.durations[toChord] +
-      endDur;
+          currentlyViewedProgression.durations[toChord] +
+          endDur;
 
   ProgressionHandlerBloc({
     required SubstitutionHandlerBloc substitutionHandlerBloc,
@@ -156,7 +158,7 @@ class ProgressionHandlerBloc extends Bloc<ProgressionHandlerEvent, ProgressionHa
           event.end <= prog.duration &&
           event.start < event.end) {
         List<double>? results =
-        Utilities.calculateDurationPositions(prog, event.start, event.end);
+            Utilities.calculateDurationPositions(prog, event.start, event.end);
         if (results != null) {
           fromChord = results[0].toInt();
           startDur = results[1];
@@ -189,18 +191,18 @@ class ProgressionHandlerBloc extends Bloc<ProgressionHandlerEvent, ProgressionHa
       bool chords = type == ProgressionType.chords;
       try {
         progression = chords
-            ? _parseChordInputs(event.inputs)
-            : _parseScaleDegreeInputs(event.inputs);
+            ? _parseChordInputs(event.inputs, event.measureIndex)
+            : _parseScaleDegreeInputs(event.inputs, event.measureIndex);
       } on NonValidDuration catch (e) {
         return emit(InvalidInputReceived(
             progression: currentlyViewedProgression, exception: e));
       } on Exception catch (firstError) {
         try {
           progression = chords
-              ? _parseScaleDegreeInputs(event.inputs)
-              : _parseChordInputs(event.inputs);
+              ? _parseScaleDegreeInputs(event.inputs, event.measureIndex)
+              : _parseChordInputs(event.inputs, event.measureIndex);
           newType =
-          chords ? ProgressionType.romanNumerals : ProgressionType.chords;
+              chords ? ProgressionType.romanNumerals : ProgressionType.chords;
         } on Exception catch (_) {
           return emit(InvalidInputReceived(
               progression: currentlyViewedProgression, exception: firstError));
@@ -212,38 +214,19 @@ class ProgressionHandlerBloc extends Bloc<ProgressionHandlerEvent, ProgressionHa
             progression: currentlyViewedProgression, newType: newType));
       }
       // If we're here then the input was valid...
+
       if (type == ProgressionType.chords) {
+        final ChordProgression chordProgression =
+            ChordProgression.fromProgression(progression as Progression<Chord>);
         if (_currentScale == null) {
-          _currentScale = ChordProgression.fromProgression(
-              progression as Progression<Chord>)
-              .krumhanslSchmucklerScales
-              .first;
+          _currentScale = chordProgression.krumhanslSchmucklerScales.first;
           emit(ScaleChanged(
               progression: currentlyViewedProgression, scale: _currentScale!));
         }
-        add(
-          OverrideProgression(
-            ScaleDegreeProgression.fromChords(
-              _currentScale!,
-              currentChords.replaceMeasure(
-                event.measureIndex,
-                progression as Progression<Chord>,
-                measures: chordMeasures,
-              ),
-            ),
-          ),
-        );
+        add(OverrideProgression(chordProgression));
       } else {
         add(
-          OverrideProgression(
-            ScaleDegreeProgression.fromProgression(
-              currentProgression.replaceMeasure(
-                event.measureIndex,
-                progression as Progression<ScaleDegreeChord>,
-                measures: progressionMeasures,
-              ),
-            ),
-          ),
+          OverrideProgression(progression),
         );
       }
     });
@@ -285,12 +268,25 @@ class ProgressionHandlerBloc extends Bloc<ProgressionHandlerEvent, ProgressionHa
     });
   }
 
-  Progression<ScaleDegreeChord> _parseScaleDegreeInputs(List<String> inputs) =>
-      ScaleDegreeProgression.fromProgression(_parseInputs<ScaleDegreeChord>(
-          inputs, (input) => ScaleDegreeChord.parse(input)));
+  Progression<ScaleDegreeChord> _parseScaleDegreeInputs(
+          List<String> inputs, int index) =>
+      ScaleDegreeProgression.fromProgression(
+          _parseInputsAndReplace<ScaleDegreeChord>(
+        inputs: inputs,
+        index: index,
+        parse: (input) => ScaleDegreeChord.parse(input),
+        progression: currentProgression,
+        measures: _progressionMeasures,
+      ));
 
-  Progression<Chord> _parseChordInputs(List<String> inputs) =>
-      _parseInputs<Chord>(inputs, (input) => ChordExtension.parse(input));
+  Progression<Chord> _parseChordInputs(List<String> inputs, int index) =>
+      _parseInputsAndReplace<Chord>(
+        inputs: inputs,
+        index: index,
+        parse: (input) => ChordExtension.parse(input),
+        progression: currentChords,
+        measures: _chordMeasures,
+      );
 
   Progression get currentlyViewedProgression {
     if (type == ProgressionType.romanNumerals) {
@@ -374,16 +370,27 @@ class ProgressionHandlerBloc extends Bloc<ProgressionHandlerEvent, ProgressionHa
 
   bool _adjacentValuesEqual(String val, String next) =>
       Progression.adjacentValuesEqual(val, next) ||
-          (_valueIsNull(val) && _valueIsNull(next));
+      (_valueIsNull(val) && _valueIsNull(next));
 
-  Progression<T> _parseInputs<T>(List<String> inputs, T Function(String input) parse) {
+  Progression<T> _parseInputsAndReplace<T>({
+    required List<String> inputs,
+    required T Function(String input) parse,
+    required int index,
+    required Progression<T> progression,
+    required List<Progression<T>>? measures,
+  }) {
+    final TimeSignature ts = currentProgression.timeSignature;
     if (inputs.length == 1 && inputs[0].isEmpty) {
-      return Progression.empty();
+      progression.replaceMeasure(
+        index,
+        Progression.empty(timeSignature: ts),
+        measures: measures,
+      );
     }
     List<double> durations = [];
-    final TimeSignature ts = currentProgression.timeSignature;
     final double step = ts.step;
     double duration = 0.0;
+    bool hasNull = false;
     List<T?> newValues = [];
     for (int i = 0; i < inputs.length; i++) {
       if (inputs.isEmpty || inputs[i].isNotEmpty) {
@@ -394,6 +401,7 @@ class ProgressionHandlerBloc extends Bloc<ProgressionHandlerEvent, ProgressionHa
           String value = inputs[i];
           if (value == '/' || value == '//' || value == 'null') {
             newValues.add(null);
+            hasNull = true;
           } else {
             newValues.add(parse.call(value));
           }
@@ -403,21 +411,23 @@ class ProgressionHandlerBloc extends Bloc<ProgressionHandlerEvent, ProgressionHa
           }
           if (dur <= 0) {
             throw NonPositiveDuration(value, dur);
-          } else if (!currentProgression.timeSignature
-              .validDurationPos(dur, duration - dur)) {
-            throw NonValidDuration(
-                value: value, duration: dur, timeSignature: ts);
           }
           durations.add(duration);
         }
       }
     }
+
     // Since the names can be different, we pass through again to conjoin
     // adjacent elements...
-    return Progression.absolute(
-      newValues,
-      durations,
-      timeSignature: currentlyViewedProgression.timeSignature,
+    return progression.replaceMeasure(
+      index,
+      Progression.raw(
+        values: newValues,
+        durations: AbsoluteDurations(durations),
+        hasNull: hasNull,
+        timeSignature: ts,
+      ),
+      measures: measures,
     );
   }
 }
