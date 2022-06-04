@@ -40,7 +40,8 @@ class _BankProgressionButtonState extends State<BankProgressionButton> {
     ProgressionHandlerBloc _bloc =
         BlocProvider.of<ProgressionHandlerBloc>(context);
     int id = _bloc.currentProgression.id;
-    if (ProgressionBank.idFreeInSubs(_bloc.title, id)) {
+    if (ProgressionBank.idFreeInSubs(
+        location: _bloc.location.toString(), id: id)) {
       if (!ProgressionBank.canBeSubstitution(_bloc.currentProgression)) {
         _error = 'Progression does not consist of 2 - 8 chords';
       }
@@ -57,12 +58,15 @@ class _BankProgressionButtonState extends State<BankProgressionButton> {
     return BlocListener<ProgressionHandlerBloc, ProgressionHandlerState>(
       listenWhen: (previous, state) => state is ProgressionChanged,
       listener: (context, state) {
-        String title = BlocProvider.of<ProgressionHandlerBloc>(context).title;
+        EntryLocation location =
+            BlocProvider.of<ProgressionHandlerBloc>(context).location;
         String? _error = _getError(context);
         bool _canBank = _error == null;
-        if (!_canBank && ProgressionBank.bank[title]!.usedInSubstitutions) {
+        if (!_canBank &&
+            ProgressionBank
+                .bank[location.package]![location.title]!.usedInSubstitutions) {
           BlocProvider.of<BankBloc>(context).add(ChangeUseInSubstitutions(
-              title: title, useInSubstitutions: false));
+              location: location, useInSubstitutions: false));
         }
         setState(() {
           canBank = _canBank;

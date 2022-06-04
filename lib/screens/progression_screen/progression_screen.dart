@@ -4,6 +4,7 @@ import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/exceptions.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_chord.dart';
+import 'package:thoery_test/state/progression_bank.dart';
 import 'package:thoery_test/state/progression_bank_entry.dart';
 import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/blocs/bank/bank_bloc.dart';
@@ -29,17 +30,15 @@ class ProgressionScreen extends StatelessWidget {
   const ProgressionScreen({
     Key? key,
     required this.bankBloc,
+    required this.location,
     required this.entry,
-    required this.title,
     required this.initiallyBanked,
-    required this.builtIn,
   }) : super(key: key);
 
   final BankBloc bankBloc;
+  final EntryLocation location;
   final ProgressionBankEntry entry;
-  final String title;
   final bool initiallyBanked;
-  final bool builtIn;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +48,7 @@ class ProgressionScreen extends StatelessWidget {
         BlocProvider(create: (_) => SubstitutionHandlerBloc()),
         BlocProvider(
           create: (context) => ProgressionHandlerBloc(
-            initialTitle: title,
+            initialLocation: location,
             currentProgression: entry.progression,
             substitutionHandlerBloc:
                 BlocProvider.of<SubstitutionHandlerBloc>(context),
@@ -59,9 +58,8 @@ class ProgressionScreen extends StatelessWidget {
       ],
       child: Scaffold(
         body: ProgressionScreenUI(
-          title: title,
+          location: location,
           initiallyBanked: initiallyBanked,
-          builtIn: builtIn,
         ),
       ),
     );
@@ -71,14 +69,12 @@ class ProgressionScreen extends StatelessWidget {
 class ProgressionScreenUI extends StatelessWidget {
   const ProgressionScreenUI({
     Key? key,
-    required this.title,
+    required this.location,
     required this.initiallyBanked,
-    required this.builtIn,
   }) : super(key: key);
 
-  final String title;
+  final EntryLocation location;
   final bool initiallyBanked;
-  final bool builtIn;
 
   @override
   Widget build(BuildContext context) {
@@ -129,15 +125,15 @@ class ProgressionScreenUI extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          ProgressionTitle(title: title, builtIn: builtIn),
+                          ProgressionTitle(location: location),
                           BankProgressionButton(
                             initiallyBanked: initiallyBanked,
                             onToggle: (active) {
                               BlocProvider.of<BankBloc>(context).add(
                                   ChangeUseInSubstitutions(
-                                      title: BlocProvider.of<
+                                      location: BlocProvider.of<
                                               ProgressionHandlerBloc>(context)
-                                          .title,
+                                          .location,
                                       useInSubstitutions: active));
                             },
                           )
@@ -313,8 +309,9 @@ class ProgressionScreenUI extends StatelessWidget {
                   listener: (context, state) {
                     if (state is ProgressionChanged) {
                       BlocProvider.of<BankBloc>(context).add(OverrideEntry(
-                        title: BlocProvider.of<ProgressionHandlerBloc>(context)
-                            .title,
+                        location:
+                            BlocProvider.of<ProgressionHandlerBloc>(context)
+                                .location,
                         progression:
                             BlocProvider.of<ProgressionHandlerBloc>(context)
                                 .currentProgression,

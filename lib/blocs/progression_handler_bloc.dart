@@ -12,6 +12,7 @@ import 'package:thoery_test/modals/scale_degree_chord.dart';
 import 'package:thoery_test/modals/scale_degree_progression.dart';
 import 'package:thoery_test/modals/substitution.dart';
 import 'package:thoery_test/modals/time_signature.dart';
+import 'package:thoery_test/state/progression_bank.dart';
 import 'package:tonic/tonic.dart';
 import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
 import 'package:weizmann_theory_app_test/utilities.dart';
@@ -24,7 +25,7 @@ part 'progression_handler_state.dart';
 class ProgressionHandlerBloc
     extends Bloc<ProgressionHandlerEvent, ProgressionHandlerState> {
   late final SubstitutionHandlerBloc _substitutionHandlerBloc;
-  String title;
+  EntryLocation location;
   PitchScale? _currentScale;
   ChordProgression currentChords = ChordProgression.empty();
   ScaleDegreeProgression currentProgression = ScaleDegreeProgression.empty();
@@ -56,9 +57,10 @@ class ProgressionHandlerBloc
   ProgressionHandlerBloc({
     required SubstitutionHandlerBloc substitutionHandlerBloc,
     required this.currentProgression,
-    required String initialTitle,
-  })  : _substitutionHandlerBloc = substitutionHandlerBloc,
-        title = initialTitle,
+    required EntryLocation initialLocation,
+  })
+      : _substitutionHandlerBloc = substitutionHandlerBloc,
+        location = initialLocation,
         super(ProgressionHandlerInitial()) {
     on<OverrideProgression>((event, emit) {
       _chordMeasures = null;

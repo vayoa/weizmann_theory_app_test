@@ -1,7 +1,7 @@
 part of 'bank_bloc.dart';
 
 abstract class BankState extends Equatable {
-  final List<String> titles;
+  final Map<String, List<String>> titles;
 
   @override
   List<Object?> get props => [titles];
@@ -10,24 +10,25 @@ abstract class BankState extends Equatable {
 }
 
 class BankInitial extends BankState {
-  const BankInitial() : super(titles: const []);
+  const BankInitial() : super(titles: const {});
 }
 
 class BankLoading extends BankInitial {}
 
 class BankLoaded extends BankState {
-  const BankLoaded({required List<String> titles}) : super(titles: titles);
+  const BankLoaded({required Map<String, List<String>> titles})
+      : super(titles: titles);
 }
 
 class AddedNewEntry extends BankState {
-  final String addedEntryTitle;
+  final EntryLocation addEntryLocation;
 
   @override
-  List<Object?> get props => [...super.props, addedEntryTitle];
+  List<Object?> get props => [...super.props, addEntryLocation];
 
   const AddedNewEntry({
-    required List<String> titles,
-    required this.addedEntryTitle,
+    required Map<String, List<String>> titles,
+    required this.addEntryLocation,
   }) : super(titles: titles);
 }
 
@@ -38,7 +39,7 @@ class RenamedEntry extends BankState {
   List<Object?> get props => [...super.props, newEntryName];
 
   const RenamedEntry({
-    required List<String> titles,
+    required Map<String, List<String>> titles,
     required this.newEntryName,
   }) : super(titles: titles);
 }

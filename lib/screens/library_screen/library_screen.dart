@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/state/progression_bank.dart';
+import 'package:thoery_test/state/progression_bank_entry.dart';
 import 'package:weizmann_theory_app_test/constants.dart';
-import 'package:weizmann_theory_app_test/screens/library_screen/widgets/library_entry.dart';
+import 'package:weizmann_theory_app_test/screens/library_screen/widgets/package_view.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/progression_screen.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 import 'package:window_manager/window_manager.dart';
@@ -19,7 +20,7 @@ class LibraryScreen extends StatefulWidget {
 }
 
 class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
-  List<String> titles = const [];
+  Map<String, List<String>> packages = const {};
   late TextEditingController _controller;
 
   @override
@@ -111,19 +112,26 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                             hintText: 'Search...',
                           ),
                           onChanged: (text) {
-                            List<String> _realTitles =
+                            Map<String, List<String>> _realPackages =
                                 BlocProvider.of<BankBloc>(context).titles;
                             if (text.isEmpty) {
                               setState(() {
-                                titles = _realTitles;
+                                packages = _realPackages;
                               });
                             } else {
                               setState(() {
-                                titles = _realTitles
-                                    .where((String title) => title
-                                        .toLowerCase()
-                                        .contains(text.toLowerCase()))
-                                    .toList();
+                                packages = {};
+                                for (MapEntry<String, List<String>> package
+                                    in _realPackages.entries) {
+                                  List<String> newTitles = package.value
+                                      .where((String title) => title
+                                          .toLowerCase()
+                                          .contains(text.toLowerCase()))
+                                      .toList();
+                                  if (newTitles.isNotEmpty) {
+                                    packages[package.key] = newTitles;
+                                  }
+                                }
                               });
                             }
                           },
@@ -169,8 +177,10 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                               ),
                             );
                             if (_title != null) {
-                              BlocProvider.of<BankBloc>(context)
-                                  .add(AddNewEntry(_title));
+                              BlocProvider.of<BankBloc>(context).add(
+                                  AddNewEntry(EntryLocation(
+                                      ProgressionBank.defaultPackageName,
+                                      _title)));
                             }
                           },
                         ),
@@ -260,16 +270,16 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                   await windowManager.destroy();
                 }
                 if (state is AddedNewEntry) {
-                  _pushProgressionPage(context, state.addedEntryTitle);
+                  _pushProgressionPage(context, state.addEntryLocation);
                 }
                 setState(() {
                   _controller.text = '';
-                  titles = state.titles;
+                  packages = state.titles;
                 });
               },
               buildWhen: (previous, state) => state is! RenamedEntry,
               builder: (context, state) {
-                if (titles.isEmpty) {
+                if (packages.isEmpty) {
                   return const FractionallySizedBox(
                     heightFactor: 0.5,
                     child: Text(
@@ -281,73 +291,18 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                     state is! BankInitial &&
                     state is! ClosingWindow) {
                   return Scrollbar(
-                    child: GridView.builder(
-                        itemCount: titles.length,
-                        shrinkWrap: true,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15.0, horizontal: 30.0),
-                        gridDelegate:
-                            const SliverGridDelegateWithMaxCrossAxisExtent(
-                                maxCrossAxisExtent:
-                                    Constants.libraryEntryWidth * 1.1,
-                                childAspectRatio: Constants.libraryEntryWidth /
-                                    Constants.libraryEntryHeight,
-                                crossAxisSpacing:
-                                    Constants.libraryEntryWidth * 0.1,
-                                mainAxisSpacing:
-                                    Constants.libraryEntryHeight * 0.8),
-                        itemBuilder: (context, index) {
-                          String currentTitle =
-                              titles[titles.length - index - 1];
-                          return LibraryEntry(
-                              title: currentTitle,
-                              builtIn:
-                                  ProgressionBank.bank[currentTitle]!.builtIn,
-                              onOpen: () =>
-                                  _pushProgressionPage(context, currentTitle),
-                              onDelete: () async {
-                                final bool? _result =
-                                    await showGeneralDialog<bool>(
-                                      context: context,
-                                  barrierDismissible: true,
-                                  barrierLabel: 'Details',
-                                  pageBuilder: (context, _, __) =>
-                                      GeneralDialogChoice(
-                                    title: Text.rich(
-                                      TextSpan(
-                                        text:
-                                            'Are you sure you want to permanently '
-                                            'delete "',
-                                        children: [
-                                          TextSpan(
-                                            text: currentTitle,
-                                            style: Constants
-                                                .boldedValuePatternTextStyle,
-                                          ),
-                                          const TextSpan(text: '"?'),
-                                        ],
-                                      ),
-                                      style: Constants.valuePatternTextStyle,
-                                      textAlign: TextAlign.center,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 3,
-                                      softWrap: true,
-                                    ),
-                                    onPressed: (deleted) =>
-                                        Navigator.pop(context, deleted),
-                                    noButtonName: 'Cancel',
-                                    yesButtonName: 'DELETE!',
-                                  ),
-                                );
-                                // When a choice was made...
-                                // This is done like this (and not "if (_result) ..."
-                                // since it can be null...
-                                if (_result == true) {
-                                  BlocProvider.of<BankBloc>(context)
-                                      .add(DeleteEntry(currentTitle));
-                                }
-                              });
-                        }),
+                    child: ListView.builder(
+                      itemCount: packages.length,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 15.0, horizontal: 30.0),
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) => PackageView(
+                        package: packages.keys.elementAt(index),
+                        titles: packages[packages.keys.elementAt(index)]!,
+                        onOpen: (location) =>
+                            _pushProgressionPage(context, location),
+                      ),
+                    ),
                   );
                 } else {
                   return Column(
@@ -371,19 +326,21 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
   }
 
   Future<void> _pushProgressionPage(
-      BuildContext context, String currentTitle) async {
-    BankBloc bloc = BlocProvider.of<BankBloc>(context);
+      BuildContext context, EntryLocation currentLocation) async {
+    final BankBloc bloc = BlocProvider.of<BankBloc>(context);
+    final ProgressionBankEntry progressionBankEntry =
+        ProgressionBank.getAtLocation(currentLocation)!;
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ProgressionScreen(
-          bankBloc: bloc,
-          title: currentTitle,
-          initiallyBanked:
-              ProgressionBank.bank[currentTitle]!.usedInSubstitutions,
-          entry: ProgressionBank.bank[currentTitle]!,
-          builtIn: ProgressionBank.bank[currentTitle]!.builtIn,
-        ),
+        builder: (context) {
+          return ProgressionScreen(
+            bankBloc: bloc,
+            location: currentLocation,
+            entry: progressionBankEntry,
+            initiallyBanked: progressionBankEntry.usedInSubstitutions,
+          );
+        },
       ),
     );
     bloc.add(const SaveToJson());

@@ -18,9 +18,9 @@ class BankBloc extends Bloc<BankEvent, BankState> {
   late final File jsonFile;
   static const String jsonFilePath = r'WeizmannTheory\bank.json';
 
-  late List<String> _titles;
+  late Map<String, List<String>> _titles;
 
-  List<String> get titles => _titles;
+  Map<String, List<String>> get titles => _titles;
 
   BankBloc() : super(const BankInitial()) {
     // --- Initial Load Event ---
@@ -33,42 +33,52 @@ class BankBloc extends Bloc<BankEvent, BankState> {
 
     on<AddNewEntry>((event, emit) {
       ProgressionBank.add(
-        title: event.title,
+        package: event.location.package,
+        title: event.location.title,
         entry: ProgressionBankEntry(
           progression: ScaleDegreeProgression.empty(),
         ),
       );
-      _titles.add(event.title);
-      return emit(AddedNewEntry(titles: _titles, addedEntryTitle: event.title));
+      _addTitle(event.location);
+      return emit(
+          AddedNewEntry(titles: _titles, addEntryLocation: event.location));
     });
     // Since we never rename a progression from the library screen we don't
     // have to rebuild yet.
     on<RenameEntry>((event, emit) {
       ProgressionBank.rename(
-          previousTitle: event.previousTitle, newTitle: event.newTitle);
-      _titles.remove(event.previousTitle);
-      _titles.add(event.newTitle);
+          package: event.location.package,
+          previousTitle: event.location.title,
+          newTitle: event.newTitle);
+      _titles[event.location.package]!.remove(event.location.title);
+      _addTitle(event.location);
       return emit(RenamedEntry(titles: _titles, newEntryName: event.newTitle));
     });
     on<OverrideEntry>((event, emit) {
-      if (ProgressionBank.bank.containsKey(event.title)) {
+      if (ProgressionBank.bank.containsKey(event.location.package) &&
+          ProgressionBank.bank[event.location.package]!
+              .containsKey(event.location.title)) {
         ProgressionBank.add(
-            title: event.title,
-            entry: ProgressionBank.bank[event.title]!
+            package: event.location.package,
+            title: event.location.title,
+            entry: ProgressionBank.getAtLocation(event.location)!
                 .copyWith(progression: event.progression));
       }
     });
     on<ChangeUseInSubstitutions>((event, emit) {
       ProgressionBank.changeUseInSubstitutions(
-          title: event.title, useInSubstitutions: event.useInSubstitutions);
+          package: event.location.package,
+          title: event.location.title,
+          useInSubstitutions: event.useInSubstitutions);
     });
 
     // --- Save Points ---
     on<DeleteEntry>((event, emit) async {
-      ProgressionBank.remove(event.title);
+      ProgressionBank.remove(
+          package: event.location.package, title: event.location.title);
       emit(BankLoading());
       await _saveBankData();
-      _titles.remove(event.title);
+      _titles[event.location.package]!.remove(event.location.title);
       return emit(BankLoaded(titles: _titles));
     });
     on<RevertAll>((event, emit) async {
@@ -91,7 +101,16 @@ class BankBloc extends Bloc<BankEvent, BankState> {
     });
   }
 
-  _getKeys() => _titles = ProgressionBank.bank.keys.toList();
+  _getKeys() => _titles = {
+        for (MapEntry<String, Map<String, ProgressionBankEntry>> package
+            in ProgressionBank.bank.entries)
+          package.key: package.value.keys.toList(),
+      };
+
+  _addTitle(EntryLocation location) {
+    if (!_titles.containsKey(location.package)) _titles[location.package] = [];
+    _titles[location.package]!.add(location.title);
+  }
 
   Future<void> _initialLoad() async {
     final directory = await getApplicationDocumentsDirectory();

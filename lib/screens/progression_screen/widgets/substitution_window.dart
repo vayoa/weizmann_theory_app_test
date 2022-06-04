@@ -508,7 +508,7 @@ class SubstitutionView extends StatelessWidget {
               TextSpan(
                   text: surpriseMe
                       ? 'Final Substitution'
-                      : '"${substitution.title}" ',
+                      : '"${substitution.location}" ',
                   style: const TextStyle(fontWeight: FontWeight.bold)),
               TextSpan(
                   text: surpriseMe ? '' : match.type.name,
