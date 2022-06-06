@@ -109,25 +109,24 @@ class _PackageViewState extends State<PackageView> {
                                 baseline: TextBaseline.ideographic,
                                 child: Padding(
                                   padding:
-                                      EdgeInsets.only(left: 4.0, bottom: 1.0),
+                                      EdgeInsets.only(left: 4.0, bottom: 1.5),
                                   child: Icon(Constants.builtInIcon, size: 12),
                                 ),
                               ),
                           ],
                         ),
                       ),
+                      const SizedBox(width: 5.0),
                       Text(
-                        '  ${widget.titles.length}',
+                        '${widget.titles.length}',
                         style: const TextStyle(fontSize: 12.0),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4.0),
-                        child: Icon(
-                            _expanded
-                                ? Icons.expand_less_rounded
-                                : Icons.expand_more_rounded,
-                            size: 14),
-                      ),
+                      const SizedBox(width: 3.0),
+                      Icon(
+                          _expanded
+                              ? Icons.expand_less_rounded
+                              : Icons.expand_more_rounded,
+                          size: 14),
                     ],
                   ),
                 ],
@@ -136,89 +135,109 @@ class _PackageViewState extends State<PackageView> {
           ),
         ),
       ),
-      content: ExpandablePanel(
+      content: _PackageViewContent(
         controller: _controller,
-        theme: const ExpandableThemeData(hasIcon: false, useInkWell: false),
-        collapsed: const SizedBox(),
-        expanded: Column(
-          children: [
-            widget.titles.isEmpty
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        "No Entries In Package.",
-                        style: Constants.valuePatternTextStyle,
-                      ),
+        package: widget.package,
+        titles: widget.titles,
+        onOpen: widget.onOpen,
+      ),
+    );
+  }
+}
+
+class _PackageViewContent extends StatelessWidget {
+  const _PackageViewContent({
+    Key? key,
+    required this.package,
+    required this.titles,
+    required this.controller,
+    required this.onOpen,
+  }) : super(key: key);
+
+  final String package;
+  final List<String> titles;
+  final ExpandableController controller;
+  final void Function(EntryLocation) onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExpandablePanel(
+      controller: controller,
+      theme: const ExpandableThemeData(hasIcon: false, useInkWell: false),
+      collapsed: const SizedBox(),
+      expanded: Column(
+        children: [
+          titles.isEmpty
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      "No Progressions In Package.",
+                      style: TextStyle(fontSize: 14.0),
                     ),
-                  )
-                : GridView.builder(
-                    itemCount: widget.titles.length,
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16.0, horizontal: 0.5),
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: Constants.libraryEntryWidth *
-                                1.1,
-                            childAspectRatio: Constants.libraryEntryWidth /
-                                Constants.libraryEntryHeight,
-                            crossAxisSpacing: Constants.libraryEntryWidth * 0.1,
-                            mainAxisSpacing:
-                                Constants.libraryEntryHeight * 0.8),
-                    itemBuilder: (context, index) {
-                      String currentTitle =
-                          widget.titles[widget.titles.length - index - 1];
-                      EntryLocation currentLocation =
-                          EntryLocation(widget.package, currentTitle);
-                      return LibraryEntry(
-                          title: currentTitle,
-                          builtIn: ProgressionBank.isBuiltIn(currentLocation),
-                          onOpen: () => widget.onOpen(currentLocation),
-                          onDelete: () async {
-                            final bool? _result = await showGeneralDialog<bool>(
-                              context: context,
-                              barrierDismissible: true,
-                              barrierLabel: 'Details',
-                              pageBuilder: (context, _, __) =>
-                                  GeneralDialogChoice(
-                                title: Text.rich(
-                                  TextSpan(
-                                    text:
-                                        'Are you sure you want to permanently '
-                                        'delete "',
-                                    children: [
-                                      TextSpan(
-                                        text: currentTitle,
-                                        style: Constants
-                                            .boldedValuePatternTextStyle,
-                                      ),
-                                      const TextSpan(text: '"?'),
-                                    ],
-                                  ),
-                                  style: Constants.valuePatternTextStyle,
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 3,
-                                  softWrap: true,
+                  ),
+                )
+              : GridView.builder(
+                  itemCount: titles.length,
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 16.0, horizontal: 0.5),
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: Constants.libraryEntryWidth * 1.1,
+                      childAspectRatio: Constants.libraryEntryWidth /
+                          Constants.libraryEntryHeight,
+                      crossAxisSpacing: Constants.libraryEntryWidth * 0.1,
+                      mainAxisSpacing: Constants.libraryEntryHeight * 0.8),
+                  itemBuilder: (context, index) {
+                    String currentTitle = titles[titles.length - index - 1];
+                    EntryLocation currentLocation =
+                        EntryLocation(package, currentTitle);
+                    return LibraryEntry(
+                        title: currentTitle,
+                        builtIn: ProgressionBank.isBuiltIn(currentLocation),
+                        onOpen: () => onOpen(currentLocation),
+                        onDelete: () async {
+                          final bool? _result = await showGeneralDialog<bool>(
+                            context: context,
+                            barrierDismissible: true,
+                            barrierLabel: 'Details',
+                            pageBuilder: (context, _, __) =>
+                                GeneralDialogChoice(
+                              title: Text.rich(
+                                TextSpan(
+                                  text: 'Are you sure you want to permanently '
+                                      'delete "',
+                                  children: [
+                                    TextSpan(
+                                      text: currentTitle,
+                                      style:
+                                          Constants.boldedValuePatternTextStyle,
+                                    ),
+                                    const TextSpan(text: '"?'),
+                                  ],
                                 ),
-                                onPressed: (deleted) =>
-                                    Navigator.pop(context, deleted),
-                                noButtonName: 'Cancel',
-                                yesButtonName: 'DELETE!',
+                                style: Constants.valuePatternTextStyle,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 3,
+                                softWrap: true,
                               ),
-                            );
-                            // When a choice was made...
-                            // This is done like this (and not "if (_result) ..."
-                            // since it can be null...
-                            if (_result == true) {
-                              BlocProvider.of<BankBloc>(context)
-                                  .add(DeleteEntry(currentLocation));
-                            }
-                          });
-                    })
-          ],
-        ),
+                              onPressed: (deleted) =>
+                                  Navigator.pop(context, deleted),
+                              noButtonName: 'Cancel',
+                              yesButtonName: 'DELETE!',
+                            ),
+                          );
+                          // When a choice was made...
+                          // This is done like this (and not "if (_result) ..."
+                          // since it can be null...
+                          if (_result == true) {
+                            BlocProvider.of<BankBloc>(context)
+                                .add(DeleteEntry(currentLocation));
+                          }
+                        });
+                  })
+        ],
       ),
     );
   }
