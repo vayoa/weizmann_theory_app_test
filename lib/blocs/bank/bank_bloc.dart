@@ -65,20 +65,18 @@ class BankBloc extends Bloc<BankEvent, BankState> {
                 .copyWith(progression: event.progression));
       }
     });
-    on<MoveEntry>((event, emit) {
-      ProgressionBank.move(
-          location: event.currentLocation, newPackage: event.newPackage);
-      final String title = event.currentLocation.title;
-      _titles[event.currentLocation.package]!.remove(title);
-      List<String>? saved = _titles[event.newPackage];
-      if (saved == null) {
-        _titles[event.newPackage] = [title];
-      } else {
+    on<MoveEntries>((event, emit) {
+      List<EntryLocation> moved = [];
+      for (EntryLocation location in event.currentLocations) {
+        ProgressionBank.move(location: location, newPackage: event.newPackage);
+        final String title = location.title;
+        _titles[location.package]!.remove(title);
+        List<String>? saved =
+            _titles[event.newPackage] ?? _addPackage(event.newPackage);
         saved.add(title);
+        moved.add(EntryLocation(event.newPackage, title));
       }
-      return emit(MovedEntry(
-          titles: _titles,
-          newLocation: EntryLocation(event.newPackage, title)));
+      return emit(MovedEntries(titles: _titles, newLocations: moved));
     });
     on<ChangeUseInSubstitutions>((event, emit) {
       ProgressionBank.changeUseInSubstitutions(
@@ -114,16 +112,52 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       emit(BankLoaded(titles: _titles));
       return emit(const ClosingWindow());
     });
+    on<CreatePackage>((event, emit) async {
+      ProgressionBank.bank[event.package] = {};
+      // To make sure built-in is last...
+      _addPackage(event.package);
+      emit(CreatedPackage(titles: _titles, package: event.package));
+      emit(BankLoading());
+      await _saveBankData();
+      return emit(BankLoaded(titles: _titles));
+    });
+    on<DeletePackage>((event, emit) async {
+      ProgressionBank.removePackage(event.package);
+      _titles.remove(event.package);
+      emit(DeletedPackage(titles: _titles, package: event.package));
+      emit(BankLoading());
+      await _saveBankData();
+      return emit(BankLoaded(titles: _titles));
+    });
   }
 
-  _getKeys() => _titles = {
-        for (MapEntry<String, Map<String, ProgressionBankEntry>> package
-            in ProgressionBank.bank.entries)
-          package.key: package.value.keys.toList(),
-      };
+  List<String> _addPackage(String package) {
+    // To make sure built-in is last...
+    List<String>? builtIn = _titles.remove(ProgressionBank.builtInPackageName);
+    _titles[package] = [];
+    if (builtIn != null) {
+      _titles[ProgressionBank.builtInPackageName] = builtIn;
+    }
+    return _titles[package]!;
+  }
+
+  _getKeys() {
+    _titles = {};
+    for (MapEntry<String, Map<String, ProgressionBankEntry>> package
+        in ProgressionBank.bank.entries) {
+      if (package.key != ProgressionBank.builtInPackageName) {
+        _titles[package.key] = package.value.keys.toList();
+      }
+    }
+    if (ProgressionBank.bank.containsKey(ProgressionBank.builtInPackageName)) {
+      _titles[ProgressionBank.builtInPackageName] = ProgressionBank
+          .bank[ProgressionBank.builtInPackageName]!.keys
+          .toList();
+    }
+  }
 
   _addTitle(EntryLocation location) {
-    if (!_titles.containsKey(location.package)) _titles[location.package] = [];
+    if (!_titles.containsKey(location.package)) _addPackage(location.package);
     _titles[location.package]!.add(location.title);
   }
 

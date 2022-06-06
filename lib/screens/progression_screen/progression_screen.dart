@@ -14,7 +14,6 @@ import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/prog
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/reharmonize_bar.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_window.dart';
 import 'package:weizmann_theory_app_test/widgets/dialogs.dart';
-import 'package:weizmann_theory_app_test/widgets/text_and_icon.dart';
 
 import '../../Constants.dart';
 import '../../blocs/audio_player/audio_player_bloc.dart';
@@ -143,10 +142,16 @@ class ProgressionScreenUI extends StatelessWidget {
                                 final String? newPackage =
                                     await showGeneralDialog<String>(
                                   context: context,
-                                  pageBuilder: (context2, _, __) => MoveDialog(
-                                      location: BlocProvider.of<
-                                              ProgressionHandlerBloc>(context)
-                                          .location),
+                                  barrierLabel: 'Move Entry',
+                                  barrierDismissible: true,
+                                  pageBuilder: (context2, _, __) =>
+                                      PackageChooserDialog(
+                                    package:
+                                        BlocProvider.of<ProgressionHandlerBloc>(
+                                                context)
+                                            .location
+                                            .package,
+                                  ),
                                 );
                                 if (newPackage != null) {
                                   final ProgressionHandlerBloc bloc =
@@ -154,8 +159,8 @@ class ProgressionScreenUI extends StatelessWidget {
                                           context);
                                   EntryLocation _location = bloc.location;
                                   BlocProvider.of<BankBloc>(context).add(
-                                    MoveEntry(
-                                      currentLocation: _location,
+                                    MoveEntries(
+                                      currentLocations: [_location],
                                       newPackage: newPackage,
                                     ),
                                   );
@@ -190,37 +195,37 @@ class ProgressionScreenUI extends StatelessWidget {
                             builder: (context, state) {
                               return IgnorePointer(
                                 ignoring:
-                                BlocProvider.of<ProgressionHandlerBloc>(
-                                    context,
-                                    listen: true)
-                                    .progressionEmpty ||
                                     BlocProvider.of<ProgressionHandlerBloc>(
-                                        context,
-                                        listen: true)
-                                        .currentScale ==
-                                        null ||
-                                    (state is Playing &&
-                                        !state.baseControl),
+                                                context,
+                                                listen: true)
+                                            .progressionEmpty ||
+                                        BlocProvider.of<ProgressionHandlerBloc>(
+                                                    context,
+                                                    listen: true)
+                                                .currentScale ==
+                                            null ||
+                                        (state is Playing &&
+                                            !state.baseControl),
                                 child: Row(
                                   children: [
                                     TIconButton(
                                       iconData: (state is Playing &&
-                                          state.baseControl)
+                                              state.baseControl)
                                           ? Icons.pause_rounded
                                           : Icons.play_arrow_rounded,
                                       size: 32,
                                       crop: true,
                                       onPressed: () {
                                         AudioPlayerBloc bloc =
-                                        BlocProvider.of<AudioPlayerBloc>(
-                                            context);
+                                            BlocProvider.of<AudioPlayerBloc>(
+                                                context);
                                         if (state is Playing) {
                                           bloc.add(const Pause());
                                         } else {
                                           List<Progression<Chord>> chords =
                                               BlocProvider.of<
-                                                  ProgressionHandlerBloc>(
-                                                  context)
+                                                          ProgressionHandlerBloc>(
+                                                      context)
                                                   .chordMeasures;
                                           bloc.add(Play(
                                             measures: chords,
@@ -234,7 +239,7 @@ class ProgressionScreenUI extends StatelessWidget {
                                       size: 32,
                                       onPressed: () =>
                                           BlocProvider.of<AudioPlayerBloc>(
-                                              context)
+                                                  context)
                                               .add(const Reset()),
                                     ),
                                   ],
@@ -255,12 +260,12 @@ class ProgressionScreenUI extends StatelessWidget {
                           BlocBuilder<ProgressionHandlerBloc,
                               ProgressionHandlerState>(
                             buildWhen: (_, state) =>
-                            state is ChangedTimeSignature,
+                                state is ChangedTimeSignature,
                             builder: (context, state) {
                               return TextButton(
                                 child: Text(
                                   BlocProvider.of<ProgressionHandlerBloc>(
-                                      context)
+                                          context)
                                       .currentProgression
                                       .timeSignature
                                       .toString(),
@@ -273,14 +278,14 @@ class ProgressionScreenUI extends StatelessWidget {
                                   backgroundColor: Colors.transparent,
                                 ),
                                 onPressed:
-                                BlocProvider.of<SubstitutionHandlerBloc>(
-                                    context,
-                                    listen: true)
-                                    .showingWindow
-                                    ? null
-                                    : () => BlocProvider.of<
-                                    ProgressionHandlerBloc>(context)
-                                    .add(const ChangeTimeSignature()),
+                                    BlocProvider.of<SubstitutionHandlerBloc>(
+                                                context,
+                                                listen: true)
+                                            .showingWindow
+                                        ? null
+                                        : () => BlocProvider.of<
+                                                ProgressionHandlerBloc>(context)
+                                            .add(const ChangeTimeSignature()),
                               );
                             },
                           )
@@ -295,21 +300,21 @@ class ProgressionScreenUI extends StatelessWidget {
                             BlocBuilder<ProgressionHandlerBloc,
                                 ProgressionHandlerState>(
                               buildWhen: (previous, state) =>
-                              state is TypeChanged,
+                                  state is TypeChanged,
                               builder: (context, state) {
                                 return ViewTypeSelector(
                                   tight: true,
                                   startOnChords:
-                                  BlocProvider.of<ProgressionHandlerBloc>(
-                                      context)
-                                      .type ==
-                                      ProgressionType.chords,
+                                      BlocProvider.of<ProgressionHandlerBloc>(
+                                                  context)
+                                              .type ==
+                                          ProgressionType.chords,
                                   onPressed: (newType) {
                                     ProgressionHandlerBloc _bloc =
-                                    BlocProvider.of<ProgressionHandlerBloc>(
-                                        context);
+                                        BlocProvider.of<ProgressionHandlerBloc>(
+                                            context);
                                     if (newType ==
-                                        ProgressionType.romanNumerals ||
+                                            ProgressionType.romanNumerals ||
                                         _bloc.currentScale != null) {
                                       _bloc.add(SwitchType(newType));
                                       return true;
@@ -321,28 +326,28 @@ class ProgressionScreenUI extends StatelessWidget {
                             ),
                             ScaleChooser(
                                 enabled:
-                                !BlocProvider.of<SubstitutionHandlerBloc>(
-                                    context,
-                                    listen: true)
-                                    .showingWindow),
+                                    !BlocProvider.of<SubstitutionHandlerBloc>(
+                                            context,
+                                            listen: true)
+                                        .showingWindow),
                             ReharmonizeBar(
                                 enabled:
-                                !BlocProvider.of<SubstitutionHandlerBloc>(
-                                    context,
-                                    listen: true)
-                                    .showingWindow),
+                                    !BlocProvider.of<SubstitutionHandlerBloc>(
+                                            context,
+                                            listen: true)
+                                        .showingWindow),
                             CustomButton(
                               label: 'Surprise Me',
                               iconData: Icons.lightbulb,
                               onPressed:
-                              BlocProvider.of<SubstitutionHandlerBloc>(
-                                  context,
-                                  listen: true)
-                                  .showingWindow
-                                  ? null
-                                  : () => BlocProvider.of<
-                                  ProgressionHandlerBloc>(context)
-                                  .add(const SurpriseMe()),
+                                  BlocProvider.of<SubstitutionHandlerBloc>(
+                                              context,
+                                              listen: true)
+                                          .showingWindow
+                                      ? null
+                                      : () => BlocProvider.of<
+                                              ProgressionHandlerBloc>(context)
+                                          .add(const SurpriseMe()),
                             ),
                           ],
                         ),
@@ -355,11 +360,11 @@ class ProgressionScreenUI extends StatelessWidget {
                     if (state is ProgressionChanged) {
                       BlocProvider.of<BankBloc>(context).add(OverrideEntry(
                         location:
-                        BlocProvider.of<ProgressionHandlerBloc>(context)
-                            .location,
+                            BlocProvider.of<ProgressionHandlerBloc>(context)
+                                .location,
                         progression:
-                        BlocProvider.of<ProgressionHandlerBloc>(context)
-                            .currentProgression,
+                            BlocProvider.of<ProgressionHandlerBloc>(context)
+                                .currentProgression,
                       ));
                     } else if (state is InvalidInputReceived) {
                       Duration duration = const Duration(seconds: 4);
@@ -367,15 +372,15 @@ class ProgressionScreenUI extends StatelessWidget {
                           '\n${state.exception}';
                       if (state.exception is NonValidDuration) {
                         NonValidDuration e =
-                        state.exception as NonValidDuration;
+                            state.exception as NonValidDuration;
                         String value = e.value is String
                             ? e.value
                             : (e.value == null
-                            ? '//'
-                            : (e.value is Chord
-                            ? (e.value as Chord).commonName
-                            : (e.value as ScaleDegreeChord)
-                            .toString()));
+                                ? '//'
+                                : (e.value is Chord
+                                    ? (e.value as Chord).commonName
+                                    : (e.value as ScaleDegreeChord)
+                                        .toString()));
                         message = 'An invalid duration was inputted:'
                             '\nA value of $value in a duration of '
                             '${(e.duration * e.timeSignature.denominator).toInt()}'
@@ -394,7 +399,7 @@ class ProgressionScreenUI extends StatelessWidget {
                   },
                   builder: (context, state) {
                     ProgressionHandlerBloc bloc =
-                    BlocProvider.of<ProgressionHandlerBloc>(context);
+                        BlocProvider.of<ProgressionHandlerBloc>(context);
                     return SelectableProgressionView(
                       measures: bloc.currentlyViewedMeasures,
                       fromChord: bloc.fromChord,
@@ -408,54 +413,6 @@ class ProgressionScreenUI extends StatelessWidget {
         ),
         const SubstitutionWindow(),
       ],
-    );
-  }
-}
-
-class MoveDialog extends StatelessWidget {
-  const MoveDialog({
-    Key? key,
-    required this.location,
-  }) : super(key: key);
-
-  final EntryLocation location;
-
-  @override
-  Widget build(BuildContext context) {
-    return GeneralDialogTextField(
-      title: Text.rich(
-        TextSpan(text: 'Move Entry From ', children: [
-          TextSpan(
-            text: '"${location.package}"',
-            style: Constants.boldedValuePatternTextStyle,
-          ),
-          const TextSpan(text: ' To ...'),
-        ]),
-        style: Constants.valuePatternTextStyle,
-        textAlign: TextAlign.center,
-      ),
-      options: ProgressionBank.bank.keys
-          .where((element) => element != location.package)
-          .toList(),
-      autoFocus: true,
-      uniqueOption:
-          const TextAndIcon(text: 'Create New', icon: Icons.add_rounded),
-      optionTitleBuilder: (context, option) {
-        if (option == ProgressionBank.builtInPackageName) {
-          return TextAndIcon(text: option, icon: Constants.builtInIcon);
-        }
-        return Text(option);
-      },
-      onCancelled: (_) => Navigator.pop(context),
-      onSubmitted: (input) {
-        if (ProgressionBank.bank.containsKey(input) ||
-            (input.trim().isNotEmpty &&
-                ProgressionBank.packageNameValid(input))) {
-          Navigator.pop(context, input);
-        } else {
-          return '"$input" is an invalid package name.';
-        }
-      },
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 import 'package:thoery_test/state/progression_bank.dart';
+import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 
 import '../../../Constants.dart';
 import '../../../blocs/bank/bank_bloc.dart';
@@ -74,64 +75,137 @@ class _PackageViewState extends State<PackageView> {
         child: MouseRegion(
           onEnter: (event) => setState(() => _hovered = true),
           onExit: (event) => setState(() => _hovered = false),
-          child: Padding(
-            padding: const EdgeInsets.only(top: PackageView.dividerHeight),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: _hovered
-                  ? const EdgeInsets.symmetric(vertical: 3.0)
-                  : EdgeInsets.zero,
-              decoration: BoxDecoration(
-                color: _hovered
-                    ? Constants.buttonBackgroundColor
-                    : Theme.of(context).canvasColor,
-                border: _expanded
-                    ? Border(
-                        bottom: BorderSide(
-                          color: Colors.grey[300]!,
-                          width: 1.0,
-                        ),
-                      )
-                    : null,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text.rich(
-                        TextSpan(
-                          text: widget.package,
-                          style: const TextStyle(fontSize: 18.0),
-                          children: [
-                            if (_builtIn)
-                              const WidgetSpan(
-                                alignment: PlaceholderAlignment.aboveBaseline,
-                                baseline: TextBaseline.ideographic,
-                                child: Padding(
-                                  padding:
-                                      EdgeInsets.only(left: 4.0, bottom: 1.5),
-                                  child: Icon(Constants.builtInIcon, size: 12),
+          child: ColoredBox(
+            color: Theme.of(context).canvasColor,
+            child: Padding(
+              padding: const EdgeInsets.only(top: PackageView.dividerHeight),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: _hovered
+                    ? const EdgeInsets.symmetric(vertical: 3.0, horizontal: 3.0)
+                    : EdgeInsets.zero,
+                decoration: BoxDecoration(
+                  color: _hovered
+                      ? Constants.rangeSelectColor
+                      : Theme.of(context).canvasColor,
+                  borderRadius: _hovered
+                      ? (_expanded
+                          ? const BorderRadius.vertical(
+                              top: Radius.circular(5.0))
+                          : BorderRadius.circular(5.0))
+                      : null,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Flexible(
+                                child: Text.rich(
+                                  TextSpan(
+                                    text: widget.package,
+                                    style: const TextStyle(fontSize: 18.0),
+                                    children: [
+                                      if (_builtIn)
+                                        const WidgetSpan(
+                                          alignment: PlaceholderAlignment
+                                              .aboveBaseline,
+                                          baseline: TextBaseline.ideographic,
+                                          child: Padding(
+                                            padding: EdgeInsets.only(
+                                                left: 4.0, bottom: 1.5),
+                                            child: Icon(Constants.builtInIcon,
+                                                size: 12),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                          ],
+                              const SizedBox(width: 5.0),
+                              Text(
+                                '${widget.titles.length}',
+                                style: const TextStyle(fontSize: 12.0),
+                              ),
+                              const SizedBox(width: 3.0),
+                              Icon(
+                                  _expanded
+                                      ? Icons.expand_less_rounded
+                                      : Icons.expand_more_rounded,
+                                  size: 14),
+                            ],
+                          ),
                         ),
+                        if (_hovered || _expanded)
+                          Padding(
+                            padding: const EdgeInsets.all(6.0),
+                            child: CustomButton(
+                              label: 'Delete',
+                              iconData: Icons.delete_rounded,
+                              tight: true,
+                              onPressed: () async {
+                                bool? delete = await showGeneralDialog(
+                                  context: context,
+                                  barrierLabel: 'Delete Package',
+                                  barrierDismissible: true,
+                                  pageBuilder: (context, _, __) =>
+                                      GeneralDialogChoice(
+                                    title: Text.rich(TextSpan(
+                                      text: 'Delete "',
+                                      children: [
+                                        TextSpan(
+                                          text: widget.package,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        const TextSpan(text: '" ?'),
+                                      ],
+                                    )),
+                                    onPressed: (choice) =>
+                                        Navigator.pop(context, choice),
+                                  ),
+                                );
+                                if (widget.titles.isNotEmpty &&
+                                    delete == true) {
+                                  String? package =
+                                      await showGeneralDialog<String>(
+                                    context: context,
+                                    pageBuilder: (context, _, __) =>
+                                        PackageChooserDialog(
+                                      package: widget.package,
+                                      submitButtonName: 'Delete All Instead',
+                                      submitButtonIcon: Icons.delete_rounded,
+                                      differentSubmit: () =>
+                                          Navigator.pop(context, ''),
+                                      beforePackageName:
+                                          'Move all entries from ',
+                                    ),
+                                  );
+                                  if (package == null || package.isNotEmpty) {
+                                    delete = false;
+                                  }
+                                }
+                                if (delete == true) {
+                                  BlocProvider.of<BankBloc>(context).add(
+                                      DeletePackage(package: widget.package));
+                                }
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (_expanded && !_hovered)
+                      Divider(
+                        height: 1.0,
+                        thickness: 1.0,
+                        color: Colors.grey[300]!,
                       ),
-                      const SizedBox(width: 5.0),
-                      Text(
-                        '${widget.titles.length}',
-                        style: const TextStyle(fontSize: 12.0),
-                      ),
-                      const SizedBox(width: 3.0),
-                      Icon(
-                          _expanded
-                              ? Icons.expand_less_rounded
-                              : Icons.expand_more_rounded,
-                          size: 14),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

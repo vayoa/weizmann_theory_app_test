@@ -144,13 +144,13 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
                         child: CustomButton(
-                          label: 'Create New',
+                          label: 'New Entry',
                           iconData: Icons.add,
                           tight: true,
                           onPressed: () async {
                             String? _title = await showGeneralDialog<String>(
                               context: context,
-                              barrierLabel: 'Create New',
+                              barrierLabel: 'New Entry',
                               barrierDismissible: true,
                               pageBuilder: (context, _, __) =>
                                   GeneralDialogTextField(
@@ -164,6 +164,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                 submitButtonName: 'Create',
                                 onCancelled: (text) => Navigator.pop(context),
                                 onSubmitted: (text) {
+                                  text = text.trim();
                                   if (text.isEmpty ||
                                       RegExp(r'^\s*$').hasMatch(text)) {
                                     return "Entry titles can't be empty.";
@@ -182,6 +183,55 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                   AddNewEntry(EntryLocation(
                                       ProgressionBank.defaultPackageName,
                                       _title)));
+                            }
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                        child: CustomButton(
+                          label: 'New Package',
+                          iconData: Icons.all_inbox_rounded,
+                          tight: true,
+                          onPressed: () async {
+                            String? _package = await showGeneralDialog<String>(
+                              context: context,
+                              barrierLabel: 'New Package',
+                              barrierDismissible: true,
+                              pageBuilder: (context, _, __) =>
+                                  GeneralDialogTextField(
+                                title: const Text(
+                                  'Create a new package named...',
+                                  style: Constants.valuePatternTextStyle,
+                                  textAlign: TextAlign.center,
+                                ),
+                                autoFocus: true,
+                                submitButtonName: 'Create',
+                                onCancelled: (text) => Navigator.pop(context),
+                                onSubmitted: (text) {
+                                  text = text.trim();
+                                  String errorText = text.length > 35
+                                      ? 'Your input'
+                                      : '"$text"';
+                                  if (text.isEmpty ||
+                                      RegExp(r'^\s*$').hasMatch(text)) {
+                                    return "Entry titles can't be empty.";
+                                  } else if (ProgressionBank.bank
+                                      .containsKey(text)) {
+                                    return '$errorText already exists in the library.';
+                                  } else if (!ProgressionBank.packageNameValid(
+                                      text)) {
+                                    return '$errorText is an invalid package name.';
+                                  } else {
+                                    Navigator.pop(context, text);
+                                    return null;
+                                  }
+                                },
+                              ),
+                            );
+                            if (_package != null) {
+                              BlocProvider.of<BankBloc>(context)
+                                  .add(CreatePackage(package: _package));
                             }
                           },
                         ),

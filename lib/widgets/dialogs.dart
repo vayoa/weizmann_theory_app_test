@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:thoery_test/state/progression_bank.dart';
+import 'package:weizmann_theory_app_test/widgets/text_and_icon.dart';
 
 import '../constants.dart';
 import 'custom_button.dart';
@@ -86,6 +87,7 @@ class GeneralDialogChoice extends StatelessWidget {
     required this.onPressed,
     this.noButtonName = 'No',
     this.yesButtonName = 'Yes',
+    this.yesButtonIcon = Icons.check_rounded,
     this.widthFactor = GeneralDialog.defaultWidthFactor,
     this.heightFactor = GeneralDialog.defaultHeightFactor,
   }) : super(key: key);
@@ -93,6 +95,7 @@ class GeneralDialogChoice extends StatelessWidget {
   final Widget title;
   final String noButtonName;
   final String yesButtonName;
+  final IconData yesButtonIcon;
   final void Function(bool) onPressed;
   final double widthFactor;
   final double heightFactor;
@@ -119,7 +122,7 @@ class GeneralDialogChoice extends StatelessWidget {
                 ),
                 CustomButton(
                   label: yesButtonName,
-                  iconData: Icons.check_rounded,
+                  iconData: yesButtonIcon,
                   tight: true,
                   onPressed: () => onPressed(true),
                 ),
@@ -142,9 +145,11 @@ class GeneralDialogTextField extends StatefulWidget {
     required this.onSubmitted,
     this.cancelButtonName = 'Cancel',
     this.submitButtonName = 'Submit',
+    this.submitButtonIcon = Icons.check_rounded,
     this.autoFocus = false,
     this.optionTitleBuilder,
     this.uniqueOption,
+    this.differentSubmit,
   }) : super(key: key);
 
   final Widget title;
@@ -152,11 +157,13 @@ class GeneralDialogTextField extends StatefulWidget {
   final List<String>? options;
   final String cancelButtonName;
   final String submitButtonName;
+  final IconData submitButtonIcon;
   final void Function(String) onCancelled;
   final String? Function(String) onSubmitted;
   final bool autoFocus;
   final Widget Function(BuildContext, String)? optionTitleBuilder;
   final Widget? uniqueOption;
+  final void Function()? differentSubmit;
 
   @override
   _GeneralDialogTextFieldState createState() => _GeneralDialogTextFieldState();
@@ -188,6 +195,7 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
     return GeneralDialogChoice(
       widthFactor: GeneralDialog.defaultWidthFactor + 0.05,
       heightFactor: GeneralDialog.defaultHeightFactor + 0.05,
+      yesButtonIcon: widget.submitButtonIcon,
       title: Column(
         children: [
           widget.title,
@@ -287,7 +295,11 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
       yesButtonName: widget.submitButtonName,
       onPressed: (choice) {
         if (choice) {
-          _submit(_controller.text);
+          if (widget.differentSubmit == null) {
+            _submit(_controller.text);
+          } else {
+            widget.differentSubmit!();
+          }
         } else {
           widget.onCancelled(_controller.text);
         }
@@ -362,6 +374,68 @@ class GeneralThreeChoiceDialog extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class PackageChooserDialog extends StatelessWidget {
+  const PackageChooserDialog({
+    Key? key,
+    required this.package,
+    this.beforePackageName = 'Move Entry From ',
+    this.afterPackageName = ' To ...',
+    this.submitButtonName = 'Submit',
+    this.submitButtonIcon = Icons.check_rounded,
+    this.differentSubmit,
+  }) : super(key: key);
+
+  final String package;
+  final String beforePackageName;
+  final String afterPackageName;
+  final String submitButtonName;
+  final IconData submitButtonIcon;
+  final void Function()? differentSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    return GeneralDialogTextField(
+      title: Text.rich(
+        TextSpan(text: beforePackageName, children: [
+          TextSpan(
+            text: '"$package"',
+            style: Constants.boldedValuePatternTextStyle,
+          ),
+          TextSpan(text: afterPackageName),
+        ]),
+        style: Constants.valuePatternTextStyle,
+        textAlign: TextAlign.center,
+      ),
+      submitButtonName: submitButtonName,
+      submitButtonIcon: submitButtonIcon,
+      differentSubmit: differentSubmit,
+      options: ProgressionBank.bank.keys
+          .where((element) => element != package)
+          .toList(),
+      autoFocus: true,
+      uniqueOption:
+          const TextAndIcon(text: 'Create New', icon: Icons.add_rounded),
+      optionTitleBuilder: (context, option) {
+        if (option == ProgressionBank.builtInPackageName) {
+          return TextAndIcon(text: option, icon: Constants.builtInIcon);
+        }
+        return Text(option);
+      },
+      onCancelled: (_) => Navigator.pop(context),
+      onSubmitted: (input) {
+        if (ProgressionBank.bank.containsKey(input) ||
+            (input.trim().isNotEmpty &&
+                ProgressionBank.packageNameValid(input))) {
+          Navigator.pop(context, input);
+          return null;
+        } else {
+          return '"$input" is an invalid package name.';
+        }
+      },
     );
   }
 }

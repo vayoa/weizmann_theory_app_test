@@ -44,16 +44,38 @@ class RenamedEntry extends BankState {
   }) : super(titles: titles);
 }
 
-class MovedEntry extends BankState {
-  final EntryLocation newLocation;
+class MovedEntries extends BankState {
+  final List<EntryLocation> newLocations;
 
   @override
-  List<Object?> get props => [...super.props, newLocation];
+  List<Object?> get props => [...super.props, newLocations];
 
-  const MovedEntry({
+  const MovedEntries({
     required Map<String, List<String>> titles,
-    required this.newLocation,
+    required this.newLocations,
   }) : super(titles: titles);
+}
+
+class CreatedPackage extends BankState {
+  final String package;
+
+  @override
+  List<Object?> get props => [...super.props, package];
+
+  const CreatedPackage(
+      {required Map<String, List<String>> titles, required this.package})
+      : super(titles: titles);
+}
+
+class DeletedPackage extends BankState {
+  final String package;
+
+  @override
+  List<Object?> get props => [...super.props, package];
+
+  const DeletedPackage(
+      {required Map<String, List<String>> titles, required this.package})
+      : super(titles: titles);
 }
 
 class ClosingWindow extends BankInitial {
