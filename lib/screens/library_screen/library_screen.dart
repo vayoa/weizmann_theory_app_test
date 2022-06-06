@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/state/progression_bank.dart';
 import 'package:thoery_test/state/progression_bank_entry.dart';
 import 'package:weizmann_theory_app_test/constants.dart';
-import 'package:weizmann_theory_app_test/screens/library_screen/widgets/package_view.dart';
+import 'package:weizmann_theory_app_test/screens/library_screen/widgets/library_list.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/progression_screen.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 import 'package:window_manager/window_manager.dart';
@@ -290,19 +290,11 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                 } else if (state is! BankLoading &&
                     state is! BankInitial &&
                     state is! ClosingWindow) {
-                  return Scrollbar(
-                    child: ListView.builder(
-                      itemCount: packages.length,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 15.0, horizontal: 30.0),
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) => PackageView(
-                        package: packages.keys.elementAt(index),
-                        titles: packages[packages.keys.elementAt(index)]!,
-                        onOpen: (location) =>
-                            _pushProgressionPage(context, location),
-                      ),
-                    ),
+                  return LibraryList(
+                    packages: packages,
+                    searching: _controller.text.isNotEmpty,
+                    onOpen: (location) =>
+                        _pushProgressionPage(context, location),
                   );
                 } else {
                   return Column(

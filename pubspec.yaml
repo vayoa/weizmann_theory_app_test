@@ -38,6 +38,8 @@ dependencies:
   equatable: ^2.0.3
   window_manager: ^0.2.2
   dart_vlc: ^0.2.0
+  expandable: ^5.0.1
+  sticky_headers: ^0.2.0
 
 dev_dependencies:
   flutter_test:

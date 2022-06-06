@@ -97,7 +97,7 @@ class ProgressionScreenUI extends StatelessWidget {
                       Row(
                         children: [
                           CustomButton(
-                            label: 'Back',
+                            label: 'Library / ${location.package}',
                             tight: true,
                             size: 12,
                             iconData: Constants.backIcon,
@@ -120,6 +120,14 @@ class ProgressionScreenUI extends StatelessWidget {
                                         .add(const SaveToJson()),
                               );
                             },
+                          ),
+                          const SizedBox(width: 8),
+                          CustomButton(
+                            label: 'Move',
+                            tight: true,
+                            size: 12,
+                            iconData: Icons.unarchive_rounded,
+                            onPressed: () {},
                           ),
                         ],
                       ),
