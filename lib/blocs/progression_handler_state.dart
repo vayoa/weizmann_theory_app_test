@@ -87,3 +87,14 @@ class ChangedTimeSignature extends ProgressionHandlerState {
       {required Progression progression, required this.even})
       : super(progression);
 }
+
+class ChangedLocation extends ProgressionHandlerState {
+  final EntryLocation newLocation;
+
+  @override
+  List<Object?> get props => [newLocation];
+
+  const ChangedLocation(
+      {required Progression progression, required this.newLocation})
+      : super(progression);
+}

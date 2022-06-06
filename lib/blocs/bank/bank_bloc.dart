@@ -51,7 +51,7 @@ class BankBloc extends Bloc<BankEvent, BankState> {
           previousTitle: event.location.title,
           newTitle: event.newTitle);
       _titles[event.location.package]!.remove(event.location.title);
-      _addTitle(event.location);
+      _addTitle(EntryLocation(event.location.package, event.newTitle));
       return emit(RenamedEntry(titles: _titles, newEntryName: event.newTitle));
     });
     on<OverrideEntry>((event, emit) {
@@ -64,6 +64,21 @@ class BankBloc extends Bloc<BankEvent, BankState> {
             entry: ProgressionBank.getAtLocation(event.location)!
                 .copyWith(progression: event.progression));
       }
+    });
+    on<MoveEntry>((event, emit) {
+      ProgressionBank.move(
+          location: event.currentLocation, newPackage: event.newPackage);
+      final String title = event.currentLocation.title;
+      _titles[event.currentLocation.package]!.remove(title);
+      List<String>? saved = _titles[event.newPackage];
+      if (saved == null) {
+        _titles[event.newPackage] = [title];
+      } else {
+        saved.add(title);
+      }
+      return emit(MovedEntry(
+          titles: _titles,
+          newLocation: EntryLocation(event.newPackage, title)));
     });
     on<ChangeUseInSubstitutions>((event, emit) {
       ProgressionBank.changeUseInSubstitutions(

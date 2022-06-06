@@ -91,3 +91,12 @@ class SurpriseMe extends ProgressionHandlerEvent {
 class ChangeTimeSignature extends ProgressionHandlerEvent {
   const ChangeTimeSignature();
 }
+
+class ChangeLocation extends ProgressionHandlerEvent {
+  final EntryLocation newLocation;
+
+  @override
+  List<Object?> get props => [newLocation];
+
+  const ChangeLocation({required this.newLocation});
+}

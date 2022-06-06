@@ -44,6 +44,18 @@ class RenamedEntry extends BankState {
   }) : super(titles: titles);
 }
 
+class MovedEntry extends BankState {
+  final EntryLocation newLocation;
+
+  @override
+  List<Object?> get props => [...super.props, newLocation];
+
+  const MovedEntry({
+    required Map<String, List<String>> titles,
+    required this.newLocation,
+  }) : super(titles: titles);
+}
+
 class ClosingWindow extends BankInitial {
   const ClosingWindow();
 }

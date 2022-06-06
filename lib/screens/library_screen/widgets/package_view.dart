@@ -87,8 +87,10 @@ class _PackageViewState extends State<PackageView> {
                     : Theme.of(context).canvasColor,
                 border: _expanded
                     ? Border(
-                        bottom:
-                            BorderSide(color: Colors.grey[300]!, width: 1.0),
+                        bottom: BorderSide(
+                          color: Colors.grey[300]!,
+                          width: 1.0,
+                        ),
                       )
                     : null,
               ),

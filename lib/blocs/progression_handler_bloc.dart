@@ -58,8 +58,7 @@ class ProgressionHandlerBloc
     required SubstitutionHandlerBloc substitutionHandlerBloc,
     required this.currentProgression,
     required EntryLocation initialLocation,
-  })
-      : _substitutionHandlerBloc = substitutionHandlerBloc,
+  })  : _substitutionHandlerBloc = substitutionHandlerBloc,
         location = initialLocation,
         super(ProgressionHandlerInitial()) {
     on<OverrideProgression>((event, emit) {
@@ -267,6 +266,11 @@ class ProgressionHandlerBloc
       emit(ChangedTimeSignature(
           progression: currentlyViewedProgression, even: !even));
       add(OverrideProgression(progression));
+    });
+    on<ChangeLocation>((event, emit) {
+      location = event.newLocation;
+      return emit(ChangedLocation(
+          progression: currentlyViewedProgression, newLocation: location));
     });
   }
 

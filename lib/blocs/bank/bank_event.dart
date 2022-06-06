@@ -61,6 +61,19 @@ class OverrideEntry extends BankEvent {
   const OverrideEntry({required this.location, required this.progression});
 }
 
+class MoveEntry extends BankEvent {
+  final EntryLocation currentLocation;
+  final String newPackage;
+
+  @override
+  List<Object?> get props => [currentLocation, newPackage];
+
+  const MoveEntry({
+    required this.currentLocation,
+    required this.newPackage,
+  });
+}
+
 class SaveAndCloseWindow extends BankEvent {
   @override
   List<Object?> get props => const [];

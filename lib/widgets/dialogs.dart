@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../constants.dart';
 import 'custom_button.dart';
@@ -135,19 +136,27 @@ class GeneralDialogTextField extends StatefulWidget {
   const GeneralDialogTextField({
     Key? key,
     required this.title,
+    this.maxLength,
+    this.options,
     required this.onCancelled,
     required this.onSubmitted,
     this.cancelButtonName = 'Cancel',
     this.submitButtonName = 'Submit',
     this.autoFocus = false,
+    this.optionTitleBuilder,
+    this.uniqueOption,
   }) : super(key: key);
 
   final Widget title;
+  final int? maxLength;
+  final List<String>? options;
   final String cancelButtonName;
   final String submitButtonName;
   final void Function(String) onCancelled;
   final String? Function(String) onSubmitted;
   final bool autoFocus;
+  final Widget Function(BuildContext, String)? optionTitleBuilder;
+  final Widget? uniqueOption;
 
   @override
   _GeneralDialogTextFieldState createState() => _GeneralDialogTextFieldState();
@@ -155,17 +164,22 @@ class GeneralDialogTextField extends StatefulWidget {
 
 class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
   late final TextEditingController _controller;
+  late final FocusNode _focusNode;
   String? errorMessage;
+  late final bool _uniqueShown;
 
   @override
   void initState() {
     _controller = TextEditingController();
+    _focusNode = FocusNode();
+    _uniqueShown = widget.uniqueOption != null;
     super.initState();
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -177,23 +191,94 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
       title: Column(
         children: [
           widget.title,
-          TextField(
-            controller: _controller,
-            autofocus: widget.autoFocus,
-            maxLength: Constants.maxTitleCharacters,
-            maxLines: 1,
-            style: Constants.boldedValuePatternTextStyle,
-            textAlign: TextAlign.center,
-            decoration: InputDecoration(
-              isDense: true,
-              constraints: const BoxConstraints(maxWidth: 36 * 11),
-              errorText: errorMessage,
-            ),
-            onSubmitted: _submit,
-            onChanged: (text) {
-              if (errorMessage != null) {
-                setState(() => errorMessage = null);
+          RawAutocomplete<String>(
+            textEditingController: _controller,
+            focusNode: _focusNode,
+            onSelected: _submit,
+            optionsViewBuilder: (BuildContext context,
+                void Function(String) onSelected, Iterable<String> options) {
+              final int highlighted = AutocompleteHighlightedOption.of(context);
+              return Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 4.0,
+                  child: ConstrainedBox(
+                    constraints:
+                        const BoxConstraints(maxHeight: 200, maxWidth: 396),
+                    child: ListView.builder(
+                      itemCount: options.length,
+                      shrinkWrap: true,
+                      padding: EdgeInsets.zero,
+                      itemBuilder: (BuildContext context, int index) {
+                        final String option = options.elementAt(index);
+                        late final Widget title;
+                        bool unique = false;
+                        if (_uniqueShown &&
+                            index == options.length - 1 &&
+                            !widget.options!.contains(option)) {
+                          // If a unique option was given it'll always be the last.
+                          title = widget.uniqueOption!;
+                          unique = true;
+                        } else if (widget.optionTitleBuilder != null) {
+                          title =
+                              widget.optionTitleBuilder!.call(context, option);
+                        } else {
+                          title = Text(option);
+                        }
+                        return InkWell(
+                          onTap: () =>
+                              onSelected(unique ? _controller.text : option),
+                          child: ListTile(
+                            title: title,
+                            tileColor:
+                                index == highlighted ? Colors.grey[400]! : null,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+            optionsBuilder: (TextEditingValue textEditingValue) {
+              final String text = textEditingValue.text;
+              if (text == '' ||
+                  widget.options == null ||
+                  widget.options!.isEmpty) {
+                return const Iterable<String>.empty();
+              } else {
+                List<String> r = widget.options!
+                    .where((element) =>
+                        element.toLowerCase().contains(text.toLowerCase()))
+                    .toList();
+                if (_uniqueShown && !(r.length == 1 && r.first == text)) {
+                  r.add(text);
+                }
+                return r;
               }
+            },
+            fieldViewBuilder: (context, controller, node, onSubmit) {
+              return TextField(
+                controller: controller,
+                focusNode: node,
+                autofocus: widget.autoFocus,
+                maxLength: widget.maxLength,
+                maxLines: 1,
+                style: Constants.boldedValuePatternTextStyle,
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(
+                  isDense: true,
+                  constraints: const BoxConstraints(maxWidth: 396),
+                  errorText: errorMessage,
+                ),
+                onSubmitted: (input) =>
+                    widget.options == null ? _submit(input) : onSubmit(),
+                onChanged: (text) {
+                  if (errorMessage != null) {
+                    setState(() => errorMessage = null);
+                  }
+                },
+              );
             },
           ),
         ],

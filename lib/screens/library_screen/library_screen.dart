@@ -159,6 +159,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                   style: Constants.valuePatternTextStyle,
                                   textAlign: TextAlign.center,
                                 ),
+                                maxLength: Constants.maxTitleCharacters,
                                 autoFocus: true,
                                 submitButtonName: 'Create',
                                 onCancelled: (text) => Navigator.pop(context),
