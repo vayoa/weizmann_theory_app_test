@@ -6,11 +6,11 @@ class LibraryList extends StatelessWidget {
   const LibraryList({
     Key? key,
     required this.packages,
-    required this.onOpen,
     required this.searching,
+    required this.onOpen,
   }) : super(key: key);
 
-  final Map<String, List<String>> packages;
+  final Map<String, Map<String, bool>> packages;
   final bool searching;
   final void Function(EntryLocation) onOpen;
 
@@ -23,9 +23,11 @@ class LibraryList extends StatelessWidget {
         shrinkWrap: true,
         itemBuilder: (context, index) => PackageView(
           package: packages.keys.elementAt(index),
+          searching: searching,
           titles: packages[packages.keys.elementAt(index)]!,
           onOpen: onOpen,
-          searching: searching,
+          onTicked: (title, ticked) =>
+              packages[packages.keys.elementAt(index)]![title] = ticked,
         ),
       ),
     );

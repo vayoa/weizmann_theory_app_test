@@ -20,7 +20,8 @@ class LibraryScreen extends StatefulWidget {
 }
 
 class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
-  Map<String, List<String>> packages = const {};
+  Map<String, Map<String, bool>> packages = const {};
+  Map<String, Map<String, bool>> _realPackages = const {};
   late TextEditingController _controller;
 
   @override
@@ -112,22 +113,21 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                             hintText: 'Search...',
                           ),
                           onChanged: (text) {
-                            Map<String, List<String>> _realPackages =
-                                BlocProvider.of<BankBloc>(context).titles;
                             if (text.isEmpty) {
                               setState(() {
-                                packages = _realPackages;
+                                packages = Map.from(_realPackages);
                               });
                             } else {
                               setState(() {
-                                packages = {};
-                                for (MapEntry<String, List<String>> package
+                                for (MapEntry<String, Map<String, bool>> package
                                     in _realPackages.entries) {
-                                  List<String> newTitles = package.value
-                                      .where((String title) => title
-                                          .toLowerCase()
-                                          .contains(text.toLowerCase()))
-                                      .toList();
+                                  Map<String, bool> newTitles = Map.fromEntries(
+                                      package.value.keys
+                                          .where((String title) => title
+                                              .toLowerCase()
+                                              .contains(text.toLowerCase()))
+                                          .map((e) =>
+                                              MapEntry(e, package.value[e]!)));
                                   if (newTitles.isNotEmpty) {
                                     packages[package.key] = newTitles;
                                   }
@@ -324,8 +324,10 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                   _pushProgressionPage(context, state.addEntryLocation);
                 }
                 setState(() {
+                  _realPackages = _getPackages(state.titles);
+                  // Clone _realPackages to not destroy it...
+                  packages = Map.from(_realPackages);
                   _controller.text = '';
-                  packages = state.titles;
                 });
               },
               buildWhen: (previous, state) => state is! RenamedEntry,
@@ -367,6 +369,17 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
       ),
     );
   }
+
+  _getPackages(Map<String, List<String>> newPackages) => {
+        for (var package in newPackages.entries)
+          package.key: {
+            for (var title in package.value)
+              title: _realPackages.containsKey(package.key) &&
+                      _realPackages[package.key]!.containsKey(title)
+                  ? _realPackages[package.key]![title]!
+                  : false
+          },
+      };
 
   Future<void> _pushProgressionPage(
       BuildContext context, EntryLocation currentLocation) async {

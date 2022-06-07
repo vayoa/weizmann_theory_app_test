@@ -24,6 +24,19 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.grey,
+        checkboxTheme: CheckboxThemeData(
+            splashRadius: 0.0,
+            checkColor: MaterialStateProperty.all(Colors.black),
+            fillColor: MaterialStateProperty.resolveWith((states) {
+              if (states.contains(MaterialState.hovered)) {
+                return Constants.selectedColor;
+              } else {
+                return Constants.buttonBackgroundColor;
+              }
+            }),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Constants.tightBorderRadius),
+            )),
         buttonTheme: ButtonThemeData(
           minWidth: Constants.minButtonWidth,
           height: Constants.minButtonHeight,

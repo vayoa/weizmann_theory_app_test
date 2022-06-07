@@ -17,12 +17,14 @@ class PackageView extends StatefulWidget {
     required this.titles,
     required this.searching,
     required this.onOpen,
+    required this.onTicked,
   }) : super(key: key);
 
   final String package;
-  final List<String> titles;
+  final Map<String, bool> titles;
   final bool searching;
   final void Function(EntryLocation location) onOpen;
+  final void Function(String, bool) onTicked;
   static const double dividerHeight = 8.0;
 
   @override
@@ -38,7 +40,10 @@ class _PackageViewState extends State<PackageView> {
   @override
   void initState() {
     _builtIn = widget.package == ProgressionBank.builtInPackageName;
-    _expanded = widget.titles.isNotEmpty && !_builtIn;
+    // We expand if we have titles selected or if we have titles and are not
+    // the built-in package...
+    _expanded = widget.titles.values.any((element) => element) ||
+        (widget.titles.isNotEmpty && !_builtIn);
     _controller = ExpandableController(initialExpanded: _expanded);
     _controller.addListener(() {
       if (_controller.expanded != _expanded) {
@@ -85,9 +90,9 @@ class _PackageViewState extends State<PackageView> {
                       : Theme.of(context).canvasColor,
                   borderRadius: _hovered
                       ? (_expanded
-                      ? const BorderRadius.vertical(
-                      top: Radius.circular(5.0))
-                      : BorderRadius.circular(5.0))
+                          ? const BorderRadius.vertical(
+                              top: Radius.circular(5.0))
+                          : BorderRadius.circular(5.0))
                       : null,
                 ),
                 child: Column(
@@ -138,11 +143,28 @@ class _PackageViewState extends State<PackageView> {
                         if (_hovered || _expanded)
                           Padding(
                             padding: const EdgeInsets.all(6.0),
-                            child: CustomButton(
-                              label: 'Delete',
-                              iconData: Icons.delete_rounded,
-                              tight: true,
-                              onPressed: () => _handleDelete(context),
+                            child: Row(
+                              children: [
+                                ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxHeight: 10),
+                                  child: Checkbox(
+                                    value: _getCheckboxValue(),
+                                    tristate: true,
+                                    onChanged: (ticked) => setState(() {
+                                      for (var title in widget.titles.keys) {
+                                        widget.titles[title] = ticked ?? false;
+                                      }
+                                    }),
+                                  ),
+                                ),
+                                CustomButton(
+                                  label: 'Delete',
+                                  iconData: Icons.delete_rounded,
+                                  tight: true,
+                                  onPressed: () => _handleDelete(context),
+                                ),
+                              ],
                             ),
                           ),
                       ],
@@ -165,8 +187,23 @@ class _PackageViewState extends State<PackageView> {
         package: widget.package,
         titles: widget.titles,
         onOpen: widget.onOpen,
+        onTicked: (title, ticked) {
+          widget.onTicked(title, ticked);
+          setState(() {});
+        },
       ),
     );
+  }
+
+  bool? _getCheckboxValue() {
+    var list = widget.titles.values.where((element) => element);
+    if (list.isEmpty) {
+      return false;
+    } else if (list.length == widget.titles.length) {
+      return true;
+    } else {
+      return null;
+    }
   }
 
   @override
@@ -213,7 +250,7 @@ class _PackageViewState extends State<PackageView> {
       } else {
         BlocProvider.of<BankBloc>(context).add(MoveEntries(
           currentLocations: [
-            for (String title in widget.titles)
+            for (String title in widget.titles.keys)
               EntryLocation(widget.package, title)
           ],
           newPackage: newPackage,
@@ -234,12 +271,14 @@ class _PackageViewContent extends StatelessWidget {
     required this.titles,
     required this.controller,
     required this.onOpen,
+    required this.onTicked,
   }) : super(key: key);
 
   final String package;
-  final List<String> titles;
+  final Map<String, bool> titles;
   final ExpandableController controller;
   final void Function(EntryLocation) onOpen;
+  final void Function(String, bool) onTicked;
 
   @override
   Widget build(BuildContext context) {
@@ -271,12 +310,15 @@ class _PackageViewContent extends StatelessWidget {
                       crossAxisSpacing: Constants.libraryEntryWidth * 0.1,
                       mainAxisSpacing: Constants.libraryEntryHeight * 0.8),
                   itemBuilder: (context, index) {
-                    String currentTitle = titles[titles.length - index - 1];
+                    index = titles.length - index - 1;
+                    String currentTitle = titles.keys.elementAt(index);
                     EntryLocation currentLocation =
                         EntryLocation(package, currentTitle);
                     return LibraryEntry(
                         title: currentTitle,
                         builtIn: ProgressionBank.isBuiltIn(currentLocation),
+                        ticked: titles.values.elementAt(index),
+                        onTick: (ticked) => onTicked(currentTitle, ticked),
                         onOpen: () => onOpen(currentLocation),
                         onDelete: () async {
                           final bool? _result = await showGeneralDialog<bool>(
