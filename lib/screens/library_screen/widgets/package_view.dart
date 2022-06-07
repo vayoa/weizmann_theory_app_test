@@ -62,17 +62,12 @@ class _PackageViewState extends State<PackageView> {
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return StickyHeader(
       header: GestureDetector(
         onTap: () => _controller.value = !_expanded,
         child: MouseRegion(
+          cursor: SystemMouseCursors.click,
           onEnter: (event) => setState(() => _hovered = true),
           onExit: (event) => setState(() => _hovered = false),
           child: ColoredBox(
@@ -90,9 +85,9 @@ class _PackageViewState extends State<PackageView> {
                       : Theme.of(context).canvasColor,
                   borderRadius: _hovered
                       ? (_expanded
-                          ? const BorderRadius.vertical(
-                              top: Radius.circular(5.0))
-                          : BorderRadius.circular(5.0))
+                      ? const BorderRadius.vertical(
+                      top: Radius.circular(5.0))
+                      : BorderRadius.circular(5.0))
                       : null,
                 ),
                 child: Column(
@@ -147,53 +142,7 @@ class _PackageViewState extends State<PackageView> {
                               label: 'Delete',
                               iconData: Icons.delete_rounded,
                               tight: true,
-                              onPressed: () async {
-                                bool? delete = await showGeneralDialog(
-                                  context: context,
-                                  barrierLabel: 'Delete Package',
-                                  barrierDismissible: true,
-                                  pageBuilder: (context, _, __) =>
-                                      GeneralDialogChoice(
-                                    title: Text.rich(TextSpan(
-                                      text: 'Delete "',
-                                      children: [
-                                        TextSpan(
-                                          text: widget.package,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        const TextSpan(text: '" ?'),
-                                      ],
-                                    )),
-                                    onPressed: (choice) =>
-                                        Navigator.pop(context, choice),
-                                  ),
-                                );
-                                if (widget.titles.isNotEmpty &&
-                                    delete == true) {
-                                  String? package =
-                                      await showGeneralDialog<String>(
-                                    context: context,
-                                    pageBuilder: (context, _, __) =>
-                                        PackageChooserDialog(
-                                      package: widget.package,
-                                      submitButtonName: 'Delete All Instead',
-                                      submitButtonIcon: Icons.delete_rounded,
-                                      differentSubmit: () =>
-                                          Navigator.pop(context, ''),
-                                      beforePackageName:
-                                          'Move all entries from ',
-                                    ),
-                                  );
-                                  if (package == null || package.isNotEmpty) {
-                                    delete = false;
-                                  }
-                                }
-                                if (delete == true) {
-                                  BlocProvider.of<BankBloc>(context).add(
-                                      DeletePackage(package: widget.package));
-                                }
-                              },
+                              onPressed: () => _handleDelete(context),
                             ),
                           ),
                       ],
@@ -218,6 +167,63 @@ class _PackageViewState extends State<PackageView> {
         onOpen: widget.onOpen,
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleDelete(BuildContext context) async {
+    bool? delete = await showGeneralDialog(
+      context: context,
+      barrierLabel: 'Delete Package',
+      barrierDismissible: true,
+      pageBuilder: (context, _, __) => GeneralDialogChoice(
+        title: Text.rich(TextSpan(
+          text: 'Delete "',
+          style: Constants.valuePatternTextStyle,
+          children: [
+            TextSpan(
+              text: widget.package,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const TextSpan(text: '" ?'),
+          ],
+        )),
+        onPressed: (choice) => Navigator.pop(context, choice),
+      ),
+    );
+    if (widget.titles.isNotEmpty && delete == true) {
+      String? newPackage = await showGeneralDialog<String>(
+        context: context,
+        barrierLabel: 'Move All Entries',
+        barrierDismissible: true,
+        pageBuilder: (context, _, __) => PackageChooserDialog(
+          package: widget.package,
+          submitButtonName: 'Delete All Instead',
+          submitButtonIcon: Icons.delete_rounded,
+          differentSubmit: () => Navigator.pop(context, ''),
+          beforePackageName: 'Move all entries from ',
+        ),
+      );
+      if (newPackage == null) {
+        delete = false;
+      } else {
+        BlocProvider.of<BankBloc>(context).add(MoveEntries(
+          currentLocations: [
+            for (String title in widget.titles)
+              EntryLocation(widget.package, title)
+          ],
+          newPackage: newPackage,
+        ));
+      }
+    }
+    if (delete == true) {
+      BlocProvider.of<BankBloc>(context)
+          .add(DeletePackage(package: widget.package));
+    }
   }
 }
 

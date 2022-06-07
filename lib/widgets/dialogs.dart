@@ -413,9 +413,7 @@ class PackageChooserDialog extends StatelessWidget {
       submitButtonName: submitButtonName,
       submitButtonIcon: submitButtonIcon,
       differentSubmit: differentSubmit,
-      options: ProgressionBank.bank.keys
-          .where((element) => element != package)
-          .toList(),
+      options: _buildOptionsList(),
       autoFocus: true,
       uniqueOption:
           const TextAndIcon(text: 'Create New', icon: Icons.add_rounded),
@@ -427,9 +425,8 @@ class PackageChooserDialog extends StatelessWidget {
       },
       onCancelled: (_) => Navigator.pop(context),
       onSubmitted: (input) {
-        if (ProgressionBank.bank.containsKey(input) ||
-            (input.trim().isNotEmpty &&
-                ProgressionBank.packageNameValid(input))) {
+        if (input.trim().isNotEmpty &&
+            ProgressionBank.packageNameValid(input)) {
           Navigator.pop(context, input);
           return null;
         } else {
@@ -437,5 +434,16 @@ class PackageChooserDialog extends StatelessWidget {
         }
       },
     );
+  }
+
+  List<String> _buildOptionsList() {
+    List<String> options = ProgressionBank.bank.keys
+        .where((element) => element != package)
+        .toList();
+    if (package != ProgressionBank.builtInPackageName &&
+        !options.contains(ProgressionBank.builtInPackageName)) {
+      options.add(ProgressionBank.builtInPackageName);
+    }
+    return options;
   }
 }

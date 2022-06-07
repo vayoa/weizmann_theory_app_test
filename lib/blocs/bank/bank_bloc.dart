@@ -65,19 +65,6 @@ class BankBloc extends Bloc<BankEvent, BankState> {
                 .copyWith(progression: event.progression));
       }
     });
-    on<MoveEntries>((event, emit) {
-      List<EntryLocation> moved = [];
-      for (EntryLocation location in event.currentLocations) {
-        ProgressionBank.move(location: location, newPackage: event.newPackage);
-        final String title = location.title;
-        _titles[location.package]!.remove(title);
-        List<String>? saved =
-            _titles[event.newPackage] ?? _addPackage(event.newPackage);
-        saved.add(title);
-        moved.add(EntryLocation(event.newPackage, title));
-      }
-      return emit(MovedEntries(titles: _titles, newLocations: moved));
-    });
     on<ChangeUseInSubstitutions>((event, emit) {
       ProgressionBank.changeUseInSubstitutions(
           package: event.location.package,
@@ -111,6 +98,22 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       await _saveBankData();
       emit(BankLoaded(titles: _titles));
       return emit(const ClosingWindow());
+    });
+    on<MoveEntries>((event, emit) async {
+      List<EntryLocation> moved = [];
+      for (EntryLocation location in event.currentLocations) {
+        ProgressionBank.move(location: location, newPackage: event.newPackage);
+        final String title = location.title;
+        _titles[location.package]!.remove(title);
+        List<String>? saved =
+            _titles[event.newPackage] ?? _addPackage(event.newPackage);
+        saved.add(title);
+        moved.add(EntryLocation(event.newPackage, title));
+      }
+      emit(MovedEntries(titles: _titles, newLocations: moved));
+      emit(BankLoading());
+      await _saveBankData();
+      return emit(BankLoaded(titles: _titles));
     });
     on<CreatePackage>((event, emit) async {
       ProgressionBank.bank[event.package] = {};
