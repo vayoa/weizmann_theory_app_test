@@ -24,6 +24,12 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.grey,
+        pageTransitionsTheme: PageTransitionsTheme(
+          builders: <TargetPlatform, PageTransitionsBuilder>{
+            for (final platform in TargetPlatform.values)
+              platform: const ZoomPageTransitionsBuilder(),
+          },
+        ),
         checkboxTheme: CheckboxThemeData(
             splashRadius: 0.0,
             checkColor: MaterialStateProperty.all(Colors.black),

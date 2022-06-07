@@ -439,17 +439,14 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
     final BankBloc bloc = BlocProvider.of<BankBloc>(context);
     final ProgressionBankEntry progressionBankEntry =
         ProgressionBank.getAtLocation(currentLocation)!;
-    await Navigator.push(
-      context,
+    await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) {
-          return ProgressionScreen(
-            bankBloc: bloc,
-            location: currentLocation,
-            entry: progressionBankEntry,
-            initiallyBanked: progressionBankEntry.usedInSubstitutions,
-          );
-        },
+        builder: (context) => ProgressionScreen(
+          bankBloc: bloc,
+          location: currentLocation,
+          entry: progressionBankEntry,
+          initiallyBanked: progressionBankEntry.usedInSubstitutions,
+        ),
       ),
     );
     bloc.add(const SaveToJson());
