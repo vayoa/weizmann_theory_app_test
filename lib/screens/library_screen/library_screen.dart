@@ -241,7 +241,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
                         child: CustomButton(
                           label: 'Move Entries',
-                          iconData: Icons.move_to_inbox_rounded,
+                          iconData: Constants.moveEntryIcon,
                           tight: true,
                           onPressed: _hasSelected
                               ? () => _handleMoveSelectedEntries(context)

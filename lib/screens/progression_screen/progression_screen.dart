@@ -137,7 +137,7 @@ class ProgressionScreenUI extends StatelessWidget {
                               label: 'Move',
                               tight: true,
                               size: 12,
-                              iconData: Icons.unarchive_rounded,
+                              iconData: Constants.moveEntryIcon,
                               onPressed: () async {
                                 final String? newPackage =
                                     await showGeneralDialog<String>(
