@@ -18,6 +18,7 @@ class PackageView extends StatefulWidget {
     required this.searching,
     required this.onOpen,
     required this.onTicked,
+    required this.onTickedAll,
   }) : super(key: key);
 
   final String package;
@@ -25,6 +26,7 @@ class PackageView extends StatefulWidget {
   final bool searching;
   final void Function(EntryLocation location) onOpen;
   final void Function(String, bool) onTicked;
+  final void Function(bool?) onTickedAll;
   static const double dividerHeight = 8.0;
 
   @override
@@ -151,11 +153,8 @@ class _PackageViewState extends State<PackageView> {
                                   child: Checkbox(
                                     value: _getCheckboxValue(),
                                     tristate: true,
-                                    onChanged: (ticked) => setState(() {
-                                      for (var title in widget.titles.keys) {
-                                        widget.titles[title] = ticked ?? false;
-                                      }
-                                    }),
+                                    onChanged: (ticked) => setState(
+                                        () => widget.onTickedAll(ticked)),
                                   ),
                                 ),
                                 CustomButton(
@@ -238,16 +237,17 @@ class _PackageViewState extends State<PackageView> {
         barrierLabel: 'Move All Entries',
         barrierDismissible: true,
         pageBuilder: (context, _, __) => PackageChooserDialog(
-          package: widget.package,
+          packages: [widget.package],
           submitButtonName: 'Delete All Instead',
           submitButtonIcon: Icons.delete_rounded,
           differentSubmit: () => Navigator.pop(context, ''),
           beforePackageName: 'Move all entries from ',
+          alreadyInPackageError: 'Your entries are already in ',
         ),
       );
       if (newPackage == null) {
         delete = false;
-      } else {
+      } else if (newPackage.isNotEmpty) {
         BlocProvider.of<BankBloc>(context).add(MoveEntries(
           currentLocations: [
             for (String title in widget.titles.keys)

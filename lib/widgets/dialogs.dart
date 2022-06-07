@@ -141,6 +141,7 @@ class GeneralDialogTextField extends StatefulWidget {
     required this.title,
     this.maxLength,
     this.options,
+    this.invalidOptions,
     required this.onCancelled,
     required this.onSubmitted,
     this.cancelButtonName = 'Cancel',
@@ -155,6 +156,7 @@ class GeneralDialogTextField extends StatefulWidget {
   final Widget title;
   final int? maxLength;
   final List<String>? options;
+  final List<String>? invalidOptions;
   final String cancelButtonName;
   final String submitButtonName;
   final IconData submitButtonIcon;
@@ -261,6 +263,12 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
                     .toList();
                 if (_uniqueShown && !(r.length == 1 && r.first == text)) {
                   r.add(text);
+                }
+                if (widget.invalidOptions != null) {
+                  r = r
+                      .where(
+                          (option) => !widget.invalidOptions!.contains(option))
+                      .toList();
                 }
                 return r;
               }
@@ -381,30 +389,36 @@ class GeneralThreeChoiceDialog extends StatelessWidget {
 class PackageChooserDialog extends StatelessWidget {
   const PackageChooserDialog({
     Key? key,
-    required this.package,
+    required this.packages,
+    this.showPackageName = true,
     this.beforePackageName = 'Move Entry From ',
     this.afterPackageName = ' To ...',
     this.submitButtonName = 'Submit',
+    this.alreadyInPackageError = 'Your entry is already in ',
     this.submitButtonIcon = Icons.check_rounded,
     this.differentSubmit,
   }) : super(key: key);
 
-  final String package;
+  final List<String> packages;
   final String beforePackageName;
   final String afterPackageName;
   final String submitButtonName;
   final IconData submitButtonIcon;
+  final String alreadyInPackageError;
   final void Function()? differentSubmit;
+  final bool showPackageName;
 
   @override
   Widget build(BuildContext context) {
+    final String? package = packages.length == 1 ? packages[0] : null;
     return GeneralDialogTextField(
       title: Text.rich(
         TextSpan(text: beforePackageName, children: [
-          TextSpan(
-            text: '"$package"',
-            style: Constants.boldedValuePatternTextStyle,
-          ),
+          if (showPackageName && package != null)
+            TextSpan(
+              text: '"$package"',
+              style: Constants.boldedValuePatternTextStyle,
+            ),
           TextSpan(text: afterPackageName),
         ]),
         style: Constants.valuePatternTextStyle,
@@ -414,6 +428,7 @@ class PackageChooserDialog extends StatelessWidget {
       submitButtonIcon: submitButtonIcon,
       differentSubmit: differentSubmit,
       options: _buildOptionsList(),
+      invalidOptions: packages,
       autoFocus: true,
       uniqueOption:
           const TextAndIcon(text: 'Create New', icon: Icons.add_rounded),
@@ -425,8 +440,9 @@ class PackageChooserDialog extends StatelessWidget {
       },
       onCancelled: (_) => Navigator.pop(context),
       onSubmitted: (input) {
-        if (input.trim().isNotEmpty &&
-            ProgressionBank.packageNameValid(input)) {
+        if (packages.contains(input)) {
+          return '$alreadyInPackageError"$input".';
+        } else if (ProgressionBank.packageNameValid(input)) {
           Navigator.pop(context, input);
           return null;
         } else {
@@ -438,9 +454,9 @@ class PackageChooserDialog extends StatelessWidget {
 
   List<String> _buildOptionsList() {
     List<String> options = ProgressionBank.bank.keys
-        .where((element) => element != package)
+        .where((element) => !packages.contains(element))
         .toList();
-    if (package != ProgressionBank.builtInPackageName &&
+    if (!packages.contains(ProgressionBank.builtInPackageName) &&
         !options.contains(ProgressionBank.builtInPackageName)) {
       options.add(ProgressionBank.builtInPackageName);
     }

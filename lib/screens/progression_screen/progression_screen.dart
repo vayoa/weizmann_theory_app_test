@@ -146,11 +146,12 @@ class ProgressionScreenUI extends StatelessWidget {
                                   barrierDismissible: true,
                                   pageBuilder: (context2, _, __) =>
                                       PackageChooserDialog(
-                                    package:
-                                        BlocProvider.of<ProgressionHandlerBloc>(
-                                                context)
-                                            .location
-                                            .package,
+                                    packages: [
+                                      BlocProvider.of<ProgressionHandlerBloc>(
+                                              context)
+                                          .location
+                                          .package
+                                    ],
                                   ),
                                 );
                                 if (newPackage != null) {

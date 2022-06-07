@@ -22,6 +22,7 @@ class LibraryScreen extends StatefulWidget {
 class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
   Map<String, Map<String, bool>> packages = const {};
   Map<String, Map<String, bool>> _realPackages = const {};
+  bool _hasSelected = false;
   late TextEditingController _controller;
 
   @override
@@ -239,6 +240,17 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
                         child: CustomButton(
+                          label: 'Move Entries',
+                          iconData: Icons.move_to_inbox_rounded,
+                          tight: true,
+                          onPressed: _hasSelected
+                              ? () => _handleMoveSelectedEntries(context)
+                              : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                        child: CustomButton(
                           label: 'Revert All',
                           iconData: Icons.restart_alt_rounded,
                           tight: true,
@@ -345,9 +357,14 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                     state is! ClosingWindow) {
                   return LibraryList(
                     packages: packages,
+                    realPackages: _realPackages,
                     searching: _controller.text.isNotEmpty,
                     onOpen: (location) =>
                         _pushProgressionPage(context, location),
+                    onTicked: () => setState(() {
+                      _hasSelected = _realPackages.values
+                          .any((e) => e.values.any((e2) => e2));
+                    }),
                   );
                 } else {
                   return Column(
@@ -368,6 +385,42 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
         ],
       ),
     );
+  }
+
+  void _handleMoveSelectedEntries(BuildContext context) async {
+    List<String> packages = [];
+    List<EntryLocation> locations = [];
+    for (String package in _realPackages.keys) {
+      bool added = false;
+      for (String title in _realPackages[package]!.keys) {
+        if (_realPackages[package]![title]!) {
+          if (!added) packages.add(package);
+          locations.add(EntryLocation(package, title));
+        }
+      }
+    }
+
+    final String? newPackage = await showGeneralDialog(
+      context: context,
+      barrierLabel: 'Move Selected Entries',
+      barrierDismissible: true,
+      pageBuilder: (context, _, __) => PackageChooserDialog(
+        beforePackageName: 'Move All Selected Entries ',
+        afterPackageName: 'To...',
+        alreadyInPackageError: 'Your entries are already in ',
+        showPackageName: false,
+        packages: packages,
+      ),
+    );
+
+    if (newPackage != null) {
+      BlocProvider.of<BankBloc>(context).add(
+        MoveEntries(
+          currentLocations: locations,
+          newPackage: newPackage,
+        ),
+      );
+    }
   }
 
   _getPackages(Map<String, List<String>> newPackages) => {
