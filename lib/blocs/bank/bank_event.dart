@@ -92,6 +92,25 @@ class DeletePackage extends BankEvent {
   const DeletePackage({required this.package});
 }
 
+class ImportPackages extends BankEvent {
+  final List<String> jsonFileUrls;
+
+  @override
+  List<Object?> get props => [jsonFileUrls];
+
+  const ImportPackages({required this.jsonFileUrls});
+}
+
+class ExportPackages extends BankEvent {
+  final List<String> packages;
+  final String directory;
+
+  @override
+  List<Object?> get props => [packages, directory];
+
+  const ExportPackages({required this.packages, required this.directory});
+}
+
 class SaveAndCloseWindow extends BankEvent {
   @override
   List<Object?> get props => const [];

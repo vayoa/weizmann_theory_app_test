@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,6 +7,7 @@ import 'package:thoery_test/state/progression_bank_entry.dart';
 import 'package:weizmann_theory_app_test/constants.dart';
 import 'package:weizmann_theory_app_test/screens/library_screen/widgets/library_list.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/progression_screen.dart';
+import 'package:weizmann_theory_app_test/utilities.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -121,14 +123,14 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                             } else {
                               setState(() {
                                 for (MapEntry<String, Map<String, bool>> package
-                                    in _realPackages.entries) {
+                                in _realPackages.entries) {
                                   Map<String, bool> newTitles = Map.fromEntries(
                                       package.value.keys
                                           .where((String title) => title
-                                              .toLowerCase()
-                                              .contains(text.toLowerCase()))
+                                          .toLowerCase()
+                                          .contains(text.toLowerCase()))
                                           .map((e) =>
-                                              MapEntry(e, package.value[e]!)));
+                                          MapEntry(e, package.value[e]!)));
                                   if (newTitles.isNotEmpty) {
                                     packages[package.key] = newTitles;
                                   }
@@ -155,29 +157,29 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                               barrierDismissible: true,
                               pageBuilder: (context, _, __) =>
                                   GeneralDialogTextField(
-                                title: const Text(
-                                  'Create a new entry named...',
-                                  style: Constants.valuePatternTextStyle,
-                                  textAlign: TextAlign.center,
-                                ),
-                                maxLength: Constants.maxTitleCharacters,
-                                autoFocus: true,
-                                submitButtonName: 'Create',
-                                onCancelled: (text) => Navigator.pop(context),
-                                onSubmitted: (text) {
-                                  text = text.trim();
-                                  if (text.isEmpty ||
-                                      RegExp(r'^\s*$').hasMatch(text)) {
-                                    return "Entry titles can't be empty.";
-                                  } else if (ProgressionBank.bank
-                                      .containsKey(text)) {
-                                    return 'Title already exists in bank.';
-                                  } else {
-                                    Navigator.pop(context, text);
-                                    return null;
-                                  }
-                                },
-                              ),
+                                    title: const Text(
+                                      'Create a new entry named...',
+                                      style: Constants.valuePatternTextStyle,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    maxLength: Constants.maxTitleCharacters,
+                                    autoFocus: true,
+                                    submitButtonName: 'Create',
+                                    onCancelled: (text) => Navigator.pop(context),
+                                    onSubmitted: (text) {
+                                      text = text.trim();
+                                      if (text.isEmpty ||
+                                          RegExp(r'^\s*$').hasMatch(text)) {
+                                        return "Entry titles can't be empty.";
+                                      } else if (ProgressionBank.bank
+                                          .containsKey(text)) {
+                                        return 'Title already exists in bank.';
+                                      } else {
+                                        Navigator.pop(context, text);
+                                        return null;
+                                      }
+                                    },
+                                  ),
                             );
                             if (_title != null) {
                               BlocProvider.of<BankBloc>(context).add(
@@ -195,44 +197,60 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                           iconData: Icons.all_inbox_rounded,
                           tight: true,
                           onPressed: () async {
-                            String? _package = await showGeneralDialog<String>(
+                            var _result = await showGeneralDialog(
                               context: context,
                               barrierLabel: 'New Package',
                               barrierDismissible: true,
                               pageBuilder: (context, _, __) =>
-                                  GeneralDialogTextField(
-                                title: const Text(
-                                  'Create a new package named...',
-                                  style: Constants.valuePatternTextStyle,
-                                  textAlign: TextAlign.center,
+                                  GeneralDialogPage(
+                                child: Column(
+                                  children: [
+                                    GeneralDialogTextField(
+                                      title: const Text(
+                                        'Create a new package named...',
+                                        style: Constants.valuePatternTextStyle,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      autoFocus: true,
+                                      submitButtonName: 'Create',
+                                      onCancelled: (text) =>
+                                          Navigator.pop(context),
+                                      onSubmitted: (text) {
+                                        text = text.trim();
+                                        String errorText = text.length > 35
+                                            ? 'Your input'
+                                            : '"$text"';
+                                        if (text.isEmpty ||
+                                            RegExp(r'^\s*$').hasMatch(text)) {
+                                          return "Entry titles can't be empty.";
+                                        } else if (ProgressionBank.bank
+                                            .containsKey(text)) {
+                                          return '$errorText already exists in the library.';
+                                        } else if (!ProgressionBank
+                                            .packageNameValid(text)) {
+                                          return '$errorText is an invalid package name.';
+                                        } else {
+                                          Navigator.pop(context, text);
+                                          return null;
+                                        }
+                                      },
+                                    ),
+                                    PackageFileDropDialog(
+                                      onUrlsDropped: (urls) =>
+                                          Navigator.pop(context, urls),
+                                    ),
+                                  ],
                                 ),
-                                autoFocus: true,
-                                submitButtonName: 'Create',
-                                onCancelled: (text) => Navigator.pop(context),
-                                onSubmitted: (text) {
-                                  text = text.trim();
-                                  String errorText = text.length > 35
-                                      ? 'Your input'
-                                      : '"$text"';
-                                  if (text.isEmpty ||
-                                      RegExp(r'^\s*$').hasMatch(text)) {
-                                    return "Entry titles can't be empty.";
-                                  } else if (ProgressionBank.bank
-                                      .containsKey(text)) {
-                                    return '$errorText already exists in the library.';
-                                  } else if (!ProgressionBank.packageNameValid(
-                                      text)) {
-                                    return '$errorText is an invalid package name.';
-                                  } else {
-                                    Navigator.pop(context, text);
-                                    return null;
-                                  }
-                                },
                               ),
                             );
-                            if (_package != null) {
-                              BlocProvider.of<BankBloc>(context)
-                                  .add(CreatePackage(package: _package));
+                            if (_result != null) {
+                              if (_result is String) {
+                                BlocProvider.of<BankBloc>(context)
+                                    .add(CreatePackage(package: _result));
+                              } else if (_result is List<String>) {
+                                BlocProvider.of<BankBloc>(context)
+                                    .add(ImportPackages(jsonFileUrls: _result));
+                              }
                             }
                           },
                         ),
@@ -251,6 +269,17 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
                         child: CustomButton(
+                          label: 'Export Entries',
+                          iconData: Constants.moveEntryIcon,
+                          tight: true,
+                          onPressed: _hasSelected
+                              ? () => _handleExportSelectedEntries(context)
+                              : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                        child: CustomButton(
                           label: 'Revert All',
                           iconData: Icons.restart_alt_rounded,
                           tight: true,
@@ -261,31 +290,31 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                               barrierDismissible: true,
                               pageBuilder: (context, _, __) =>
                                   GeneralDialogChoice(
-                                widthFactor: 0.45,
-                                title: const Text.rich(
-                                  TextSpan(
-                                    text: 'Permanently ',
-                                    children: [
+                                    widthFactor: 0.45,
+                                    title: const Text.rich(
                                       TextSpan(
-                                        text: 'revert all added data?',
-                                        style: Constants
-                                            .boldedValuePatternTextStyle,
-                                      ),
-                                      TextSpan(
-                                          text:
+                                        text: 'Permanently ',
+                                        children: [
+                                          TextSpan(
+                                            text: 'revert all added data?',
+                                            style: Constants
+                                                .boldedValuePatternTextStyle,
+                                          ),
+                                          TextSpan(
+                                              text:
                                               '\n(delete everything and revert to the '
-                                              'built-in bank)'),
-                                    ],
+                                                  'built-in bank)'),
+                                        ],
+                                      ),
+                                      style: Constants.valuePatternTextStyle,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                    ),
+                                    onPressed: (choice) =>
+                                        Navigator.pop(context, choice),
+                                    yesButtonName: 'REVERT',
+                                    noButtonName: 'Cancel',
                                   ),
-                                  style: Constants.valuePatternTextStyle,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                ),
-                                onPressed: (choice) =>
-                                    Navigator.pop(context, choice),
-                                yesButtonName: 'REVERT',
-                                noButtonName: 'Cancel',
-                              ),
                             );
 
                             // Again, done in this weird way since it can be null...
@@ -294,19 +323,19 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                 context: context,
                                 pageBuilder: (context, _, __) =>
                                     GeneralDialogChoice(
-                                  widthFactor: 0.3,
-                                  heightFactor: 0.15,
-                                  title: const Text(
-                                    'Are you sure?',
-                                    style:
+                                      widthFactor: 0.3,
+                                      heightFactor: 0.15,
+                                      title: const Text(
+                                        'Are you sure?',
+                                        style:
                                         Constants.boldedValuePatternTextStyle,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  onPressed: (choice) =>
-                                      Navigator.pop(context, choice),
-                                  yesButtonName: 'REVERT',
-                                  noButtonName: 'Cancel',
-                                ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      onPressed: (choice) =>
+                                          Navigator.pop(context, choice),
+                                      yesButtonName: 'REVERT',
+                                      noButtonName: 'Cancel',
+                                    ),
                               );
                               if (_result!) {
                                 BlocProvider.of<BankBloc>(context)
@@ -326,14 +355,38 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
           Expanded(
             child: BlocConsumer<BankBloc, BankState>(
               listenWhen: (previous, state) =>
-                  state is ClosingWindow ||
+              state is ClosingWindow ||
                   (state is! BankLoading && state is! BankInitial),
               listener: (context, state) async {
-                if (state is ClosingWindow) {
-                  await windowManager.destroy();
-                }
-                if (state is AddedNewEntry) {
-                  _pushProgressionPage(context, state.addEntryLocation);
+                switch (state.runtimeType) {
+                  case ClosingWindow:
+                    await windowManager.destroy();
+                    break;
+                  case AddedNewEntry:
+                    _pushProgressionPage(
+                        context, (state as AddedNewEntry).addEntryLocation);
+                    break;
+                  case ImportPackagesFailed:
+                    String failed = (state as ImportPackagesFailed)
+                        .failedJsonFileUrls
+                        .map((e) => e.split(r'\').last)
+                        .toList()
+                        .toString();
+                    Utilities.showSnackBar(
+                        context,
+                        'Failed to import: '
+                        '${failed.substring(1, failed.length - 1)}.');
+                    break;
+                  case ExportedPackages:
+                    var _realState = state as ExportedPackages;
+                    String failed = _realState.packages
+                        .map((e) => e.split(r'\').last)
+                        .toList()
+                        .toString();
+                    Utilities.showSnackBar(
+                        context,
+                        'Exported: ${failed.substring(1, failed.length - 1)} '
+                        'to ${_realState.directory}.');
                 }
                 setState(() {
                   _realPackages = _getPackages(state.titles);
@@ -387,18 +440,26 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
     );
   }
 
-  void _handleMoveSelectedEntries(BuildContext context) async {
-    List<String> packages = [];
-    List<EntryLocation> locations = [];
+  void _handleSelectedPackageLocations(
+      List<String> packages, List<EntryLocation> locations) {
     for (String package in _realPackages.keys) {
       bool added = false;
       for (String title in _realPackages[package]!.keys) {
         if (_realPackages[package]![title]!) {
-          if (!added) packages.add(package);
+          if (!added) {
+            packages.add(package);
+            added = true;
+          }
           locations.add(EntryLocation(package, title));
         }
       }
     }
+  }
+
+  void _handleMoveSelectedEntries(BuildContext context) async {
+    List<String> packages = [];
+    List<EntryLocation> locations = [];
+    _handleSelectedPackageLocations(packages, locations);
 
     final String? newPackage = await showGeneralDialog(
       context: context,
@@ -410,7 +471,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
         alreadyInPackageError: 'Your entries are already in ',
         showPackageName: false,
         packages: packages,
-      ),
+          ),
     );
 
     if (newPackage != null) {
@@ -420,6 +481,26 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
           newPackage: newPackage,
         ),
       );
+    }
+  }
+
+  void _handleExportSelectedEntries(BuildContext context) async {
+    List<String> packages = [];
+    List<EntryLocation> locations = [];
+    _handleSelectedPackageLocations(packages, locations);
+
+    if (packages.isNotEmpty) {
+      var bloc = BlocProvider.of<BankBloc>(context);
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Please select an output file:',
+        fileName: '${packages.length == 1 ? packages.first : 'packages'}.json',
+        allowedExtensions: ['.json'],
+        initialDirectory: bloc.appDirectory,
+      );
+      if (outputFile != null) {
+        print(packages);
+        bloc.add(ExportPackages(packages: packages, directory: outputFile));
+      }
     }
   }
 
@@ -434,11 +515,10 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
           },
       };
 
-  Future<void> _pushProgressionPage(
-      BuildContext context, EntryLocation currentLocation) async {
+  Future<void> _pushProgressionPage(BuildContext context, EntryLocation currentLocation) async {
     final BankBloc bloc = BlocProvider.of<BankBloc>(context);
     final ProgressionBankEntry progressionBankEntry =
-        ProgressionBank.getAtLocation(currentLocation)!;
+    ProgressionBank.getAtLocation(currentLocation)!;
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => ProgressionScreen(

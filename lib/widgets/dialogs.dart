@@ -1,3 +1,5 @@
+import 'package:desktop_drop/desktop_drop.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:thoery_test/state/progression_bank.dart';
 import 'package:weizmann_theory_app_test/widgets/text_and_icon.dart';
@@ -214,7 +216,7 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
                   elevation: 4.0,
                   child: ConstrainedBox(
                     constraints:
-                        const BoxConstraints(maxHeight: 200, maxWidth: 396),
+                    const BoxConstraints(maxHeight: 200, maxWidth: 396),
                     child: ListView.builder(
                       itemCount: options.length,
                       shrinkWrap: true,
@@ -241,7 +243,7 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
                           child: ListTile(
                             title: title,
                             tileColor:
-                                index == highlighted ? Colors.grey[400]! : null,
+                            index == highlighted ? Colors.grey[400]! : null,
                           ),
                         );
                       },
@@ -259,7 +261,7 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
               } else {
                 List<String> r = widget.options!
                     .where((element) =>
-                        element.toLowerCase().contains(text.toLowerCase()))
+                    element.toLowerCase().contains(text.toLowerCase()))
                     .toList();
                 if (_uniqueShown && !(r.length == 1 && r.first == text)) {
                   r.add(text);
@@ -288,7 +290,7 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
                   errorText: errorMessage,
                 ),
                 onSubmitted: (input) =>
-                    widget.options == null ? _submit(input) : onSubmit(),
+                widget.options == null ? _submit(input) : onSubmit(),
                 onChanged: (text) {
                   if (errorMessage != null) {
                     setState(() => errorMessage = null);
@@ -431,7 +433,7 @@ class PackageChooserDialog extends StatelessWidget {
       invalidOptions: packages,
       autoFocus: true,
       uniqueOption:
-          const TextAndIcon(text: 'Create New', icon: Icons.add_rounded),
+      const TextAndIcon(text: 'Create New', icon: Icons.add_rounded),
       optionTitleBuilder: (context, option) {
         if (option == ProgressionBank.builtInPackageName) {
           return TextAndIcon(text: option, icon: Constants.builtInIcon);
@@ -461,5 +463,75 @@ class PackageChooserDialog extends StatelessWidget {
       options.add(ProgressionBank.builtInPackageName);
     }
     return options;
+  }
+}
+
+class PackageFileDropDialog extends StatefulWidget {
+  const PackageFileDropDialog({
+    Key? key,
+    required this.onUrlsDropped,
+  }) : super(key: key);
+
+  final void Function(List<String>) onUrlsDropped;
+
+  @override
+  State<PackageFileDropDialog> createState() => _PackageFileDropDialogState();
+}
+
+class _PackageFileDropDialogState extends State<PackageFileDropDialog> {
+  bool _hovered = false;
+  bool? _valid;
+  bool _loading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GeneralDialog(
+        child: DropTarget(
+      onDragEntered: (detail) => setState(() => _hovered = true),
+      onDragExited: (detail) => setState(() => _hovered = false),
+      onDragDone: (details) => setState(() {
+        _setValid(details);
+        if (_valid != null && _valid!) {
+          widget.onUrlsDropped(details.files.map((file) => file.path).toList());
+        }
+      }),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(),
+          borderRadius: BorderRadius.circular(Constants.borderRadius),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _valid == null
+                ? const Text('Drop .json package files here!')
+                : (_valid!
+                    ? const Text('Importing package...')
+                    : const Text('Can only import .json package files.')),
+            const SizedBox(height: 10),
+            CustomButton(
+              label: 'Choose Files',
+              iconData: Icons.upload_rounded,
+              tight: true,
+              onPressed: () => _pickFiles(),
+            )
+          ],
+        ),
+      ),
+    ));
+  }
+
+  _setValid(DropDoneDetails details) {
+    _valid = details.files.every((file) => file.name.split('.').last == 'json');
+  }
+
+  _pickFiles() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowMultiple: true,
+      allowedExtensions: ['json'],
+    );
+    if (result == null) return;
+    widget.onUrlsDropped(result.files.map((file) => file.path!).toList());
   }
 }

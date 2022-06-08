@@ -70,6 +70,7 @@ class _PackageViewState extends State<PackageView> {
 
   @override
   Widget build(BuildContext context) {
+    bool? checkboxValue = _getCheckboxValue();
     return StickyHeader(
       header: GestureDetector(
         onTap: () => _controller.value = !_expanded,
@@ -92,9 +93,9 @@ class _PackageViewState extends State<PackageView> {
                       : Theme.of(context).canvasColor,
                   borderRadius: _hovered
                       ? (_expanded
-                          ? const BorderRadius.vertical(
-                              top: Radius.circular(5.0))
-                          : BorderRadius.circular(5.0))
+                      ? const BorderRadius.vertical(
+                      top: Radius.circular(5.0))
+                      : BorderRadius.circular(5.0))
                       : null,
                 ),
                 child: Column(
@@ -142,7 +143,10 @@ class _PackageViewState extends State<PackageView> {
                             ],
                           ),
                         ),
-                        if (_hovered || _expanded)
+                        if (checkboxValue == null ||
+                            checkboxValue ||
+                            _hovered ||
+                            _expanded)
                           Padding(
                             padding: const EdgeInsets.all(6.0),
                             child: Row(
@@ -151,7 +155,7 @@ class _PackageViewState extends State<PackageView> {
                                   constraints:
                                       const BoxConstraints(maxHeight: 10),
                                   child: Checkbox(
-                                    value: _getCheckboxValue(),
+                                    value: checkboxValue,
                                     tristate: true,
                                     onChanged: (ticked) => setState(
                                         () => widget.onTickedAll(ticked)),

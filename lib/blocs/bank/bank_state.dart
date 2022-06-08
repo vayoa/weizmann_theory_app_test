@@ -78,6 +78,40 @@ class DeletedPackage extends BankState {
       : super(titles: titles);
 }
 
+class ImportedPackages extends BankState {
+  @override
+  List<Object?> get props => [...super.props];
+
+  const ImportedPackages({required Map<String, List<String>> titles})
+      : super(titles: titles);
+}
+
+class ImportPackagesFailed extends BankState {
+  final List<String> failedJsonFileUrls;
+
+  @override
+  List<Object?> get props => [failedJsonFileUrls];
+
+  const ImportPackagesFailed(
+      {required Map<String, List<String>> titles,
+      required this.failedJsonFileUrls})
+      : super(titles: titles);
+}
+
+class ExportedPackages extends BankState {
+  final List<String> packages;
+  final String directory;
+
+  @override
+  List<Object?> get props => [...super.props, packages, directory];
+
+  const ExportedPackages(
+      {required Map<String, List<String>> titles,
+      required this.packages,
+      required this.directory})
+      : super(titles: titles);
+}
+
 class ClosingWindow extends BankInitial {
   const ClosingWindow();
 }

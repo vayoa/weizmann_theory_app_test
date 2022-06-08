@@ -40,6 +40,8 @@ dependencies:
   dart_vlc: ^0.2.0
   expandable: ^5.0.1
   sticky_headers: ^0.2.0
+  desktop_drop: ^0.3.3
+  file_picker: ^4.6.1
 
 dev_dependencies:
   flutter_test:

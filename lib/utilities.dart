@@ -100,7 +100,9 @@ abstract class Utilities {
   }
 
   static void showSnackBar(BuildContext context, String text) {
-    ScaffoldMessenger.of(context).showSnackBar(
+    ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
       SnackBar(behavior: SnackBarBehavior.floating, content: Text(text)),
     );
   }

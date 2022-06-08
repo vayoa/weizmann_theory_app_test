@@ -132,6 +132,37 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       await _saveBankData();
       return emit(BankLoaded(titles: _titles));
     });
+    on<ImportPackages>((event, emit) async {
+      final List<String> failed = [];
+      for (String url in event.jsonFileUrls) {
+        try {
+          final File file = File(url);
+          final Map<String, dynamic> json = jsonDecode(file.readAsStringSync());
+          ProgressionBank.importPackages(json);
+        } catch (e) {
+          failed.add(url);
+          continue;
+        }
+      }
+      _getKeys();
+      if (failed.isNotEmpty) {
+        emit(ImportPackagesFailed(titles: _titles, failedJsonFileUrls: failed));
+      }
+      emit(ImportedPackages(titles: _titles));
+      emit(BankLoading());
+      await _saveBankData();
+      return emit(BankLoaded(titles: _titles));
+    });
+    on<ExportPackages>((event, emit) async {
+      File file = File(event.directory);
+      Map<String, dynamic> json =
+          ProgressionBank.exportPackages(event.packages);
+      await file.writeAsString(jsonEncode(json));
+      return emit(ExportedPackages(
+          titles: _titles,
+          packages: event.packages,
+          directory: event.directory));
+    });
   }
 
   List<String> _addPackage(String package) {
