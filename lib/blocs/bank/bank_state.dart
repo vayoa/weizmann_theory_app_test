@@ -99,7 +99,7 @@ class ImportPackagesFailed extends BankState {
 }
 
 class ExportedPackages extends BankState {
-  final List<String> packages;
+  final Map<String, List<String>> packages;
   final String directory;
 
   @override

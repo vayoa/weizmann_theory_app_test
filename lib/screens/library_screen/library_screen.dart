@@ -123,14 +123,14 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                             } else {
                               setState(() {
                                 for (MapEntry<String, Map<String, bool>> package
-                                in _realPackages.entries) {
+                                    in _realPackages.entries) {
                                   Map<String, bool> newTitles = Map.fromEntries(
                                       package.value.keys
                                           .where((String title) => title
-                                          .toLowerCase()
-                                          .contains(text.toLowerCase()))
+                                              .toLowerCase()
+                                              .contains(text.toLowerCase()))
                                           .map((e) =>
-                                          MapEntry(e, package.value[e]!)));
+                                              MapEntry(e, package.value[e]!)));
                                   if (newTitles.isNotEmpty) {
                                     packages[package.key] = newTitles;
                                   }
@@ -150,44 +150,8 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                           label: 'New Entry',
                           iconData: Icons.add,
                           tight: true,
-                          onPressed: () async {
-                            String? _title = await showGeneralDialog<String>(
-                              context: context,
-                              barrierLabel: 'New Entry',
-                              barrierDismissible: true,
-                              pageBuilder: (context, _, __) =>
-                                  GeneralDialogTextField(
-                                    title: const Text(
-                                      'Create a new entry named...',
-                                      style: Constants.valuePatternTextStyle,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    maxLength: Constants.maxTitleCharacters,
-                                    autoFocus: true,
-                                    submitButtonName: 'Create',
-                                    onCancelled: (text) => Navigator.pop(context),
-                                    onSubmitted: (text) {
-                                      text = text.trim();
-                                      if (text.isEmpty ||
-                                          RegExp(r'^\s*$').hasMatch(text)) {
-                                        return "Entry titles can't be empty.";
-                                      } else if (ProgressionBank.bank
-                                          .containsKey(text)) {
-                                        return 'Title already exists in bank.';
-                                      } else {
-                                        Navigator.pop(context, text);
-                                        return null;
-                                      }
-                                    },
-                                  ),
-                            );
-                            if (_title != null) {
-                              BlocProvider.of<BankBloc>(context).add(
-                                  AddNewEntry(EntryLocation(
-                                      ProgressionBank.defaultPackageName,
-                                      _title)));
-                            }
-                          },
+                          onPressed: () =>
+                              Utilities.createNewEntryDialog(context),
                         ),
                       ),
                       Padding(
@@ -290,31 +254,31 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                               barrierDismissible: true,
                               pageBuilder: (context, _, __) =>
                                   GeneralDialogChoice(
-                                    widthFactor: 0.45,
-                                    title: const Text.rich(
+                                widthFactor: 0.45,
+                                title: const Text.rich(
+                                  TextSpan(
+                                    text: 'Permanently ',
+                                    children: [
                                       TextSpan(
-                                        text: 'Permanently ',
-                                        children: [
-                                          TextSpan(
-                                            text: 'revert all added data?',
-                                            style: Constants
-                                                .boldedValuePatternTextStyle,
-                                          ),
-                                          TextSpan(
-                                              text:
-                                              '\n(delete everything and revert to the '
-                                                  'built-in bank)'),
-                                        ],
+                                        text: 'revert all added data?',
+                                        style: Constants
+                                            .boldedValuePatternTextStyle,
                                       ),
-                                      style: Constants.valuePatternTextStyle,
-                                      textAlign: TextAlign.center,
-                                      maxLines: 2,
-                                    ),
-                                    onPressed: (choice) =>
-                                        Navigator.pop(context, choice),
-                                    yesButtonName: 'REVERT',
-                                    noButtonName: 'Cancel',
+                                      TextSpan(
+                                          text:
+                                              '\n(delete everything and revert to the '
+                                              'built-in bank)'),
+                                    ],
                                   ),
+                                  style: Constants.valuePatternTextStyle,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                ),
+                                onPressed: (choice) =>
+                                    Navigator.pop(context, choice),
+                                yesButtonName: 'REVERT',
+                                noButtonName: 'Cancel',
+                              ),
                             );
 
                             // Again, done in this weird way since it can be null...
@@ -323,19 +287,19 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                 context: context,
                                 pageBuilder: (context, _, __) =>
                                     GeneralDialogChoice(
-                                      widthFactor: 0.3,
-                                      heightFactor: 0.15,
-                                      title: const Text(
-                                        'Are you sure?',
-                                        style:
+                                  widthFactor: 0.3,
+                                  heightFactor: 0.15,
+                                  title: const Text(
+                                    'Are you sure?',
+                                    style:
                                         Constants.boldedValuePatternTextStyle,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      onPressed: (choice) =>
-                                          Navigator.pop(context, choice),
-                                      yesButtonName: 'REVERT',
-                                      noButtonName: 'Cancel',
-                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  onPressed: (choice) =>
+                                      Navigator.pop(context, choice),
+                                  yesButtonName: 'REVERT',
+                                  noButtonName: 'Cancel',
+                                ),
                               );
                               if (_result!) {
                                 BlocProvider.of<BankBloc>(context)
@@ -379,13 +343,14 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                     break;
                   case ExportedPackages:
                     var _realState = state as ExportedPackages;
-                    String failed = _realState.packages
+                    String failed = _realState.packages.keys
                         .map((e) => e.split(r'\').last)
                         .toList()
                         .toString();
                     Utilities.showSnackBar(
                         context,
-                        'Exported: ${failed.substring(1, failed.length - 1)} '
+                        'Exported selected entries from: '
+                        '${failed.substring(1, failed.length - 1)} '
                         'to ${_realState.directory}.');
                 }
                 setState(() {
@@ -471,7 +436,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
         alreadyInPackageError: 'Your entries are already in ',
         showPackageName: false,
         packages: packages,
-          ),
+      ),
     );
 
     if (newPackage != null) {
@@ -485,15 +450,22 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
   }
 
   void _handleExportSelectedEntries(BuildContext context) async {
-    List<String> packages = [];
-    List<EntryLocation> locations = [];
-    _handleSelectedPackageLocations(packages, locations);
+    Map<String, List<String>> packages = {};
+    for (String package in _realPackages.keys) {
+      for (String title in _realPackages[package]!.keys) {
+        if (_realPackages[package]![title]!) {
+          if (!packages.containsKey(package)) packages[package] = [];
+          packages[package]!.add(title);
+        }
+      }
+    }
 
     if (packages.isNotEmpty) {
       var bloc = BlocProvider.of<BankBloc>(context);
       String? outputFile = await FilePicker.platform.saveFile(
         dialogTitle: 'Please select an output file:',
-        fileName: '${packages.length == 1 ? packages.first : 'packages'}.json',
+        fileName:
+            '${packages.length == 1 ? packages.keys.first : 'packages'}.json',
         allowedExtensions: ['.json'],
         initialDirectory: bloc.appDirectory,
       );
@@ -515,10 +487,11 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
           },
       };
 
-  Future<void> _pushProgressionPage(BuildContext context, EntryLocation currentLocation) async {
+  Future<void> _pushProgressionPage(
+      BuildContext context, EntryLocation currentLocation) async {
     final BankBloc bloc = BlocProvider.of<BankBloc>(context);
     final ProgressionBankEntry progressionBankEntry =
-    ProgressionBank.getAtLocation(currentLocation)!;
+        ProgressionBank.getAtLocation(currentLocation)!;
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => ProgressionScreen(

@@ -108,7 +108,7 @@ class _LibraryEntryState extends State<LibraryEntry>
                         onChanged: (ticked) => widget.onTick(ticked!),
                       ),
                       CustomButton(
-                        label: '',
+                        label: null,
                         iconData: Icons.delete,
                         tight: true,
                         onPressed: widget.onDelete,

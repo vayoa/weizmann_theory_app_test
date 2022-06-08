@@ -32,6 +32,7 @@ class LibraryList extends StatelessWidget {
               searching: searching,
               titles: packages[package]!,
               onOpen: onOpen,
+              onUpdatedSelection: onTicked,
               onTicked: (title, ticked) {
                 packages[package]![title] = ticked;
                 realPackages[package]![title] = ticked;

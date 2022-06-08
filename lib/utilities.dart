@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thoery_test/extensions/chord_extension.dart';
 import 'package:thoery_test/modals/progression.dart';
 import 'package:thoery_test/modals/scale_degree_chord.dart';
 import 'package:thoery_test/modals/tonicized_scale_degree_chord.dart';
+import 'package:thoery_test/state/progression_bank.dart';
 import 'package:tonic/tonic.dart';
+import 'package:weizmann_theory_app_test/widgets/dialogs.dart';
+
+import 'Constants.dart';
+import 'blocs/bank/bank_bloc.dart';
 
 abstract class Utilities {
   static String progressionValueToString<T>(T value) => value == null
@@ -105,5 +111,42 @@ abstract class Utilities {
     messenger.showSnackBar(
       SnackBar(behavior: SnackBarBehavior.floating, content: Text(text)),
     );
+  }
+
+  static void createNewEntryDialog(
+    BuildContext context, {
+    String package = ProgressionBank.defaultPackageName,
+  }) async {
+    String? _title = await showGeneralDialog<String>(
+      context: context,
+      barrierLabel: 'New Entry',
+      barrierDismissible: true,
+      pageBuilder: (context, _, __) => GeneralDialogTextField(
+        title: const Text(
+          'Create a new entry named...',
+          style: Constants.valuePatternTextStyle,
+          textAlign: TextAlign.center,
+        ),
+        maxLength: Constants.maxTitleCharacters,
+        autoFocus: true,
+        submitButtonName: 'Create',
+        onCancelled: (text) => Navigator.pop(context),
+        onSubmitted: (text) {
+          text = text.trim();
+          if (text.isEmpty || RegExp(r'^\s*$').hasMatch(text)) {
+            return "Entry titles can't be empty.";
+          } else if (ProgressionBank.bank[package]!.containsKey(text)) {
+            return 'Title already exists in bank.';
+          } else {
+            Navigator.pop(context, text);
+            return null;
+          }
+        },
+      ),
+    );
+    if (_title != null) {
+      BlocProvider.of<BankBloc>(context)
+          .add(AddNewEntry(EntryLocation(package, _title)));
+    }
   }
 }

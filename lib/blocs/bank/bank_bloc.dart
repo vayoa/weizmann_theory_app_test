@@ -73,12 +73,14 @@ class BankBloc extends Bloc<BankEvent, BankState> {
     });
 
     // --- Save Points ---
-    on<DeleteEntry>((event, emit) async {
-      ProgressionBank.remove(
-          package: event.location.package, title: event.location.title);
+    on<DeleteEntries>((event, emit) async {
+      for (EntryLocation location in event.locations) {
+        ProgressionBank.remove(
+            package: location.package, title: location.title);
+        _titles[location.package]!.remove(location.title);
+      }
       emit(BankLoading());
       await _saveBankData();
-      _titles[event.location.package]!.remove(event.location.title);
       return emit(BankLoaded(titles: _titles));
     });
     on<RevertAll>((event, emit) async {
@@ -154,14 +156,14 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       return emit(BankLoaded(titles: _titles));
     });
     on<ExportPackages>((event, emit) async {
-      File file = File(event.directory);
+      String directory = event.directory;
+      if (!directory.endsWith('.json')) directory += '.json';
+      File file = File(directory);
       Map<String, dynamic> json =
           ProgressionBank.exportPackages(event.packages);
       await file.writeAsString(jsonEncode(json));
       return emit(ExportedPackages(
-          titles: _titles,
-          packages: event.packages,
-          directory: event.directory));
+          titles: _titles, packages: event.packages, directory: directory));
     });
   }
 

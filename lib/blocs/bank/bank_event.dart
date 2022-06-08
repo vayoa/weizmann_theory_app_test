@@ -9,13 +9,13 @@ class LoadInitialBank extends BankEvent {
   List<Object?> get props => const [];
 }
 
-class DeleteEntry extends BankEvent {
-  final EntryLocation location;
+class DeleteEntries extends BankEvent {
+  final List<EntryLocation> locations;
 
   @override
-  List<Object?> get props => [location];
+  List<Object?> get props => [locations];
 
-  const DeleteEntry(this.location);
+  const DeleteEntries(this.locations);
 }
 
 class RevertAll extends BankEvent {
@@ -102,7 +102,7 @@ class ImportPackages extends BankEvent {
 }
 
 class ExportPackages extends BankEvent {
-  final List<String> packages;
+  final Map<String, List<String>> packages;
   final String directory;
 
   @override

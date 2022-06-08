@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 import 'package:thoery_test/state/progression_bank.dart';
+import 'package:weizmann_theory_app_test/utilities.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 
 import '../../../Constants.dart';
@@ -17,6 +18,7 @@ class PackageView extends StatefulWidget {
     required this.titles,
     required this.searching,
     required this.onOpen,
+    required this.onUpdatedSelection,
     required this.onTicked,
     required this.onTickedAll,
   }) : super(key: key);
@@ -26,6 +28,7 @@ class PackageView extends StatefulWidget {
   final bool searching;
   final void Function(EntryLocation location) onOpen;
   final void Function(String, bool) onTicked;
+  final void Function() onUpdatedSelection;
   final void Function(bool?) onTickedAll;
   static const double dividerHeight = 8.0;
 
@@ -93,9 +96,9 @@ class _PackageViewState extends State<PackageView> {
                       : Theme.of(context).canvasColor,
                   borderRadius: _hovered
                       ? (_expanded
-                      ? const BorderRadius.vertical(
-                      top: Radius.circular(5.0))
-                      : BorderRadius.circular(5.0))
+                          ? const BorderRadius.vertical(
+                              top: Radius.circular(5.0))
+                          : BorderRadius.circular(5.0))
                       : null,
                 ),
                 child: Column(
@@ -162,10 +165,28 @@ class _PackageViewState extends State<PackageView> {
                                   ),
                                 ),
                                 CustomButton(
-                                  label: 'Delete',
-                                  iconData: Icons.delete_rounded,
+                                  label: null,
+                                  iconData: Icons.add_rounded,
                                   tight: true,
-                                  onPressed: () => _handleDelete(context),
+                                  iconSize: 17.0,
+                                  onPressed: () =>
+                                      Utilities.createNewEntryDialog(
+                                    context,
+                                    package: widget.package,
+                                  ),
+                                ),
+                                const SizedBox(width: 5.0),
+                                CustomButton(
+                                  label: null,
+                                  iconData: checkboxValue == null
+                                      ? Icons.delete_sweep_rounded
+                                      : Icons.folder_delete_rounded,
+                                  iconSize: 22.0,
+                                  tight: true,
+                                  onPressed: () => _handleDelete(
+                                    context: context,
+                                    deletePackage: checkboxValue != null,
+                                  ),
                                 ),
                               ],
                             ),
@@ -215,37 +236,55 @@ class _PackageViewState extends State<PackageView> {
     super.dispose();
   }
 
-  Future<void> _handleDelete(BuildContext context) async {
-    bool? delete = await showGeneralDialog(
+  Future<void> _handleDelete({
+    required BuildContext context,
+    required bool deletePackage,
+  }) async {
+    bool? delete = await showGeneralDialog<bool>(
       context: context,
       barrierLabel: 'Delete Package',
       barrierDismissible: true,
       pageBuilder: (context, _, __) => GeneralDialogChoice(
-        title: Text.rich(TextSpan(
-          text: 'Delete "',
-          style: Constants.valuePatternTextStyle,
-          children: [
-            TextSpan(
-              text: widget.package,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const TextSpan(text: '" ?'),
-          ],
-        )),
+        title: Text.rich(
+          TextSpan(
+            text: deletePackage
+                ? 'Permanently delete\n"'
+                : 'Permanently delete selected entries from\n"',
+            style: Constants.valuePatternTextStyle,
+            children: [
+              TextSpan(
+                text: widget.package,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const TextSpan(text: '"?'),
+            ],
+          ),
+          textAlign: TextAlign.center,
+        ),
         onPressed: (choice) => Navigator.pop(context, choice),
       ),
     );
+    late final List<EntryLocation> locations;
+    if (delete != null) {
+      locations = [
+        for (String title in widget.titles.keys)
+          if (widget.titles[title]!) EntryLocation(widget.package, title)
+      ];
+    }
     if (widget.titles.isNotEmpty && delete == true) {
       String? newPackage = await showGeneralDialog<String>(
         context: context,
-        barrierLabel: 'Move All Entries',
+        barrierLabel: 'Move Entries',
         barrierDismissible: true,
         pageBuilder: (context, _, __) => PackageChooserDialog(
           packages: [widget.package],
-          submitButtonName: 'Delete All Instead',
+          submitButtonName:
+              deletePackage ? 'Delete All Instead' : 'Delete Instead',
           submitButtonIcon: Icons.delete_rounded,
           differentSubmit: () => Navigator.pop(context, ''),
-          beforePackageName: 'Move all entries from ',
+          beforePackageName: deletePackage
+              ? 'Move all entries from '
+              : 'Move selected entries from ',
           alreadyInPackageError: 'Your entries are already in ',
         ),
       );
@@ -253,17 +292,19 @@ class _PackageViewState extends State<PackageView> {
         delete = false;
       } else if (newPackage.isNotEmpty) {
         BlocProvider.of<BankBloc>(context).add(MoveEntries(
-          currentLocations: [
-            for (String title in widget.titles.keys)
-              EntryLocation(widget.package, title)
-          ],
+          currentLocations: locations,
           newPackage: newPackage,
         ));
       }
     }
     if (delete == true) {
-      BlocProvider.of<BankBloc>(context)
-          .add(DeletePackage(package: widget.package));
+      if (deletePackage) {
+        BlocProvider.of<BankBloc>(context)
+            .add(DeletePackage(package: widget.package));
+      } else {
+        BlocProvider.of<BankBloc>(context).add(DeleteEntries(locations));
+      }
+      widget.onUpdatedSelection();
     }
   }
 }
@@ -361,7 +402,7 @@ class _PackageViewContent extends StatelessWidget {
                           // since it can be null...
                           if (_result == true) {
                             BlocProvider.of<BankBloc>(context)
-                                .add(DeleteEntry(currentLocation));
+                                .add(DeleteEntries([currentLocation]));
                           }
                         });
                   })
