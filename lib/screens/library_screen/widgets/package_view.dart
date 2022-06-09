@@ -154,16 +154,17 @@ class _PackageViewState extends State<PackageView> {
                             padding: const EdgeInsets.all(6.0),
                             child: Row(
                               children: [
-                                ConstrainedBox(
-                                  constraints:
-                                      const BoxConstraints(maxHeight: 10),
-                                  child: Checkbox(
-                                    value: checkboxValue,
-                                    tristate: true,
-                                    onChanged: (ticked) => setState(
-                                        () => widget.onTickedAll(ticked)),
+                                if (widget.titles.isNotEmpty)
+                                  ConstrainedBox(
+                                    constraints:
+                                        const BoxConstraints(maxHeight: 10),
+                                    child: Checkbox(
+                                      value: checkboxValue,
+                                      tristate: true,
+                                      onChanged: (ticked) => setState(
+                                          () => widget.onTickedAll(ticked)),
+                                    ),
                                   ),
-                                ),
                                 CustomButton(
                                   label: null,
                                   iconData: Icons.add_rounded,
@@ -178,14 +179,14 @@ class _PackageViewState extends State<PackageView> {
                                 const SizedBox(width: 5.0),
                                 CustomButton(
                                   label: null,
-                                  iconData: checkboxValue == null
+                                  iconData: checkboxValue != false
                                       ? Icons.delete_sweep_rounded
                                       : Icons.folder_delete_rounded,
                                   iconSize: 22.0,
                                   tight: true,
                                   onPressed: () => _handleDelete(
                                     context: context,
-                                    deletePackage: checkboxValue != null,
+                                    deletePackage: checkboxValue == false,
                                   ),
                                 ),
                               ],
@@ -271,7 +272,7 @@ class _PackageViewState extends State<PackageView> {
           if (widget.titles[title]!) EntryLocation(widget.package, title)
       ];
     }
-    if (widget.titles.isNotEmpty && delete == true) {
+    if (widget.titles.isNotEmpty && delete == true && deletePackage) {
       String? newPackage = await showGeneralDialog<String>(
         context: context,
         barrierLabel: 'Move Entries',

@@ -113,7 +113,7 @@ abstract class Utilities {
     );
   }
 
-  static void createNewEntryDialog(
+  static Future<void> createNewEntryDialog(
     BuildContext context, {
     String package = ProgressionBank.defaultPackageName,
   }) async {

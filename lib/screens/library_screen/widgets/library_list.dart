@@ -22,32 +22,33 @@ class LibraryList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scrollbar(
       child: ListView.builder(
-          itemCount: packages.length,
-          padding: const EdgeInsets.fromLTRB(30.0, 0.0, 30.0, 15.0),
-          shrinkWrap: true,
-          itemBuilder: (context, index) {
-            final String package = packages.keys.elementAt(index);
-            return PackageView(
-              package: package,
-              searching: searching,
-              titles: packages[package]!,
-              onOpen: onOpen,
-              onUpdatedSelection: onTicked,
-              onTicked: (title, ticked) {
+        itemCount: packages.length,
+        padding: const EdgeInsets.fromLTRB(30.0, 0.0, 30.0, 15.0),
+        shrinkWrap: true,
+        itemBuilder: (context, index) {
+          final String package = packages.keys.elementAt(index);
+          return PackageView(
+            package: package,
+            searching: searching,
+            titles: packages[package]!,
+            onOpen: onOpen,
+            onUpdatedSelection: onTicked,
+            onTicked: (title, ticked) {
+              packages[package]![title] = ticked;
+              realPackages[package]![title] = ticked;
+              onTicked();
+            },
+            onTickedAll: (ticked) {
+              ticked ??= false;
+              for (var title in packages[package]!.keys) {
                 packages[package]![title] = ticked;
                 realPackages[package]![title] = ticked;
-                onTicked();
-              },
-              onTickedAll: (ticked) {
-                ticked ??= false;
-                for (var title in packages[package]!.keys) {
-                  packages[package]![title] = ticked;
-                  realPackages[package]![title] = ticked;
-                }
-                onTicked();
-              },
-            );
-          }),
+              }
+              onTicked();
+            },
+          );
+        },
+      ),
     );
   }
 }

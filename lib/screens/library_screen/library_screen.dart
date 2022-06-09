@@ -9,6 +9,7 @@ import 'package:weizmann_theory_app_test/screens/library_screen/widgets/library_
 import 'package:weizmann_theory_app_test/screens/progression_screen/progression_screen.dart';
 import 'package:weizmann_theory_app_test/utilities.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
+import 'package:weizmann_theory_app_test/widgets/custom_dropdown_button.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../blocs/bank/bank_bloc.dart';
@@ -146,101 +147,61 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                        child: CustomButton(
-                          label: 'New Entry',
-                          iconData: Icons.add,
+                        child: CustomDropdownButton(
+                          label: 'New',
+                          iconData: Icons.add_rounded,
                           tight: true,
-                          onPressed: () =>
-                              Utilities.createNewEntryDialog(context),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                        child: CustomButton(
-                          label: 'New Package',
-                          iconData: Icons.all_inbox_rounded,
-                          tight: true,
-                          onPressed: () async {
-                            var _result = await showGeneralDialog(
-                              context: context,
-                              barrierLabel: 'New Package',
-                              barrierDismissible: true,
-                              pageBuilder: (context, _, __) =>
-                                  GeneralDialogPage(
-                                child: Column(
-                                  children: [
-                                    GeneralDialogTextField(
-                                      title: const Text(
-                                        'Create a new package named...',
-                                        style: Constants.valuePatternTextStyle,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      autoFocus: true,
-                                      submitButtonName: 'Create',
-                                      onCancelled: (text) =>
-                                          Navigator.pop(context),
-                                      onSubmitted: (text) {
-                                        text = text.trim();
-                                        String errorText = text.length > 35
-                                            ? 'Your input'
-                                            : '"$text"';
-                                        if (text.isEmpty ||
-                                            RegExp(r'^\s*$').hasMatch(text)) {
-                                          return "Entry titles can't be empty.";
-                                        } else if (ProgressionBank.bank
-                                            .containsKey(text)) {
-                                          return '$errorText already exists in the library.';
-                                        } else if (!ProgressionBank
-                                            .packageNameValid(text)) {
-                                          return '$errorText is an invalid package name.';
-                                        } else {
-                                          Navigator.pop(context, text);
-                                          return null;
-                                        }
-                                      },
-                                    ),
-                                    PackageFileDropDialog(
-                                      onUrlsDropped: (urls) =>
-                                          Navigator.pop(context, urls),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                            if (_result != null) {
-                              if (_result is String) {
-                                BlocProvider.of<BankBloc>(context)
-                                    .add(CreatePackage(package: _result));
-                              } else if (_result is List<String>) {
-                                BlocProvider.of<BankBloc>(context)
-                                    .add(ImportPackages(jsonFileUrls: _result));
-                              }
+                          options: const {
+                            'Entry': Icons.add_rounded,
+                            'Package': Icons.all_inbox_rounded
+                          },
+                          onChoice: (option) async {
+                            switch (option) {
+                              case 'Entry':
+                                await Utilities.createNewEntryDialog(context);
+                                return;
+                              case 'Package':
+                                await _handleNewPackage(context);
+                                return;
                             }
                           },
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                        child: CustomButton(
-                          label: 'Move Entries',
-                          iconData: Constants.moveEntryIcon,
+                        child: CustomDropdownButton(
+                          label: 'Transfer',
+                          iconData: Icons.checklist_rtl_rounded,
                           tight: true,
-                          onPressed: _hasSelected
-                              ? () => _handleMoveSelectedEntries(context)
-                              : null,
+                          options: const {
+                            'Move Package': Constants.moveEntryIcon,
+                            'Export': Icons.download_rounded,
+                          },
+                          onChoice: !_hasSelected
+                              ? null
+                              : (option) {
+                                  switch (option) {
+                                    case 'Move Package':
+                                      _handleMoveSelectedEntries(context);
+                                      return;
+                                    case 'Export':
+                                      _handleExportSelectedEntries(context);
+                                      return;
+                                  }
+                                },
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                        child: CustomButton(
-                          label: 'Export Entries',
-                          iconData: Constants.moveEntryIcon,
-                          tight: true,
-                          onPressed: _hasSelected
-                              ? () => _handleExportSelectedEntries(context)
-                              : null,
-                        ),
-                      ),
+                      // Padding(
+                      //   padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                      //   child: CustomButton(
+                      //     label: 'Export',
+                      //     iconData: Constants.moveEntryIcon,
+                      //     tight: true,
+                      //     onPressed: _hasSelected
+                      //         ? () => _handleExportSelectedEntries(context)
+                      //         : null,
+                      //   ),
+                      // ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
                         child: CustomButton(
@@ -403,6 +364,55 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
         ],
       ),
     );
+  }
+
+  Future<void> _handleNewPackage(BuildContext context) async {
+    var _result = await showGeneralDialog(
+      context: context,
+      barrierLabel: 'New Package',
+      barrierDismissible: true,
+      pageBuilder: (context, _, __) => GeneralDialogPage(
+        child: Column(
+          children: [
+            GeneralDialogTextField(
+              title: const Text(
+                'Create a new package named...',
+                style: Constants.valuePatternTextStyle,
+                textAlign: TextAlign.center,
+              ),
+              autoFocus: true,
+              submitButtonName: 'Create',
+              onCancelled: (text) => Navigator.pop(context),
+              onSubmitted: (text) {
+                text = text.trim();
+                String errorText = text.length > 35 ? 'Your input' : '"$text"';
+                if (text.isEmpty || RegExp(r'^\s*$').hasMatch(text)) {
+                  return "Entry titles can't be empty.";
+                } else if (ProgressionBank.bank.containsKey(text)) {
+                  return '$errorText already exists in the library.';
+                } else if (!ProgressionBank.packageNameValid(text)) {
+                  return '$errorText is an invalid package name.';
+                } else {
+                  Navigator.pop(context, text);
+                  return null;
+                }
+              },
+            ),
+            PackageFileDropDialog(
+              onUrlsDropped: (urls) => Navigator.pop(context, urls),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (_result != null) {
+      if (_result is String) {
+        BlocProvider.of<BankBloc>(context).add(CreatePackage(package: _result));
+      } else if (_result is List<String>) {
+        BlocProvider.of<BankBloc>(context)
+            .add(ImportPackages(jsonFileUrls: _result));
+      }
+    }
   }
 
   void _handleSelectedPackageLocations(
