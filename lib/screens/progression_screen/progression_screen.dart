@@ -13,7 +13,6 @@ import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/bpm_
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression_title.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/reharmonize_bar.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_window.dart';
-import 'package:weizmann_theory_app_test/widgets/dialogs.dart';
 
 import '../../Constants.dart';
 import '../../blocs/audio_player/audio_player_bloc.dart';
@@ -132,46 +131,6 @@ class ProgressionScreenUI extends StatelessWidget {
                               );
                             },
                           ),
-                          const SizedBox(width: 8),
-                          CustomButton(
-                              label: 'Move',
-                              tight: true,
-                              size: 12,
-                              iconData: Constants.moveEntryIcon,
-                              onPressed: () async {
-                                final String? newPackage =
-                                    await showGeneralDialog<String>(
-                                  context: context,
-                                  barrierLabel: 'Move Entry',
-                                  barrierDismissible: true,
-                                  pageBuilder: (context2, _, __) =>
-                                      PackageChooserDialog(
-                                    packages: [
-                                      BlocProvider.of<ProgressionHandlerBloc>(
-                                              context)
-                                          .location
-                                          .package
-                                    ],
-                                  ),
-                                );
-                                if (newPackage != null) {
-                                  final ProgressionHandlerBloc bloc =
-                                      BlocProvider.of<ProgressionHandlerBloc>(
-                                          context);
-                                  EntryLocation _location = bloc.location;
-                                  BlocProvider.of<BankBloc>(context).add(
-                                    MoveEntries(
-                                      currentLocations: [_location],
-                                      newPackage: newPackage,
-                                    ),
-                                  );
-                                  BlocProvider.of<ProgressionHandlerBloc>(
-                                          context)
-                                      .add(ChangeLocation(
-                                          newLocation: EntryLocation(
-                                              newPackage, _location.title)));
-                                }
-                              }),
                         ],
                       ),
                       Row(
