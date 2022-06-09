@@ -135,7 +135,8 @@ abstract class Utilities {
           text = text.trim();
           if (text.isEmpty || RegExp(r'^\s*$').hasMatch(text)) {
             return "Entry titles can't be empty.";
-          } else if (ProgressionBank.bank[package]!.containsKey(text)) {
+          } else if (ProgressionBank.bank.containsKey(package) &&
+              ProgressionBank.bank[package]!.containsKey(text)) {
             return 'Title already exists in bank.';
           } else {
             Navigator.pop(context, text);
