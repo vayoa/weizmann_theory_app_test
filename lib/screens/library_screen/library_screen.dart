@@ -280,7 +280,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
           Expanded(
             child: BlocConsumer<BankBloc, BankState>(
               listenWhen: (previous, state) =>
-              state is ClosingWindow ||
+                  state is ClosingWindow ||
                   (state is! BankLoading && state is! BankInitial),
               listener: (context, state) async {
                 switch (state.runtimeType) {
@@ -301,6 +301,17 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                         context,
                         'Failed to import: '
                         '${failed.substring(1, failed.length - 1)}.');
+                    break;
+                  case ImportPackages:
+                    String imported = (state as ImportPackages)
+                        .jsonFileUrls
+                        .map((e) => e.split(r'\').last)
+                        .toList()
+                        .toString();
+                    Utilities.showSnackBar(
+                        context,
+                        'Imported: '
+                        '${imported.substring(1, imported.length - 1)}.');
                     break;
                   case ExportedPackages:
                     var _realState = state as ExportedPackages;
