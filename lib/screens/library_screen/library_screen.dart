@@ -153,7 +153,8 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                           tight: true,
                           options: const {
                             'Entry': Icons.add_rounded,
-                            'Package': Icons.all_inbox_rounded
+                            'Package': Icons.all_inbox_rounded,
+                            'Import': Icons.upload_file_rounded,
                           },
                           onChoice: (option) async {
                             switch (option) {
@@ -162,6 +163,9 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                 return;
                               case 'Package':
                                 await _handleNewPackage(context);
+                                return;
+                              case 'Import':
+                                await _handleImport(context);
                                 return;
                             }
                           },
@@ -191,17 +195,6 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                 },
                         ),
                       ),
-                      // Padding(
-                      //   padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                      //   child: CustomButton(
-                      //     label: 'Export',
-                      //     iconData: Constants.moveEntryIcon,
-                      //     tight: true,
-                      //     onPressed: _hasSelected
-                      //         ? () => _handleExportSelectedEntries(context)
-                      //         : null,
-                      //   ),
-                      // ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
                         child: CustomButton(
@@ -378,51 +371,56 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
   }
 
   Future<void> _handleNewPackage(BuildContext context) async {
-    var _result = await showGeneralDialog(
+    String? _result = await showGeneralDialog<String>(
       context: context,
       barrierLabel: 'New Package',
       barrierDismissible: true,
-      pageBuilder: (context, _, __) => GeneralDialogPage(
-        child: Column(
-          children: [
-            GeneralDialogTextField(
-              title: const Text(
-                'Create a new package named...',
-                style: Constants.valuePatternTextStyle,
-                textAlign: TextAlign.center,
-              ),
-              autoFocus: true,
-              submitButtonName: 'Create',
-              onCancelled: (text) => Navigator.pop(context),
-              onSubmitted: (text) {
-                text = text.trim();
-                String errorText = text.length > 35 ? 'Your input' : '"$text"';
-                if (text.isEmpty || RegExp(r'^\s*$').hasMatch(text)) {
-                  return "Entry titles can't be empty.";
-                } else if (ProgressionBank.bank.containsKey(text)) {
-                  return '$errorText already exists in the library.';
-                } else if (!ProgressionBank.packageNameValid(text)) {
-                  return '$errorText is an invalid package name.';
-                } else {
-                  Navigator.pop(context, text);
-                  return null;
-                }
-              },
-            ),
-            PackageFileDropDialog(
-              onUrlsDropped: (urls) => Navigator.pop(context, urls),
-            ),
-          ],
+      pageBuilder: (context, _, __) => GeneralDialogTextField(
+        title: const Text(
+          'Create a new package named...',
+          style: Constants.valuePatternTextStyle,
+          textAlign: TextAlign.center,
         ),
+        autoFocus: true,
+        submitButtonName: 'Create',
+        onCancelled: (text) => Navigator.pop(context),
+        onSubmitted: (text) {
+          text = text.trim();
+          String errorText = text.length > 35 ? 'Your input' : '"$text"';
+          if (text.isEmpty || RegExp(r'^\s*$').hasMatch(text)) {
+            return "Entry titles can't be empty.";
+          } else if (ProgressionBank.bank.containsKey(text)) {
+            return '$errorText already exists in the library.';
+          } else if (!ProgressionBank.packageNameValid(text)) {
+            return '$errorText is an invalid package name.';
+          } else {
+            Navigator.pop(context, text);
+            return null;
+          }
+        },
       ),
     );
     if (_result != null) {
-      if (_result is String) {
-        BlocProvider.of<BankBloc>(context).add(CreatePackage(package: _result));
-      } else if (_result is List<String>) {
-        BlocProvider.of<BankBloc>(context)
-            .add(ImportPackages(jsonFileUrls: _result));
-      }
+      BlocProvider.of<BankBloc>(context).add(CreatePackage(package: _result));
+    }
+  }
+
+  /* TODO: WE IMPORT IT TWICE SINCE THE DROPZONE BELOW THIS DIALOG STILL
+           RECEIVES INPUT! */
+  Future<void> _handleImport(BuildContext context) async {
+    List<String>? _result = await showGeneralDialog<List<String>>(
+      context: context,
+      barrierLabel: 'Import Package',
+      barrierDismissible: true,
+      pageBuilder: (context, _, __) => PackageFileDropDialog(
+        onUrlsDropped: (urls) => Navigator.pop(context, urls),
+        onCancel: () => Navigator.pop(context),
+      ),
+    );
+
+    if (_result != null) {
+      BlocProvider.of<BankBloc>(context)
+          .add(ImportPackages(jsonFileUrls: _result));
     }
   }
 
@@ -491,7 +489,6 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
         initialDirectory: bloc.appDirectory,
       );
       if (outputFile != null) {
-        print(packages);
         bloc.add(ExportPackages(packages: packages, directory: outputFile));
       }
     }

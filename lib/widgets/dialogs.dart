@@ -469,9 +469,11 @@ class PackageFileDropDialog extends StatelessWidget {
   const PackageFileDropDialog({
     Key? key,
     required this.onUrlsDropped,
+    required this.onCancel,
   }) : super(key: key);
 
   final void Function(List<String>) onUrlsDropped;
+  final void Function() onCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -480,6 +482,7 @@ class PackageFileDropDialog extends StatelessWidget {
         onUrlsDropped: onUrlsDropped,
         showFilePickButton: true,
         hideWhenNotValid: false,
+        onCancel: onCancel,
       ),
     );
   }

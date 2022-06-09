@@ -15,6 +15,7 @@ class FileDropper extends StatefulWidget {
     this.allowedExtensions = const ['json'],
     this.hideWhenNotValid = true,
     this.showFilePickButton = false,
+    this.onCancel,
   }) : super(key: key);
 
   final void Function(List<String>) onUrlsDropped;
@@ -22,6 +23,7 @@ class FileDropper extends StatefulWidget {
   final BoxDecoration? boxDecoration;
   final bool hideWhenNotValid;
   final bool showFilePickButton;
+  final void Function()? onCancel;
 
   @override
   State<FileDropper> createState() => _FileDropperState();
@@ -102,11 +104,25 @@ class _FileDropperState extends State<FileDropper> {
                       ),
                     if (widget.showFilePickButton) const SizedBox(height: 10),
                     if (widget.showFilePickButton)
-                      CustomButton(
-                        label: 'Choose Files',
-                        iconData: Icons.upload_rounded,
-                        tight: true,
-                        onPressed: () => _pickFiles(),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (widget.onCancel != null) ...[
+                            CustomButton(
+                              label: 'Cancel',
+                              iconData: Icons.close_rounded,
+                              tight: true,
+                              onPressed: widget.onCancel,
+                            ),
+                            const SizedBox(width: 15.0),
+                          ],
+                          CustomButton(
+                            label: 'Choose Files',
+                            iconData: Icons.upload_rounded,
+                            tight: true,
+                            onPressed: () => _pickFiles(),
+                          ),
+                        ],
                       )
                   ],
                 ),
