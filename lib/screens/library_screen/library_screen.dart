@@ -178,14 +178,14 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                           iconData: Icons.checklist_rtl_rounded,
                           tight: true,
                           options: const {
-                            'Move Package': Constants.moveEntryIcon,
+                            'Move': Constants.moveEntryIcon,
                             'Export': Icons.download_rounded,
                           },
                           onChoice: !_hasSelected
                               ? null
                               : (option) {
                                   switch (option) {
-                                    case 'Move Package':
+                                    case 'Move':
                                       _handleMoveSelectedEntries(context);
                                       return;
                                     case 'Export':
