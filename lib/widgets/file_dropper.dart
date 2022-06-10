@@ -32,7 +32,6 @@ class FileDropper extends StatefulWidget {
 class _FileDropperState extends State<FileDropper> {
   bool _dragging = false;
   bool? _valid;
-  bool _loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +50,7 @@ class _FileDropperState extends State<FileDropper> {
       }),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
-        child: !(!widget.hideWhenNotValid || _dragging || _loading)
+        child: !(!widget.hideWhenNotValid || _dragging)
             ? const SizedBox.expand()
             : Container(
                 constraints: const BoxConstraints.expand(),

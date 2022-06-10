@@ -327,38 +327,41 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
               },
               buildWhen: (previous, state) => state is! RenamedEntry,
               builder: (context, state) {
-                if (packages.isEmpty) {
-                  return const FractionallySizedBox(
-                    heightFactor: 0.5,
-                    child: Text(
-                      "No Matching Titles Found.",
-                      style: Constants.valuePatternTextStyle,
-                    ),
-                  );
-                } else if (state is! BankLoading &&
-                    state is! BankInitial &&
-                    state is! ClosingWindow) {
-                  return LibraryList(
-                    packages: packages,
-                    hasSelected:
-                        BlocProvider.of<BankBloc>(context).packageHasSelected,
-                    searching: _controller.text.isNotEmpty,
-                    onOpen: (location) =>
-                        _pushProgressionPage(context, location),
-                  );
-                } else {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 8),
-                      Text(
-                        'Loading...',
-                        style: Constants.valuePatternTextStyle,
-                      ),
-                    ],
-                  );
-                }
+                return AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  child: packages.isEmpty
+                      ? FractionallySizedBox(
+                          heightFactor: 0.5,
+                          child: Text(
+                            _controller.text.isEmpty
+                                ? "Your Library is Empty."
+                                : "No Matching Titles Found.",
+                            style: Constants.valuePatternTextStyle,
+                          ),
+                        )
+                      : ((state is! BankLoading &&
+                              state is! BankInitial &&
+                              state is! ClosingWindow)
+                          ? LibraryList(
+                              packages: packages,
+                              hasSelected: BlocProvider.of<BankBloc>(context)
+                                  .packageHasSelected,
+                              searching: _controller.text.isNotEmpty,
+                              onOpen: (location) =>
+                                  _pushProgressionPage(context, location),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Loading...',
+                                  style: Constants.valuePatternTextStyle,
+                                ),
+                              ],
+                            )),
+                );
               },
             ),
           ),
