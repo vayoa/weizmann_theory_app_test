@@ -17,6 +17,7 @@ class BankBloc extends Bloc<BankEvent, BankState> {
   late final String jsonPath;
   late final File jsonFile;
   static const String jsonFilePath = r'WeizmannTheory\bank.json';
+  static const String backupFilePath = r'WeizmannTheory\Migration Backups';
 
   Map<String, Map<String, bool>> _titles = {};
 
@@ -286,7 +287,16 @@ class BankBloc extends Bloc<BankEvent, BankState> {
     if (exists) {
       try {
         final String json = await jsonFile.readAsString();
-        ProgressionBank.initializeFromJson(jsonDecode(json));
+        final Map<String, dynamic> jsonMap = jsonDecode(json);
+        if (ProgressionBank.migrationRequired(jsonMap)) {
+          final String version =
+              ProgressionBank.jsonVersion(jsonMap).replaceAll('.', '-');
+          final File backupFile =
+              File('$appDirectory\\$backupFilePath\\bank $version.json');
+          await backupFile.create(recursive: true);
+          await backupFile.writeAsString(json);
+        }
+        ProgressionBank.initializeFromJson(jsonMap);
       } catch (e) {
         await jsonFile.delete();
         exists = false;
