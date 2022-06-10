@@ -17,8 +17,8 @@ class PackageView extends StatefulWidget {
     required this.package,
     required this.titles,
     required this.searching,
+    required this.hasSelected,
     required this.onOpen,
-    required this.onUpdatedSelection,
     required this.onTicked,
     required this.onTickedAll,
   }) : super(key: key);
@@ -26,9 +26,9 @@ class PackageView extends StatefulWidget {
   final String package;
   final Map<String, bool> titles;
   final bool searching;
+  final bool? hasSelected;
   final void Function(EntryLocation location) onOpen;
   final void Function(String, bool) onTicked;
-  final void Function() onUpdatedSelection;
   final void Function(bool?) onTickedAll;
   static const double dividerHeight = 8.0;
 
@@ -73,7 +73,6 @@ class _PackageViewState extends State<PackageView> {
 
   @override
   Widget build(BuildContext context) {
-    bool? checkboxValue = _getCheckboxValue();
     return StickyHeader(
       header: GestureDetector(
         onTap: () => _controller.value = !_expanded,
@@ -146,8 +145,8 @@ class _PackageViewState extends State<PackageView> {
                             ],
                           ),
                         ),
-                        if (checkboxValue == null ||
-                            checkboxValue ||
+                        if (widget.hasSelected == null ||
+                            widget.hasSelected! ||
                             _hovered ||
                             _expanded)
                           Padding(
@@ -159,7 +158,7 @@ class _PackageViewState extends State<PackageView> {
                                     constraints:
                                         const BoxConstraints(maxHeight: 10),
                                     child: Checkbox(
-                                      value: checkboxValue,
+                                      value: widget.hasSelected,
                                       tristate: true,
                                       onChanged: (ticked) => setState(
                                           () => widget.onTickedAll(ticked)),
@@ -179,14 +178,14 @@ class _PackageViewState extends State<PackageView> {
                                 const SizedBox(width: 5.0),
                                 CustomButton(
                                   label: null,
-                                  iconData: checkboxValue != false
+                                  iconData: widget.hasSelected != false
                                       ? Icons.delete_sweep_rounded
                                       : Icons.folder_delete_rounded,
                                   iconSize: 22.0,
                                   tight: true,
                                   onPressed: () => _handleDelete(
                                     context: context,
-                                    deletePackage: checkboxValue == false,
+                                    deletePackage: widget.hasSelected == false,
                                   ),
                                 ),
                               ],
@@ -212,23 +211,9 @@ class _PackageViewState extends State<PackageView> {
         package: widget.package,
         titles: widget.titles,
         onOpen: widget.onOpen,
-        onTicked: (title, ticked) {
-          widget.onTicked(title, ticked);
-          setState(() {});
-        },
+        onTicked: (title, ticked) => widget.onTicked(title, ticked),
       ),
     );
-  }
-
-  bool? _getCheckboxValue() {
-    var list = widget.titles.values.where((element) => element);
-    if (list.isEmpty) {
-      return false;
-    } else if (list.length == widget.titles.length) {
-      return true;
-    } else {
-      return null;
-    }
   }
 
   @override
@@ -305,7 +290,6 @@ class _PackageViewState extends State<PackageView> {
       } else {
         BlocProvider.of<BankBloc>(context).add(DeleteEntries(locations));
       }
-      widget.onUpdatedSelection();
     }
   }
 }

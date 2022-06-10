@@ -24,8 +24,6 @@ class LibraryScreen extends StatefulWidget {
 
 class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
   Map<String, Map<String, bool>> packages = const {};
-  Map<String, Map<String, bool>> _realPackages = const {};
-  bool _hasSelected = false;
   late TextEditingController _controller;
 
   @override
@@ -117,25 +115,19 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                             hintText: 'Search...',
                           ),
                           onChanged: (text) {
+                            Map<String, Map<String, bool>> _realPackages =
+                                BlocProvider.of<BankBloc>(context).titles;
                             if (text.isEmpty) {
                               setState(() {
-                                packages = Map.from(_realPackages);
+                                packages = _realPackages;
                               });
                             } else {
                               setState(() {
-                                for (MapEntry<String, Map<String, bool>> package
-                                    in _realPackages.entries) {
-                                  Map<String, bool> newTitles = Map.fromEntries(
-                                      package.value.keys
-                                          .where((String title) => title
-                                              .toLowerCase()
-                                              .contains(text.toLowerCase()))
-                                          .map((e) =>
-                                              MapEntry(e, package.value[e]!)));
-                                  if (newTitles.isNotEmpty) {
-                                    packages[package.key] = newTitles;
-                                  }
-                                }
+                                /* TODO: Find a way to optimize. this is done to
+                                        not change the map in the bank, which
+                                        is packages...
+                               */
+                                _handleSearch(_realPackages, text);
                               });
                             }
                           },
@@ -173,26 +165,32 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                        child: CustomDropdownButton(
-                          label: 'Transfer',
-                          iconData: Icons.checklist_rtl_rounded,
-                          tight: true,
-                          options: const {
-                            'Move': Constants.moveEntryIcon,
-                            'Export': Icons.download_rounded,
+                        child: BlocBuilder<BankBloc, BankState>(
+                          buildWhen: (_, state) => state is SelectionUpdated,
+                          builder: (context, state) {
+                            return CustomDropdownButton(
+                              label: 'Transfer',
+                              iconData: Icons.checklist_rtl_rounded,
+                              tight: true,
+                              options: const {
+                                'Move': Constants.moveEntryIcon,
+                                'Export': Icons.download_rounded,
+                              },
+                              onChoice: !BlocProvider.of<BankBloc>(context)
+                                      .hasSelected
+                                  ? null
+                                  : (option) {
+                                      switch (option) {
+                                        case 'Move':
+                                          _handleMoveSelectedEntries(context);
+                                          return;
+                                        case 'Export':
+                                          _handleExportSelectedEntries(context);
+                                          return;
+                                      }
+                                    },
+                            );
                           },
-                          onChoice: !_hasSelected
-                              ? null
-                              : (option) {
-                                  switch (option) {
-                                    case 'Move':
-                                      _handleMoveSelectedEntries(context);
-                                      return;
-                                    case 'Export':
-                                      _handleExportSelectedEntries(context);
-                                      return;
-                                  }
-                                },
                         ),
                       ),
                       Padding(
@@ -319,10 +317,12 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                         'to ${_realState.directory}.');
                 }
                 setState(() {
-                  _realPackages = _getPackages(state.titles);
-                  // Clone _realPackages to not destroy it...
-                  packages = Map.from(_realPackages);
-                  _controller.text = '';
+                  packages = state.titles;
+                  if (state is DatabaseUpdated) {
+                    _controller.text = '';
+                  } else if (_controller.text.isNotEmpty) {
+                    _handleSearch(state.titles, _controller.text);
+                  }
                 });
               },
               buildWhen: (previous, state) => state is! RenamedEntry,
@@ -340,14 +340,11 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                     state is! ClosingWindow) {
                   return LibraryList(
                     packages: packages,
-                    realPackages: _realPackages,
+                    hasSelected:
+                        BlocProvider.of<BankBloc>(context).packageHasSelected,
                     searching: _controller.text.isNotEmpty,
                     onOpen: (location) =>
                         _pushProgressionPage(context, location),
-                    onTicked: () => setState(() {
-                      _hasSelected = _realPackages.values
-                          .any((e) => e.values.any((e2) => e2));
-                    }),
                   );
                 } else {
                   return Column(
@@ -368,6 +365,24 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
         ],
       ),
     );
+  }
+
+  void _handleSearch(
+      Map<String, Map<String, bool>> _realPackages, String text) {
+    /* TODO: Find a way to optimize. this is done to
+            not change the map in the bank, which
+            is packages...
+    */
+    packages = Map.from(_realPackages);
+    for (MapEntry<String, Map<String, bool>> package in _realPackages.entries) {
+      Map<String, bool> newTitles = Map.fromEntries(package.value.keys
+          .where((String title) =>
+              title.toLowerCase().contains(text.toLowerCase()))
+          .map((e) => MapEntry(e, package.value[e]!)));
+      if (newTitles.isNotEmpty) {
+        packages[package.key] = newTitles;
+      }
+    }
   }
 
   Future<void> _handleNewPackage(BuildContext context) async {
@@ -424,26 +439,14 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
     }
   }
 
-  void _handleSelectedPackageLocations(
-      List<String> packages, List<EntryLocation> locations) {
-    for (String package in _realPackages.keys) {
-      bool added = false;
-      for (String title in _realPackages[package]!.keys) {
-        if (_realPackages[package]![title]!) {
-          if (!added) {
-            packages.add(package);
-            added = true;
-          }
-          locations.add(EntryLocation(package, title));
-        }
-      }
-    }
-  }
-
   void _handleMoveSelectedEntries(BuildContext context) async {
-    List<String> packages = [];
-    List<EntryLocation> locations = [];
-    _handleSelectedPackageLocations(packages, locations);
+    // TODO: Could optimize this...
+    var _selected = BlocProvider.of<BankBloc>(context).selectedTitles;
+    List<String> packages = _selected.keys.toList();
+    List<EntryLocation> locations = [
+      for (String package in packages)
+        for (String title in _selected[package]!) EntryLocation(package, title)
+    ];
 
     final String? newPackage = await showGeneralDialog(
       context: context,
@@ -469,15 +472,8 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
   }
 
   void _handleExportSelectedEntries(BuildContext context) async {
-    Map<String, List<String>> packages = {};
-    for (String package in _realPackages.keys) {
-      for (String title in _realPackages[package]!.keys) {
-        if (_realPackages[package]![title]!) {
-          if (!packages.containsKey(package)) packages[package] = [];
-          packages[package]!.add(title);
-        }
-      }
-    }
+    Map<String, List<String>> packages =
+        BlocProvider.of<BankBloc>(context).selectedTitles;
 
     if (packages.isNotEmpty) {
       var bloc = BlocProvider.of<BankBloc>(context);
@@ -493,17 +489,6 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
       }
     }
   }
-
-  _getPackages(Map<String, List<String>> newPackages) => {
-        for (var package in newPackages.entries)
-          package.key: {
-            for (var title in package.value)
-              title: _realPackages.containsKey(package.key) &&
-                      _realPackages[package.key]!.containsKey(title)
-                  ? _realPackages[package.key]![title]!
-                  : false
-          },
-      };
 
   Future<void> _pushProgressionPage(
       BuildContext context, EntryLocation currentLocation) async {

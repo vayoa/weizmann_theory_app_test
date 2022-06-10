@@ -128,3 +128,23 @@ class ChangeUseInSubstitutions extends BankEvent {
   const ChangeUseInSubstitutions(
       {required this.location, required this.useInSubstitutions});
 }
+
+class SelectEntry extends BankEvent {
+  final EntryLocation location;
+  final bool selected;
+
+  @override
+  List<Object?> get props => [location, selected];
+
+  const SelectEntry({required this.location, required this.selected});
+}
+
+class SelectPackage extends BankEvent {
+  final String package;
+  final bool selected;
+
+  @override
+  List<Object?> get props => [package, selected];
+
+  const SelectPackage({required this.package, required this.selected});
+}

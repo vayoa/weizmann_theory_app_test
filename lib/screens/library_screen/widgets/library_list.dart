@@ -11,17 +11,15 @@ class LibraryList extends StatelessWidget {
   const LibraryList({
     Key? key,
     required this.packages,
-    required this.realPackages,
+    required this.hasSelected,
     required this.searching,
     required this.onOpen,
-    required this.onTicked,
   }) : super(key: key);
 
   final Map<String, Map<String, bool>> packages;
-  final Map<String, Map<String, bool>> realPackages;
+  final Map<String, bool?> hasSelected;
   final bool searching;
   final void Function(EntryLocation) onOpen;
-  final void Function() onTicked;
 
   @override
   Widget build(BuildContext context) {
@@ -37,22 +35,24 @@ class LibraryList extends StatelessWidget {
               return PackageView(
                 package: package,
                 searching: searching,
+                hasSelected: hasSelected.containsKey(package)
+                    ? hasSelected[package]
+                    : false,
                 titles: packages[package]!,
                 onOpen: onOpen,
-                onUpdatedSelection: onTicked,
-                onTicked: (title, ticked) {
-                  packages[package]![title] = ticked;
-                  realPackages[package]![title] = ticked;
-                  onTicked();
-                },
-                onTickedAll: (ticked) {
-                  ticked ??= false;
-                  for (var title in packages[package]!.keys) {
-                    packages[package]![title] = ticked;
-                    realPackages[package]![title] = ticked;
-                  }
-                  onTicked();
-                },
+                onTicked: (title, ticked) =>
+                    BlocProvider.of<BankBloc>(context).add(
+                  SelectEntry(
+                    location: EntryLocation(package, title),
+                    selected: ticked,
+                  ),
+                ),
+                onTickedAll: (ticked) => BlocProvider.of<BankBloc>(context).add(
+                  SelectPackage(
+                    package: package,
+                    selected: ticked ?? false,
+                  ),
+                ),
               );
             },
           ),

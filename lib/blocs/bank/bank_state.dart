@@ -1,89 +1,115 @@
 part of 'bank_bloc.dart';
 
+/* TODO: NOTICE!!!
+    This is the same map in every bank state, so we can't relay on it for
+    equality: The map itself changes in both states, previous and new.
+    ...
+    So we can either copy the map, or just not relay on it for the state
+    equality, and always make sure we're adding another field.
+*/
 abstract class BankState extends Equatable {
-  final Map<String, List<String>> titles;
+  final Map<String, Map<String, bool>> titles;
 
   @override
   List<Object?> get props => [titles];
 
-  const BankState({required this.titles});
+  const BankState(this.titles);
 }
 
-class BankInitial extends BankState {
-  const BankInitial() : super(titles: const {});
+// --- Types ---
+/// Describes only database updates that don't include selection updates.
+abstract class DatabaseUpdated extends BankState {
+  const DatabaseUpdated(Map<String, Map<String, bool>> titles) : super(titles);
+}
+
+/// Describes only selection updates...
+abstract class SelectionUpdated extends BankState {
+  const SelectionUpdated(Map<String, Map<String, bool>> titles) : super(titles);
 }
 
 class BankLoading extends BankInitial {}
 
-class BankLoaded extends BankState {
-  const BankLoaded({required Map<String, List<String>> titles})
-      : super(titles: titles);
+class BankInitial extends DatabaseUpdated {
+  const BankInitial() : super(const {});
 }
 
-class AddedNewEntry extends BankState {
+class BankLoaded extends DatabaseUpdated {
+  const BankLoaded({required Map<String, Map<String, bool>> titles})
+      : super(titles);
+}
+
+class ClosingWindow extends BankInitial {
+  const ClosingWindow();
+}
+
+class AddedNewEntry extends DatabaseUpdated {
   final EntryLocation addEntryLocation;
 
   @override
   List<Object?> get props => [...super.props, addEntryLocation];
 
   const AddedNewEntry({
-    required Map<String, List<String>> titles,
+    required Map<String, Map<String, bool>> titles,
     required this.addEntryLocation,
-  }) : super(titles: titles);
+  }) : super(titles);
 }
 
-class RenamedEntry extends BankState {
+class RenamedEntry extends DatabaseUpdated {
   final String newEntryName;
 
   @override
   List<Object?> get props => [...super.props, newEntryName];
 
   const RenamedEntry({
-    required Map<String, List<String>> titles,
+    required Map<String, Map<String, bool>> titles,
     required this.newEntryName,
-  }) : super(titles: titles);
+  }) : super(titles);
 }
 
-class MovedEntries extends BankState {
+class MovedEntries extends DatabaseUpdated {
   final List<EntryLocation> newLocations;
 
   @override
   List<Object?> get props => [...super.props, newLocations];
 
   const MovedEntries({
-    required Map<String, List<String>> titles,
+    required Map<String, Map<String, bool>> titles,
     required this.newLocations,
-  }) : super(titles: titles);
+  }) : super(titles);
 }
 
-class CreatedPackage extends BankState {
+class CreatedPackage extends DatabaseUpdated {
   final String package;
 
   @override
   List<Object?> get props => [...super.props, package];
 
   const CreatedPackage(
-      {required Map<String, List<String>> titles, required this.package})
-      : super(titles: titles);
+      {required Map<String, Map<String, bool>> titles, required this.package})
+      : super(titles);
 }
 
-class DeletedPackage extends BankState {
+class DeletedPackage extends DatabaseUpdated {
   final String package;
 
   @override
   List<Object?> get props => [...super.props, package];
 
   const DeletedPackage(
-      {required Map<String, List<String>> titles, required this.package})
-      : super(titles: titles);
+      {required Map<String, Map<String, bool>> titles, required this.package})
+      : super(titles);
 }
 
-class ImportedPackages extends BankState {
-  @override
-  List<Object?> get props => [...super.props];
+class ImportedPackages extends DatabaseUpdated {
+  final List<String> importedUrls;
 
-  const ImportedPackages({required Map<String, List<String>> titles})
-      : super(titles: titles);
+  @override
+  List<Object?> get props => [...super.props, importedUrls];
+
+  const ImportedPackages({
+    required Map<String, Map<String, bool>> titles,
+    required this.importedUrls,
+  }) : super(titles);
 }
 
 class ImportPackagesFailed extends BankState {
@@ -93,9 +119,9 @@ class ImportPackagesFailed extends BankState {
   List<Object?> get props => [failedJsonFileUrls];
 
   const ImportPackagesFailed(
-      {required Map<String, List<String>> titles,
+      {required Map<String, Map<String, bool>> titles,
       required this.failedJsonFileUrls})
-      : super(titles: titles);
+      : super(titles);
 }
 
 class ExportedPackages extends BankState {
@@ -106,12 +132,36 @@ class ExportedPackages extends BankState {
   List<Object?> get props => [...super.props, packages, directory];
 
   const ExportedPackages(
-      {required Map<String, List<String>> titles,
+      {required Map<String, Map<String, bool>> titles,
       required this.packages,
       required this.directory})
-      : super(titles: titles);
+      : super(titles);
 }
 
-class ClosingWindow extends BankInitial {
-  const ClosingWindow();
+class SpecificSelectionUpdated extends SelectionUpdated {
+  final List<EntryLocation> updated;
+  final List<bool> selected;
+
+  @override
+  List<Object?> get props => [...super.props, updated, selected];
+
+  const SpecificSelectionUpdated({
+    required Map<String, Map<String, bool>> titles,
+    required this.updated,
+    required this.selected,
+  }) : super(titles);
+}
+
+class PackageSelectionUpdated extends SelectionUpdated {
+  final String package;
+  final bool selected;
+
+  @override
+  List<Object?> get props => [...super.props, package, selected];
+
+  const PackageSelectionUpdated({
+    required Map<String, Map<String, bool>> titles,
+    required this.package,
+    required this.selected,
+  }) : super(titles);
 }
