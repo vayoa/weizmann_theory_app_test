@@ -209,10 +209,14 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
             optionsViewBuilder: (BuildContext context,
                 void Function(String) onSelected, Iterable<String> options) {
               final int highlighted = AutocompleteHighlightedOption.of(context);
+              const borderRadius = BorderRadius.vertical(
+                bottom: Radius.circular(Constants.borderRadius),
+              );
               return Align(
                 alignment: Alignment.topLeft,
                 child: Material(
-                  elevation: 4.0,
+                  elevation: 10.0,
+                  borderRadius: borderRadius,
                   child: ConstrainedBox(
                     constraints:
                         const BoxConstraints(maxHeight: 200, maxWidth: 396),
@@ -241,6 +245,11 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
                               onSelected(unique ? _controller.text : option),
                           child: ListTile(
                             title: title,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: index == options.length - 1
+                                  ? borderRadius
+                                  : BorderRadius.zero,
+                            ),
                             tileColor:
                                 index == highlighted ? Colors.grey[400]! : null,
                           ),
