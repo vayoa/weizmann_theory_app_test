@@ -29,7 +29,6 @@ class LibraryList extends StatelessWidget {
           child: ListView.builder(
             itemCount: packages.length,
             padding: const EdgeInsets.fromLTRB(30.0, 0.0, 30.0, 15.0),
-            shrinkWrap: true,
             itemBuilder: (context, index) {
               final String package = packages.keys.elementAt(index);
               return PackageView(
