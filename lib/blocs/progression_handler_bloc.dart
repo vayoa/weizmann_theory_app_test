@@ -61,6 +61,10 @@ class ProgressionHandlerBloc
   })  : _substitutionHandlerBloc = substitutionHandlerBloc,
         location = initialLocation,
         super(ProgressionHandlerInitial()) {
+    if (!currentProgression.isEmpty) {
+      _currentScale = defaultScale;
+      currentChords = currentProgression.inScale(_currentScale!);
+    }
     on<OverrideProgression>((event, emit) {
       _chordMeasures = null;
       _progressionMeasures = null;
@@ -103,7 +107,7 @@ class ProgressionHandlerBloc
         if (rangeValid) {
           final double step = currentProgression.timeSignature.step;
           final double newFrom =
-              min(fromDur, currentProgression.duration - step);
+          min(fromDur, currentProgression.duration - step);
           final double newTo = min(toDur, currentProgression.duration);
           if (newTo - newFrom >= 2 * step) {
             _recalculateRangePositions(newFrom, newTo);
@@ -159,7 +163,7 @@ class ProgressionHandlerBloc
           event.end <= prog.duration &&
           event.start < event.end) {
         List<double>? results =
-            Utilities.calculateDurationPositions(prog, event.start, event.end);
+        Utilities.calculateDurationPositions(prog, event.start, event.end);
         if (results != null) {
           fromChord = results[0].toInt();
           startDur = results[1];
@@ -203,7 +207,7 @@ class ProgressionHandlerBloc
               ? _parseScaleDegreeInputs(event.inputs, event.measureIndex)
               : _parseChordInputs(event.inputs, event.measureIndex);
           newType =
-              chords ? ProgressionType.romanNumerals : ProgressionType.chords;
+          chords ? ProgressionType.romanNumerals : ProgressionType.chords;
         } on Exception catch (_) {
           return emit(InvalidInputReceived(
               progression: currentlyViewedProgression, exception: firstError));
@@ -218,7 +222,7 @@ class ProgressionHandlerBloc
 
       if (type == ProgressionType.chords) {
         final ChordProgression chordProgression =
-            ChordProgression.fromProgression(progression as Progression<Chord>);
+        ChordProgression.fromProgression(progression as Progression<Chord>);
         if (_currentScale == null) {
           _currentScale = chordProgression.krumhanslSchmucklerScales.first;
           emit(ScaleChanged(
@@ -244,7 +248,7 @@ class ProgressionHandlerBloc
       }
     });
     on<SurpriseMe>(
-      (event, emit) => _substitutionHandlerBloc.add(OpenSetupPage(
+          (event, emit) => _substitutionHandlerBloc.add(OpenSetupPage(
         progression: currentProgression,
         surpriseMe: true,
       )),
