@@ -372,11 +372,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
 
   void _handleSearch(
       Map<String, Map<String, bool>> _realPackages, String text) {
-    /* TODO: Find a way to optimize. this is done to
-            not change the map in the bank, which
-            is packages...
-    */
-    packages = Map.from(_realPackages);
+    packages = {};
     for (MapEntry<String, Map<String, bool>> package in _realPackages.entries) {
       Map<String, bool> newTitles = Map.fromEntries(package.value.keys
           .where((String title) =>
