@@ -139,8 +139,12 @@ class _FileDropperState extends State<FileDropper> {
         (file) => widget.allowedExtensions.contains(file.name.split('.').last));
     if (!_valid!) {
       var str = widget.allowedExtensions.toString();
-      Utilities.showSnackBar(context,
-          "Invalid import, make sure all entries are of type: ${str.substring(1, str.length - 1)}.");
+      Utilities.showSnackBar(
+        context,
+        "Invalid import, make sure all entries are of type: "
+        "${str.substring(1, str.length - 1)}.",
+        SnackBarType.warning,
+      );
     }
   }
 

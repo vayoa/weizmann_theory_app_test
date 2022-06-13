@@ -27,7 +27,10 @@ class ReharmonizeBar extends StatelessWidget {
                       BlocProvider.of<ProgressionHandlerBloc>(context);
                   if (bloc.rangeDisabled) {
                     Utilities.showSnackBar(
-                        context, "Can't reharmonize with no range selected.");
+                      context,
+                      "Can't reharmonize with no range selected.",
+                      SnackBarType.error,
+                    );
                   } else {
                     bloc.add(const Reharmonize());
                   }

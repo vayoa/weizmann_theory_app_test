@@ -289,20 +289,24 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                         .toList()
                         .toString();
                     Utilities.showSnackBar(
-                        context,
-                        'Failed to import: '
-                        '${failed.substring(1, failed.length - 1)}.');
+                      context,
+                      'Failed to import: '
+                      '${failed.substring(1, failed.length - 1)}.',
+                      SnackBarType.error,
+                    );
                     break;
-                  case ImportPackages:
-                    String imported = (state as ImportPackages)
-                        .jsonFileUrls
+                  case ImportedPackages:
+                    String imported = (state as ImportedPackages)
+                        .importedUrls
                         .map((e) => e.split(r'\').last)
                         .toList()
                         .toString();
                     Utilities.showSnackBar(
-                        context,
-                        'Imported: '
-                        '${imported.substring(1, imported.length - 1)}.');
+                      context,
+                      'Imported: '
+                      '${imported.substring(1, imported.length - 1)}.',
+                      SnackBarType.success,
+                    );
                     break;
                   case ExportedPackages:
                     var _realState = state as ExportedPackages;
@@ -311,10 +315,12 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                         .toList()
                         .toString();
                     Utilities.showSnackBar(
-                        context,
-                        'Exported selected entries from: '
-                        '${failed.substring(1, failed.length - 1)} '
-                        'to ${_realState.directory}.');
+                      context,
+                      'Exported selected entries from: '
+                      '${failed.substring(1, failed.length - 1)} '
+                      'to ${_realState.directory}.',
+                      SnackBarType.success,
+                    );
                 }
                 setState(() {
                   packages = state.titles;

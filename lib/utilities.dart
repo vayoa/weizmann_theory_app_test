@@ -105,12 +105,55 @@ abstract class Utilities {
     return null;
   }
 
-  static void showSnackBar(BuildContext context, String text) {
+  static void showSnackBar(BuildContext context, String text,
+      [SnackBarType type = SnackBarType.warning]) {
     ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     messenger.clearSnackBars();
+    final Color color = getSnackBarTypeColor(type);
     messenger.showSnackBar(
-      SnackBar(behavior: SnackBarBehavior.floating, content: Text(text)),
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(getSnackBarTypeIcon(type), color: color),
+            const SizedBox(width: 10),
+            Text(text),
+          ],
+        ),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          textColor: color,
+          onPressed: () {},
+        ),
+      ),
     );
+  }
+
+  static Color getSnackBarTypeColor(SnackBarType type) {
+    switch (type) {
+      case SnackBarType.error:
+        return Colors.redAccent;
+      case SnackBarType.warning:
+        return Colors.orangeAccent;
+      case SnackBarType.success:
+        return Colors.greenAccent;
+      case SnackBarType.hint:
+        return Colors.lightBlueAccent;
+    }
+  }
+
+  static IconData getSnackBarTypeIcon(SnackBarType type) {
+    switch (type) {
+      case SnackBarType.error:
+        return Icons.cancel_rounded;
+      case SnackBarType.warning:
+        return Icons.warning_rounded;
+      case SnackBarType.success:
+        return Icons.check_circle_rounded;
+      case SnackBarType.hint:
+        return Icons.tips_and_updates_rounded;
+    }
   }
 
   static Future<void> createNewEntryDialog(
@@ -150,4 +193,11 @@ abstract class Utilities {
           .add(AddNewEntry(EntryLocation(package, _title)));
     }
   }
+}
+
+enum SnackBarType {
+  error,
+  warning,
+  success,
+  hint,
 }

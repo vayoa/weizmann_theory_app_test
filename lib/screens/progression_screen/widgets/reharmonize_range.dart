@@ -83,21 +83,29 @@ class _ReharmonizeRangeState extends State<ReharmonizeRange> {
               bool showSnackBar = true;
               if (validSubmit.hasMatch(input)) {
                 List<String> values = input.split('-');
-                double start = double.parse(values[0].trim());
-                double end = double.parse(values.last.trim());
-                Progression prog = bloc.currentlyViewedProgression;
-                if (start >= 0.0 && end <= prog.duration && start < end) {
+                double? start = double.tryParse(values[0].trim());
+                double? end = double.tryParse(values.last.trim());
+                if (start != null && end != null) {
+                  Progression prog = bloc.currentlyViewedProgression;
                   final double step = prog.timeSignature.step;
-                  // round both numbers according to step;
-                  start = (start / step).ceil() * step;
-                  end = (end / step).ceil() * step;
-                  showSnackBar = false;
-                  bloc.add(ChangeRangeDuration(start: start, end: end));
+                  if (start >= 0.0 &&
+                      end <= prog.duration &&
+                      end - start >= step * 2) {
+                    // round both numbers according to step;
+                    start = (start / step).ceil() * step;
+                    end = (end / step).ceil() * step;
+                    showSnackBar = false;
+                    bloc.add(ChangeRangeDuration(start: start, end: end));
+                  }
                 }
               }
               controller.clear();
               if (showSnackBar) {
-                Utilities.showSnackBar(context, "Invalid range inputted.");
+                Utilities.showSnackBar(
+                  context,
+                  "Invalid range inputted.",
+                  SnackBarType.error,
+                );
               }
             },
           ),

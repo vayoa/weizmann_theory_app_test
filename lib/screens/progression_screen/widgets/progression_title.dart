@@ -93,17 +93,21 @@ class _ProgressionTitleState extends State<ProgressionTitle> {
                           .title;
                   if (text.isEmpty || RegExp(r'^\s*$').hasMatch(text)) {
                     Utilities.showSnackBar(
-                        context,
-                        "Can't rename to \"$text\" since entry titles can't be "
-                        "empty.");
+                      context,
+                      "Can't rename to \"$text\" since entry titles can't be "
+                      "empty.",
+                      SnackBarType.error,
+                    );
                   } else if (!ProgressionBank.canRename(
                       package: package,
                       previousTitle: savedTitle,
                       newTitle: text)) {
                     Utilities.showSnackBar(
-                        context,
-                        'Can\'t rename to "$text" since there\'s already an entry '
-                        'with that name in the library.');
+                      context,
+                      'Can\'t rename to "$text" since there\'s already an entry '
+                      'with that name in the library.',
+                      SnackBarType.error,
+                    );
                   } else {
                     BlocProvider.of<BankBloc>(context).add(RenameEntry(
                         location: EntryLocation(package, savedTitle),
