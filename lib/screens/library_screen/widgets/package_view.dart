@@ -250,11 +250,12 @@ class _PackageViewState extends State<PackageView> {
         onPressed: (choice) => Navigator.pop(context, choice),
       ),
     );
-    late final List<EntryLocation> locations;
+    late List<EntryLocation> locations;
     if (delete != null) {
       locations = [
         for (String title in widget.titles.keys)
-          if (widget.titles[title]!) EntryLocation(widget.package, title)
+          if (deletePackage || widget.titles[title]!)
+            EntryLocation(widget.package, title)
       ];
     }
     if (widget.titles.isNotEmpty && delete == true && deletePackage) {

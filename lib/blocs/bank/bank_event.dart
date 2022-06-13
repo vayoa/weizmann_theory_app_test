@@ -68,10 +68,10 @@ class MoveEntries extends BankEvent {
   @override
   List<Object?> get props => [currentLocations, newPackage];
 
-  const MoveEntries({
+  MoveEntries({
     required this.currentLocations,
     required this.newPackage,
-  });
+  }) : assert(currentLocations.isNotEmpty);
 }
 
 class CreatePackage extends BankEvent {

@@ -15,9 +15,10 @@ part 'bank_state.dart';
 class BankBloc extends Bloc<BankEvent, BankState> {
   late final String appDirectory;
   late final String jsonPath;
-  late final File jsonFile;
-  static const String jsonFilePath = r'WeizmannTheory\bank.json';
-  static const String backupFilePath = r'WeizmannTheory\Migration Backups';
+  late File jsonFile;
+  static const String appFolder = 'WeizmannTheory';
+  static const String jsonFilePath = '$appFolder\\bank.json';
+  static const String backupFilePath = '$appFolder\\Migration Backups';
 
   Map<String, Map<String, bool>> _titles = {};
 
@@ -151,12 +152,12 @@ class BankBloc extends Bloc<BankEvent, BankState> {
     });
     on<MoveEntries>((event, emit) async {
       List<EntryLocation> moved = [];
+      Map<String, bool>? saved =
+          _titles[event.newPackage] ?? _addPackage(event.newPackage);
       for (EntryLocation location in event.currentLocations) {
         ProgressionBank.move(location: location, newPackage: event.newPackage);
         final String title = location.title;
         bool selected = _titles[location.package]!.remove(title)!;
-        Map<String, bool>? saved =
-            _titles[event.newPackage] ?? _addPackage(event.newPackage);
         saved[title] = selected;
         moved.add(EntryLocation(event.newPackage, title));
       }
@@ -300,6 +301,7 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       } catch (e) {
         await jsonFile.delete();
         exists = false;
+        rethrow;
       }
     }
     if (!exists) {
@@ -316,6 +318,10 @@ class BankBloc extends Bloc<BankEvent, BankState> {
   /// Overrides the current data if present. If not re-creates the json file.
   Future<void> _saveBankData() async {
     final String json = jsonEncode(ProgressionBank.toJson());
-    await jsonFile.writeAsString(json, mode: FileMode.write);
+    jsonFile.writeAsStringSync(
+      json,
+      mode: FileMode.write,
+      flush: true,
+    );
   }
 }
