@@ -335,7 +335,7 @@ class _PackageViewContent extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       vertical: 16.0, horizontal: 0.5),
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: Constants.libraryEntryWidth * 1.1,
+                      maxCrossAxisExtent: Constants.libraryEntryWidth * 1.25,
                       childAspectRatio: Constants.libraryEntryWidth /
                           Constants.libraryEntryHeight,
                       crossAxisSpacing: Constants.libraryEntryWidth * 0.1,
