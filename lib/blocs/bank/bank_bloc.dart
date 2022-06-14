@@ -4,12 +4,13 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:harmony_theory/modals/scale_degree_progression.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
+import 'package:harmony_theory/state/progression_bank_entry.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:thoery_test/modals/scale_degree_progression.dart';
-import 'package:thoery_test/state/progression_bank.dart';
-import 'package:thoery_test/state/progression_bank_entry.dart';
 
 part 'bank_event.dart';
+
 part 'bank_state.dart';
 
 class BankBloc extends Bloc<BankEvent, BankState> {

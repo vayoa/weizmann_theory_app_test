@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:thoery_test/modals/substitution.dart';
-import 'package:thoery_test/modals/weights/weight.dart';
-import 'package:thoery_test/state/substitution_handler.dart';
+import 'package:harmony_theory/modals/substitution.dart';
+import 'package:harmony_theory/modals/weights/weight.dart';
+import 'package:harmony_theory/state/substitution_handler.dart';
 
 import '../../../Constants.dart';
 

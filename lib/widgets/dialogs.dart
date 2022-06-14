@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:thoery_test/state/progression_bank.dart';
-import 'package:weizmann_theory_app_test/widgets/file_dropper.dart';
-import 'package:weizmann_theory_app_test/widgets/text_and_icon.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
 
 import '../constants.dart';
+import '../widgets/file_dropper.dart';
+import '../widgets/text_and_icon.dart';
 import 'custom_button.dart';
 
 class GeneralDialog extends StatelessWidget {

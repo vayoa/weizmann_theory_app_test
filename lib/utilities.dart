@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/extensions/chord_extension.dart';
-import 'package:thoery_test/modals/progression.dart';
-import 'package:thoery_test/modals/scale_degree_chord.dart';
-import 'package:thoery_test/modals/tonicized_scale_degree_chord.dart';
-import 'package:thoery_test/state/progression_bank.dart';
+import 'package:harmony_theory/extensions/chord_extension.dart';
+import 'package:harmony_theory/modals/progression.dart';
+import 'package:harmony_theory/modals/scale_degree_chord.dart';
+import 'package:harmony_theory/modals/tonicized_scale_degree_chord.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:tonic/tonic.dart';
-import 'package:weizmann_theory_app_test/widgets/dialogs.dart';
 
+import '../widgets/dialogs.dart';
 import 'Constants.dart';
 import 'blocs/bank/bank_bloc.dart';
 

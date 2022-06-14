@@ -2,8 +2,8 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:weizmann_theory_app_test/utilities.dart';
 
+import '../../utilities.dart';
 import '../Constants.dart';
 import 'custom_button.dart';
 

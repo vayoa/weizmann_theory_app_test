@@ -2,18 +2,18 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/state/progression_bank.dart';
-import 'package:thoery_test/state/progression_bank_entry.dart';
-import 'package:weizmann_theory_app_test/constants.dart';
-import 'package:weizmann_theory_app_test/screens/library_screen/widgets/library_list.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/progression_screen.dart';
-import 'package:weizmann_theory_app_test/utilities.dart';
-import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
-import 'package:weizmann_theory_app_test/widgets/custom_dropdown_button.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
+import 'package:harmony_theory/state/progression_bank_entry.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../blocs/bank/bank_bloc.dart';
+import '../../constants.dart';
+import '../../screens/progression_screen/progression_screen.dart';
+import '../../utilities.dart';
+import '../../widgets/custom_button.dart';
+import '../../widgets/custom_dropdown_button.dart';
 import '../../widgets/dialogs.dart';
+import 'widgets/library_list.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({Key? key}) : super(key: key);

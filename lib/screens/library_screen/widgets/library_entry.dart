@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:weizmann_theory_app_test/constants.dart';
-import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
+
+import '../../../constants.dart';
+import '../../../widgets/custom_button.dart';
 
 class LibraryEntry extends StatefulWidget {
   const LibraryEntry({

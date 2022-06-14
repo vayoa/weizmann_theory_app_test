@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/state/progression_bank.dart';
-import 'package:weizmann_theory_app_test/screens/library_screen/widgets/package_view.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
 
 import '../../../Constants.dart';
 import '../../../blocs/bank/bank_bloc.dart';
 import '../../../widgets/file_dropper.dart';
+import 'package_view.dart';
 
 class LibraryList extends StatelessWidget {
   const LibraryList({

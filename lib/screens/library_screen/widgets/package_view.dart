@@ -1,13 +1,13 @@
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:sticky_headers/sticky_headers.dart';
-import 'package:thoery_test/state/progression_bank.dart';
-import 'package:weizmann_theory_app_test/utilities.dart';
-import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 
 import '../../../Constants.dart';
 import '../../../blocs/bank/bank_bloc.dart';
+import '../../../utilities.dart';
+import '../../../widgets/custom_button.dart';
 import '../../../widgets/dialogs.dart';
 import 'library_entry.dart';
 

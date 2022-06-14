@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/modals/progression.dart';
-import 'package:weizmann_theory_app_test/utilities.dart';
+import 'package:harmony_theory/modals/progression.dart';
 
 import '../../../blocs/progression_handler_bloc.dart';
 import '../../../constants.dart';
+import '../../../utilities.dart';
 
 class ReharmonizeRange extends StatefulWidget {
   const ReharmonizeRange({

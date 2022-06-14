@@ -3,12 +3,12 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/modals/progression.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/measure_view.dart';
+import 'package:harmony_theory/modals/progression.dart';
 
 import '../../../../blocs/progression_handler_bloc.dart';
 import '../../../../constants.dart';
 import '../../../../utilities.dart';
+import '../progression/measure_view.dart';
 
 class ProgressionView<T> extends StatefulWidget {
   const ProgressionView({

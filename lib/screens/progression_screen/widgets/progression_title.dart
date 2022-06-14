@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/state/progression_bank.dart';
-import 'package:weizmann_theory_app_test/blocs/progression_handler_bloc.dart';
-import 'package:weizmann_theory_app_test/constants.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/general_built_in_choice.dart';
-import 'package:weizmann_theory_app_test/utilities.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
 
 import '../../../blocs/bank/bank_bloc.dart';
+import '../../../blocs/progression_handler_bloc.dart';
+import '../../../constants.dart';
+import '../../../utilities.dart';
+import 'general_built_in_choice.dart';
 
 class ProgressionTitle extends StatefulWidget {
   const ProgressionTitle({

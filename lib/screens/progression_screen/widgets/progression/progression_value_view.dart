@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:weizmann_theory_app_test/constants.dart';
-import 'package:weizmann_theory_app_test/utilities.dart';
+
+import '../../../../constants.dart';
+import '../../../../utilities.dart';
 
 class ProgressionValueView<T> extends StatelessWidget {
   const ProgressionValueView({

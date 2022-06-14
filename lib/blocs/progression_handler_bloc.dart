@@ -2,24 +2,25 @@ import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:thoery_test/extensions/chord_extension.dart';
-import 'package:thoery_test/modals/absolute_durations.dart';
-import 'package:thoery_test/modals/chord_progression.dart';
-import 'package:thoery_test/modals/exceptions.dart';
-import 'package:thoery_test/modals/pitch_scale.dart';
-import 'package:thoery_test/modals/progression.dart';
-import 'package:thoery_test/modals/scale_degree_chord.dart';
-import 'package:thoery_test/modals/scale_degree_progression.dart';
-import 'package:thoery_test/modals/substitution.dart';
-import 'package:thoery_test/modals/time_signature.dart';
-import 'package:thoery_test/state/progression_bank.dart';
+import 'package:harmony_theory/extensions/chord_extension.dart';
+import 'package:harmony_theory/modals/absolute_durations.dart';
+import 'package:harmony_theory/modals/chord_progression.dart';
+import 'package:harmony_theory/modals/exceptions.dart';
+import 'package:harmony_theory/modals/pitch_scale.dart';
+import 'package:harmony_theory/modals/progression.dart';
+import 'package:harmony_theory/modals/scale_degree_chord.dart';
+import 'package:harmony_theory/modals/scale_degree_progression.dart';
+import 'package:harmony_theory/modals/substitution.dart';
+import 'package:harmony_theory/modals/time_signature.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:tonic/tonic.dart';
-import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
-import 'package:weizmann_theory_app_test/utilities.dart';
 
+import '../blocs/substitution_handler/substitution_handler_bloc.dart';
 import '../modals/progression_type.dart';
+import '../utilities.dart';
 
 part 'progression_handler_event.dart';
+
 part 'progression_handler_state.dart';
 
 class ProgressionHandlerBloc

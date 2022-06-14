@@ -1,10 +1,10 @@
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:weizmann_theory_app_test/blocs/bank/bank_bloc.dart';
-import 'package:weizmann_theory_app_test/screens/library_screen/library_screen.dart';
 import 'package:window_manager/window_manager.dart';
 
+import '../blocs/bank/bank_bloc.dart';
+import '../screens/library_screen/library_screen.dart';
 import 'constants.dart';
 
 void main() async {

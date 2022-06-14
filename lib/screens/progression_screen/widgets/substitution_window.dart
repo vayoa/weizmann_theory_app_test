@@ -1,25 +1,25 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/modals/pitch_scale.dart';
-import 'package:thoery_test/modals/substitution.dart';
-import 'package:thoery_test/modals/substitution_match.dart';
-import 'package:thoery_test/modals/weights/keep_harmonic_function_weight.dart';
-import 'package:thoery_test/modals/weights/weight.dart';
-import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
-import 'package:weizmann_theory_app_test/modals/progression_type.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_view.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/view_type_selector.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/weights_view.dart';
-import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
-import 'package:weizmann_theory_app_test/widgets/custom_icon_button.dart';
-import 'package:weizmann_theory_app_test/widgets/custom_selector.dart';
-import 'package:weizmann_theory_app_test/widgets/dialogs.dart';
+import 'package:harmony_theory/modals/pitch_scale.dart';
+import 'package:harmony_theory/modals/substitution.dart';
+import 'package:harmony_theory/modals/substitution_match.dart';
+import 'package:harmony_theory/modals/weights/keep_harmonic_function_weight.dart';
+import 'package:harmony_theory/modals/weights/weight.dart';
 
 import '../../../blocs/audio_player/audio_player_bloc.dart';
 import '../../../blocs/progression_handler_bloc.dart';
+import '../../../blocs/substitution_handler/substitution_handler_bloc.dart';
 import '../../../constants.dart';
+import '../../../modals/progression_type.dart';
 import '../../../utilities.dart';
+import '../../../widgets/custom_button.dart';
+import '../../../widgets/custom_icon_button.dart';
+import '../../../widgets/custom_selector.dart';
+import '../../../widgets/dialogs.dart';
+import 'progression/progression_view.dart';
+import 'view_type_selector.dart';
+import 'weights_view.dart';
 
 class SubstitutionWindowCover extends StatelessWidget {
   const SubstitutionWindowCover({

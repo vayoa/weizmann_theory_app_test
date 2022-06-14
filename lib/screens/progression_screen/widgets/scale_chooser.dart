@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/extensions/pitch_extension.dart';
-import 'package:thoery_test/modals/pitch_scale.dart';
+import 'package:harmony_theory/extensions/pitch_extension.dart';
+import 'package:harmony_theory/modals/pitch_scale.dart';
 import 'package:tonic/tonic.dart';
-import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 
 import '../../../Constants.dart';
 import '../../../blocs/progression_handler_bloc.dart';
+import '../../../widgets/custom_button.dart';
 
 class ScaleChooser extends StatefulWidget {
   const ScaleChooser({Key? key, this.enabled = true}) : super(key: key);

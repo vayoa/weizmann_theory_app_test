@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/state/progression_bank.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
 
 import '../../../blocs/bank/bank_bloc.dart';
 import '../../../blocs/progression_handler_bloc.dart';

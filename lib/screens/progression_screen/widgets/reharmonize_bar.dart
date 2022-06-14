@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/reharmonize_range.dart';
-import 'package:weizmann_theory_app_test/utilities.dart';
 
 import '../../../Constants.dart';
 import '../../../blocs/progression_handler_bloc.dart';
+import '../../../screens/progression_screen/widgets/reharmonize_range.dart';
+import '../../../utilities.dart';
 import '../../../widgets/custom_button.dart';
 
 class ReharmonizeBar extends StatelessWidget {

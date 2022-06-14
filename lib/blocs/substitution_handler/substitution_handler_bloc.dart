@@ -3,18 +3,20 @@ import 'dart:isolate';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/modals/chord_progression.dart';
-import 'package:thoery_test/modals/pitch_scale.dart';
-import 'package:thoery_test/modals/progression.dart';
-import 'package:thoery_test/modals/scale_degree_progression.dart';
-import 'package:thoery_test/modals/substitution.dart';
-import 'package:thoery_test/modals/weights/keep_harmonic_function_weight.dart';
-import 'package:thoery_test/modals/weights/weight.dart';
-import 'package:thoery_test/state/progression_bank.dart';
-import 'package:thoery_test/state/substitution_handler.dart';
-import 'package:weizmann_theory_app_test/modals/progression_type.dart';
+import 'package:harmony_theory/modals/chord_progression.dart';
+import 'package:harmony_theory/modals/pitch_scale.dart';
+import 'package:harmony_theory/modals/progression.dart';
+import 'package:harmony_theory/modals/scale_degree_progression.dart';
+import 'package:harmony_theory/modals/substitution.dart';
+import 'package:harmony_theory/modals/weights/keep_harmonic_function_weight.dart';
+import 'package:harmony_theory/modals/weights/weight.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
+import 'package:harmony_theory/state/substitution_handler.dart';
+
+import '../../modals/progression_type.dart';
 
 part 'substitution_handler_event.dart';
+
 part 'substitution_handler_state.dart';
 
 class SubstitutionHandlerBloc
