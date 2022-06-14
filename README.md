@@ -19,9 +19,10 @@ The video guide can be found here: https://www.youtube.com/watch?v=eUNX8s5Csc8.
 
 ## Roadmap
 ### App Related
-- [ ] Improved UI.
+- [x] Package system (allowing for better library sharing).
 - [ ] Chord inversions support.
-- [ ] Package system (allowing for better library sharing).
+- [ ] Chord tensions support.
+- [ ] Improved UI.
 - [ ] Melody support.
 
 ### Community Related
