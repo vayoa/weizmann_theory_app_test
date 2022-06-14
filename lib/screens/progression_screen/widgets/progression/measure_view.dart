@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:thoery_test/modals/progression.dart';
-import 'package:weizmann_theory_app_test/constants.dart';
+import 'package:harmony_theory/modals/progression.dart';
 
+import '../../../../constants.dart';
 import '../../../../utilities.dart';
 import '../../../../widgets/custom_button.dart';
 import 'progression_value_view.dart';

@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:thoery_test/extensions/chord_extension.dart';
-import 'package:thoery_test/modals/progression.dart';
-import 'package:thoery_test/modals/scale_degree_chord.dart';
-import 'package:thoery_test/modals/tonicized_scale_degree_chord.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:harmony_theory/extensions/chord_extension.dart';
+import 'package:harmony_theory/modals/progression.dart';
+import 'package:harmony_theory/modals/scale_degree_chord.dart';
+import 'package:harmony_theory/modals/tonicized_scale_degree_chord.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:tonic/tonic.dart';
+
+import '../widgets/dialogs.dart';
+import 'Constants.dart';
+import 'blocs/bank/bank_bloc.dart';
 
 abstract class Utilities {
   static String progressionValueToString<T>(T value) => value == null
@@ -99,9 +105,99 @@ abstract class Utilities {
     return null;
   }
 
-  static void showSnackBar(BuildContext context, String text) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(behavior: SnackBarBehavior.floating, content: Text(text)),
+  static void showSnackBar(BuildContext context, String text,
+      [SnackBarType type = SnackBarType.warning]) {
+    ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    final Color color = getSnackBarTypeColor(type);
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(getSnackBarTypeIcon(type), color: color),
+            const SizedBox(width: 10),
+            Text(text),
+          ],
+        ),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          textColor: color,
+          onPressed: () {},
+        ),
+      ),
     );
   }
+
+  static Color getSnackBarTypeColor(SnackBarType type) {
+    switch (type) {
+      case SnackBarType.error:
+        return Colors.redAccent;
+      case SnackBarType.warning:
+        return Colors.orangeAccent;
+      case SnackBarType.success:
+        return Colors.greenAccent;
+      case SnackBarType.hint:
+        return Colors.lightBlueAccent;
+    }
+  }
+
+  static IconData getSnackBarTypeIcon(SnackBarType type) {
+    switch (type) {
+      case SnackBarType.error:
+        return Icons.cancel_rounded;
+      case SnackBarType.warning:
+        return Icons.warning_rounded;
+      case SnackBarType.success:
+        return Icons.check_circle_rounded;
+      case SnackBarType.hint:
+        return Icons.tips_and_updates_rounded;
+    }
+  }
+
+  static Future<void> createNewEntryDialog(
+    BuildContext context, {
+    String package = ProgressionBank.defaultPackageName,
+  }) async {
+    String? _title = await showGeneralDialog<String>(
+      context: context,
+      barrierLabel: 'New Entry',
+      barrierDismissible: true,
+      pageBuilder: (context, _, __) => GeneralDialogTextField(
+        title: const Text(
+          'Create a new entry named...',
+          style: Constants.valuePatternTextStyle,
+          textAlign: TextAlign.center,
+        ),
+        maxLength: Constants.maxTitleCharacters,
+        autoFocus: true,
+        submitButtonName: 'Create',
+        onCancelled: (text) => Navigator.pop(context),
+        onSubmitted: (text) {
+          text = text.trim();
+          if (text.isEmpty || RegExp(r'^\s*$').hasMatch(text)) {
+            return "Entry titles can't be empty.";
+          } else if (ProgressionBank.bank.containsKey(package) &&
+              ProgressionBank.bank[package]!.containsKey(text)) {
+            return 'Title already exists in bank.';
+          } else {
+            Navigator.pop(context, text);
+            return null;
+          }
+        },
+      ),
+    );
+    if (_title != null) {
+      BlocProvider.of<BankBloc>(context)
+          .add(AddNewEntry(EntryLocation(package, _title)));
+    }
+  }
+}
+
+enum SnackBarType {
+  error,
+  warning,
+  success,
+  hint,
 }

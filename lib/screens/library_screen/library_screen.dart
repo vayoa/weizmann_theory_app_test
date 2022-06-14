@@ -1,15 +1,19 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/state/progression_bank.dart';
-import 'package:weizmann_theory_app_test/constants.dart';
-import 'package:weizmann_theory_app_test/screens/library_screen/widgets/library_entry.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/progression_screen.dart';
-import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
+import 'package:harmony_theory/state/progression_bank_entry.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../blocs/bank/bank_bloc.dart';
+import '../../constants.dart';
+import '../../screens/progression_screen/progression_screen.dart';
+import '../../utilities.dart';
+import '../../widgets/custom_button.dart';
+import '../../widgets/custom_dropdown_button.dart';
 import '../../widgets/dialogs.dart';
+import 'widgets/library_list.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({Key? key}) : super(key: key);
@@ -19,7 +23,7 @@ class LibraryScreen extends StatefulWidget {
 }
 
 class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
-  List<String> titles = const [];
+  Map<String, Map<String, bool>> packages = const {};
   late TextEditingController _controller;
 
   @override
@@ -111,19 +115,19 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                             hintText: 'Search...',
                           ),
                           onChanged: (text) {
-                            List<String> _realTitles =
+                            Map<String, Map<String, bool>> _realPackages =
                                 BlocProvider.of<BankBloc>(context).titles;
                             if (text.isEmpty) {
                               setState(() {
-                                titles = _realTitles;
+                                packages = _realPackages;
                               });
                             } else {
                               setState(() {
-                                titles = _realTitles
-                                    .where((String title) => title
-                                        .toLowerCase()
-                                        .contains(text.toLowerCase()))
-                                    .toList();
+                                /* TODO: Find a way to optimize. this is done to
+                                        not change the map in the bank, which
+                                        is packages...
+                               */
+                                _handleSearch(_realPackages, text);
                               });
                             }
                           },
@@ -135,43 +139,57 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                        child: CustomButton(
-                          label: 'Create New',
-                          iconData: Icons.add,
+                        child: CustomDropdownButton(
+                          label: 'New',
+                          iconData: Icons.add_rounded,
                           tight: true,
-                          onPressed: () async {
-                            String? _title = await showGeneralDialog<String>(
-                              context: context,
-                              barrierLabel: 'Create New',
-                              barrierDismissible: true,
-                              pageBuilder: (context, _, __) =>
-                                  GeneralDialogTextField(
-                                title: const Text(
-                                  'Create a new entry named...',
-                                  style: Constants.valuePatternTextStyle,
-                                  textAlign: TextAlign.center,
-                                ),
-                                autoFocus: true,
-                                submitButtonName: 'Create',
-                                onCancelled: (text) => Navigator.pop(context),
-                                onSubmitted: (text) {
-                                  if (text.isEmpty ||
-                                      RegExp(r'^\s*$').hasMatch(text)) {
-                                    return "Entry titles can't be empty.";
-                                  } else if (ProgressionBank.bank
-                                      .containsKey(text)) {
-                                    return 'Title already exists in bank.';
-                                  } else {
-                                    Navigator.pop(context, text);
-                                    return null;
-                                  }
-                                },
-                              ),
-                            );
-                            if (_title != null) {
-                              BlocProvider.of<BankBloc>(context)
-                                  .add(AddNewEntry(_title));
+                          options: const {
+                            'Entry': Icons.add_rounded,
+                            'Package': Icons.all_inbox_rounded,
+                            'Import': Icons.upload_file_rounded,
+                          },
+                          onChoice: (option) async {
+                            switch (option) {
+                              case 'Entry':
+                                await Utilities.createNewEntryDialog(context);
+                                return;
+                              case 'Package':
+                                await _handleNewPackage(context);
+                                return;
+                              case 'Import':
+                                await _handleImport(context);
+                                return;
                             }
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                        child: BlocBuilder<BankBloc, BankState>(
+                          buildWhen: (_, state) => state is SelectionUpdated,
+                          builder: (context, state) {
+                            return CustomDropdownButton(
+                              label: 'Transfer',
+                              iconData: Icons.checklist_rtl_rounded,
+                              tight: true,
+                              options: const {
+                                'Move': Constants.moveEntryIcon,
+                                'Export': Icons.download_rounded,
+                              },
+                              onChoice: !BlocProvider.of<BankBloc>(context)
+                                      .hasSelected
+                                  ? null
+                                  : (option) {
+                                      switch (option) {
+                                        case 'Move':
+                                          _handleMoveSelectedEntries(context);
+                                          return;
+                                        case 'Export':
+                                          _handleExportSelectedEntries(context);
+                                          return;
+                                      }
+                                    },
+                            );
                           },
                         ),
                       ),
@@ -256,112 +274,100 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                   state is ClosingWindow ||
                   (state is! BankLoading && state is! BankInitial),
               listener: (context, state) async {
-                if (state is ClosingWindow) {
-                  await windowManager.destroy();
-                }
-                if (state is AddedNewEntry) {
-                  _pushProgressionPage(context, state.addedEntryTitle);
+                switch (state.runtimeType) {
+                  case ClosingWindow:
+                    await windowManager.destroy();
+                    break;
+                  case AddedNewEntry:
+                    _pushProgressionPage(
+                        context, (state as AddedNewEntry).addEntryLocation);
+                    break;
+                  case ImportPackagesFailed:
+                    String failed = (state as ImportPackagesFailed)
+                        .failedJsonFileUrls
+                        .map((e) => e.split(r'\').last)
+                        .toList()
+                        .toString();
+                    Utilities.showSnackBar(
+                      context,
+                      'Failed to import: '
+                      '${failed.substring(1, failed.length - 1)}.',
+                      SnackBarType.error,
+                    );
+                    break;
+                  case ImportedPackages:
+                    String imported = (state as ImportedPackages)
+                        .importedUrls
+                        .map((e) => e.split(r'\').last)
+                        .toList()
+                        .toString();
+                    Utilities.showSnackBar(
+                      context,
+                      'Imported: '
+                      '${imported.substring(1, imported.length - 1)}.',
+                      SnackBarType.success,
+                    );
+                    break;
+                  case ExportedPackages:
+                    var _realState = state as ExportedPackages;
+                    String failed = _realState.packages.keys
+                        .map((e) => e.split(r'\').last)
+                        .toList()
+                        .toString();
+                    Utilities.showSnackBar(
+                      context,
+                      'Exported selected entries from: '
+                      '${failed.substring(1, failed.length - 1)} '
+                      'to ${_realState.directory}.',
+                      SnackBarType.success,
+                    );
                 }
                 setState(() {
-                  _controller.text = '';
-                  titles = state.titles;
+                  packages = state.titles;
+                  if (state is DatabaseUpdated) {
+                    _controller.text = '';
+                  } else if (_controller.text.isNotEmpty) {
+                    _handleSearch(state.titles, _controller.text);
+                  }
                 });
               },
               buildWhen: (previous, state) => state is! RenamedEntry,
               builder: (context, state) {
-                if (titles.isEmpty) {
-                  return const FractionallySizedBox(
-                    heightFactor: 0.5,
-                    child: Text(
-                      "No Matching Titles Found.",
-                      style: Constants.valuePatternTextStyle,
-                    ),
-                  );
-                } else if (state is! BankLoading &&
-                    state is! BankInitial &&
-                    state is! ClosingWindow) {
-                  return Scrollbar(
-                    child: GridView.builder(
-                        itemCount: titles.length,
-                        shrinkWrap: true,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15.0, horizontal: 30.0),
-                        gridDelegate:
-                            const SliverGridDelegateWithMaxCrossAxisExtent(
-                                maxCrossAxisExtent:
-                                    Constants.libraryEntryWidth * 1.1,
-                                childAspectRatio: Constants.libraryEntryWidth /
-                                    Constants.libraryEntryHeight,
-                                crossAxisSpacing:
-                                    Constants.libraryEntryWidth * 0.1,
-                                mainAxisSpacing:
-                                    Constants.libraryEntryHeight * 0.8),
-                        itemBuilder: (context, index) {
-                          String currentTitle =
-                              titles[titles.length - index - 1];
-                          return LibraryEntry(
-                              title: currentTitle,
-                              builtIn:
-                                  ProgressionBank.bank[currentTitle]!.builtIn,
-                              onOpen: () =>
-                                  _pushProgressionPage(context, currentTitle),
-                              onDelete: () async {
-                                final bool? _result =
-                                    await showGeneralDialog<bool>(
-                                      context: context,
-                                  barrierDismissible: true,
-                                  barrierLabel: 'Details',
-                                  pageBuilder: (context, _, __) =>
-                                      GeneralDialogChoice(
-                                    title: Text.rich(
-                                      TextSpan(
-                                        text:
-                                            'Are you sure you want to permanently '
-                                            'delete "',
-                                        children: [
-                                          TextSpan(
-                                            text: currentTitle,
-                                            style: Constants
-                                                .boldedValuePatternTextStyle,
-                                          ),
-                                          const TextSpan(text: '"?'),
-                                        ],
-                                      ),
-                                      style: Constants.valuePatternTextStyle,
-                                      textAlign: TextAlign.center,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 3,
-                                      softWrap: true,
-                                    ),
-                                    onPressed: (deleted) =>
-                                        Navigator.pop(context, deleted),
-                                    noButtonName: 'Cancel',
-                                    yesButtonName: 'DELETE!',
-                                  ),
-                                );
-                                // When a choice was made...
-                                // This is done like this (and not "if (_result) ..."
-                                // since it can be null...
-                                if (_result == true) {
-                                  BlocProvider.of<BankBloc>(context)
-                                      .add(DeleteEntry(currentTitle));
-                                }
-                              });
-                        }),
-                  );
-                } else {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 8),
-                      Text(
-                        'Loading...',
-                        style: Constants.valuePatternTextStyle,
-                      ),
-                    ],
-                  );
-                }
+                return AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  child: packages.isEmpty
+                      ? FractionallySizedBox(
+                          heightFactor: 0.5,
+                          child: Text(
+                            _controller.text.isEmpty
+                                ? "Your Library is Empty."
+                                : "No Matching Titles Found.",
+                            style: Constants.valuePatternTextStyle,
+                          ),
+                        )
+                      : ((state is! BankLoading &&
+                              state is! BankInitial &&
+                              state is! ClosingWindow)
+                          ? LibraryList(
+                              packages: packages,
+                              hasSelected: BlocProvider.of<BankBloc>(context)
+                                  .packageHasSelected,
+                              searching: _controller.text.isNotEmpty,
+                              onOpen: (location) =>
+                                  _pushProgressionPage(context, location),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Loading...',
+                                  style: Constants.valuePatternTextStyle,
+                                ),
+                              ],
+                            )),
+                );
               },
             ),
           ),
@@ -370,19 +376,137 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
     );
   }
 
+  void _handleSearch(
+      Map<String, Map<String, bool>> _realPackages, String text) {
+    packages = {};
+    for (MapEntry<String, Map<String, bool>> package in _realPackages.entries) {
+      Map<String, bool> newTitles = Map.fromEntries(package.value.keys
+          .where((String title) =>
+              title.toLowerCase().contains(text.toLowerCase()))
+          .map((e) => MapEntry(e, package.value[e]!)));
+      if (newTitles.isNotEmpty) {
+        packages[package.key] = newTitles;
+      }
+    }
+  }
+
+  Future<void> _handleNewPackage(BuildContext context) async {
+    String? _result = await showGeneralDialog<String>(
+      context: context,
+      barrierLabel: 'New Package',
+      barrierDismissible: true,
+      pageBuilder: (context, _, __) => GeneralDialogTextField(
+        title: const Text(
+          'Create a new package named...',
+          style: Constants.valuePatternTextStyle,
+          textAlign: TextAlign.center,
+        ),
+        autoFocus: true,
+        submitButtonName: 'Create',
+        onCancelled: (text) => Navigator.pop(context),
+        onSubmitted: (text) {
+          text = text.trim();
+          String errorText = text.length > 35 ? 'Your input' : '"$text"';
+          if (text.isEmpty || RegExp(r'^\s*$').hasMatch(text)) {
+            return "Entry titles can't be empty.";
+          } else if (ProgressionBank.bank.containsKey(text)) {
+            return '$errorText already exists in the library.';
+          } else if (!ProgressionBank.packageNameValid(text)) {
+            return '$errorText is an invalid package name.';
+          } else {
+            Navigator.pop(context, text);
+            return null;
+          }
+        },
+      ),
+    );
+    if (_result != null) {
+      BlocProvider.of<BankBloc>(context).add(CreatePackage(package: _result));
+    }
+  }
+
+  /* TODO: WE IMPORT IT TWICE SINCE THE DROPZONE BELOW THIS DIALOG STILL
+           RECEIVES INPUT! */
+  Future<void> _handleImport(BuildContext context) async {
+    List<String>? _result = await showGeneralDialog<List<String>>(
+      context: context,
+      barrierLabel: 'Import Package',
+      barrierDismissible: true,
+      pageBuilder: (context, _, __) => PackageFileDropDialog(
+        onUrlsDropped: (urls) => Navigator.pop(context, urls),
+        onCancel: () => Navigator.pop(context),
+      ),
+    );
+
+    if (_result != null) {
+      BlocProvider.of<BankBloc>(context)
+          .add(ImportPackages(jsonFileUrls: _result));
+    }
+  }
+
+  void _handleMoveSelectedEntries(BuildContext context) async {
+    // TODO: Could optimize this...
+    var _selected = BlocProvider.of<BankBloc>(context).selectedTitles;
+    List<String> packages = _selected.keys.toList();
+    List<EntryLocation> locations = [
+      for (String package in packages)
+        for (String title in _selected[package]!) EntryLocation(package, title)
+    ];
+
+    final String? newPackage = await showGeneralDialog(
+      context: context,
+      barrierLabel: 'Move Selected Entries',
+      barrierDismissible: true,
+      pageBuilder: (context, _, __) => PackageChooserDialog(
+        beforePackageName: 'Move All Selected Entries ',
+        afterPackageName: 'To...',
+        alreadyInPackageError: 'Your entries are already in ',
+        showPackageName: false,
+        packages: packages,
+      ),
+    );
+
+    if (newPackage != null) {
+      BlocProvider.of<BankBloc>(context).add(
+        MoveEntries(
+          currentLocations: locations,
+          newPackage: newPackage,
+        ),
+      );
+    }
+  }
+
+  void _handleExportSelectedEntries(BuildContext context) async {
+    Map<String, List<String>> packages =
+        BlocProvider.of<BankBloc>(context).selectedTitles;
+
+    if (packages.isNotEmpty) {
+      var bloc = BlocProvider.of<BankBloc>(context);
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Please select an output file:',
+        fileName:
+            '${packages.length == 1 ? packages.keys.first : 'packages'}.json',
+        allowedExtensions: ['.json'],
+        initialDirectory: bloc.appDirectory,
+      );
+      if (outputFile != null) {
+        bloc.add(ExportPackages(packages: packages, directory: outputFile));
+      }
+    }
+  }
+
   Future<void> _pushProgressionPage(
-      BuildContext context, String currentTitle) async {
-    BankBloc bloc = BlocProvider.of<BankBloc>(context);
-    await Navigator.push(
-      context,
+      BuildContext context, EntryLocation currentLocation) async {
+    final BankBloc bloc = BlocProvider.of<BankBloc>(context);
+    final ProgressionBankEntry progressionBankEntry =
+        ProgressionBank.getAtLocation(currentLocation)!;
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => ProgressionScreen(
           bankBloc: bloc,
-          title: currentTitle,
-          initiallyBanked:
-              ProgressionBank.bank[currentTitle]!.usedInSubstitutions,
-          entry: ProgressionBank.bank[currentTitle]!,
-          builtIn: ProgressionBank.bank[currentTitle]!.builtIn,
+          location: currentLocation,
+          entry: progressionBankEntry,
+          initiallyBanked: progressionBankEntry.usedInSubstitutions,
         ),
       ),
     );

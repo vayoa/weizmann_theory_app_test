@@ -2,29 +2,31 @@ import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:thoery_test/extensions/chord_extension.dart';
-import 'package:thoery_test/modals/absolute_durations.dart';
-import 'package:thoery_test/modals/chord_progression.dart';
-import 'package:thoery_test/modals/exceptions.dart';
-import 'package:thoery_test/modals/pitch_scale.dart';
-import 'package:thoery_test/modals/progression.dart';
-import 'package:thoery_test/modals/scale_degree_chord.dart';
-import 'package:thoery_test/modals/scale_degree_progression.dart';
-import 'package:thoery_test/modals/substitution.dart';
-import 'package:thoery_test/modals/time_signature.dart';
+import 'package:harmony_theory/extensions/chord_extension.dart';
+import 'package:harmony_theory/modals/absolute_durations.dart';
+import 'package:harmony_theory/modals/chord_progression.dart';
+import 'package:harmony_theory/modals/exceptions.dart';
+import 'package:harmony_theory/modals/pitch_scale.dart';
+import 'package:harmony_theory/modals/progression.dart';
+import 'package:harmony_theory/modals/scale_degree_chord.dart';
+import 'package:harmony_theory/modals/scale_degree_progression.dart';
+import 'package:harmony_theory/modals/substitution.dart';
+import 'package:harmony_theory/modals/time_signature.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:tonic/tonic.dart';
-import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
-import 'package:weizmann_theory_app_test/utilities.dart';
 
+import '../blocs/substitution_handler/substitution_handler_bloc.dart';
 import '../modals/progression_type.dart';
+import '../utilities.dart';
 
 part 'progression_handler_event.dart';
+
 part 'progression_handler_state.dart';
 
 class ProgressionHandlerBloc
     extends Bloc<ProgressionHandlerEvent, ProgressionHandlerState> {
   late final SubstitutionHandlerBloc _substitutionHandlerBloc;
-  String title;
+  EntryLocation location;
   PitchScale? _currentScale;
   ChordProgression currentChords = ChordProgression.empty();
   ScaleDegreeProgression currentProgression = ScaleDegreeProgression.empty();
@@ -56,10 +58,14 @@ class ProgressionHandlerBloc
   ProgressionHandlerBloc({
     required SubstitutionHandlerBloc substitutionHandlerBloc,
     required this.currentProgression,
-    required String initialTitle,
+    required EntryLocation initialLocation,
   })  : _substitutionHandlerBloc = substitutionHandlerBloc,
-        title = initialTitle,
+        location = initialLocation,
         super(ProgressionHandlerInitial()) {
+    if (!currentProgression.isEmpty) {
+      _currentScale = defaultScale;
+      currentChords = currentProgression.inScale(_currentScale!);
+    }
     on<OverrideProgression>((event, emit) {
       _chordMeasures = null;
       _progressionMeasures = null;
@@ -102,7 +108,7 @@ class ProgressionHandlerBloc
         if (rangeValid) {
           final double step = currentProgression.timeSignature.step;
           final double newFrom =
-              min(fromDur, currentProgression.duration - step);
+          min(fromDur, currentProgression.duration - step);
           final double newTo = min(toDur, currentProgression.duration);
           if (newTo - newFrom >= 2 * step) {
             _recalculateRangePositions(newFrom, newTo);
@@ -158,7 +164,7 @@ class ProgressionHandlerBloc
           event.end <= prog.duration &&
           event.start < event.end) {
         List<double>? results =
-            Utilities.calculateDurationPositions(prog, event.start, event.end);
+        Utilities.calculateDurationPositions(prog, event.start, event.end);
         if (results != null) {
           fromChord = results[0].toInt();
           startDur = results[1];
@@ -202,7 +208,7 @@ class ProgressionHandlerBloc
               ? _parseScaleDegreeInputs(event.inputs, event.measureIndex)
               : _parseChordInputs(event.inputs, event.measureIndex);
           newType =
-              chords ? ProgressionType.romanNumerals : ProgressionType.chords;
+          chords ? ProgressionType.romanNumerals : ProgressionType.chords;
         } on Exception catch (_) {
           return emit(InvalidInputReceived(
               progression: currentlyViewedProgression, exception: firstError));
@@ -217,7 +223,7 @@ class ProgressionHandlerBloc
 
       if (type == ProgressionType.chords) {
         final ChordProgression chordProgression =
-            ChordProgression.fromProgression(progression as Progression<Chord>);
+        ChordProgression.fromProgression(progression as Progression<Chord>);
         if (_currentScale == null) {
           _currentScale = chordProgression.krumhanslSchmucklerScales.first;
           emit(ScaleChanged(
@@ -243,7 +249,7 @@ class ProgressionHandlerBloc
       }
     });
     on<SurpriseMe>(
-      (event, emit) => _substitutionHandlerBloc.add(OpenSetupPage(
+          (event, emit) => _substitutionHandlerBloc.add(OpenSetupPage(
         progression: currentProgression,
         surpriseMe: true,
       )),
@@ -265,6 +271,11 @@ class ProgressionHandlerBloc
       emit(ChangedTimeSignature(
           progression: currentlyViewedProgression, even: !even));
       add(OverrideProgression(progression));
+    });
+    on<ChangeLocation>((event, emit) {
+      location = event.newLocation;
+      return emit(ChangedLocation(
+          progression: currentlyViewedProgression, newLocation: location));
     });
   }
 

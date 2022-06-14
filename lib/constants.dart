@@ -18,8 +18,10 @@ abstract class Constants {
   static const double measureFontSize = 26;
   static const double measurePatternFontSize = measureFontSize * 0.74;
   static const double minButtonWidth = 54;
+  static const double minButtonOnlyIconWidth = 35;
   static const double minButtonHeight = 29;
-  static const double borderRadius = 10;
+  static const double borderRadius = 10.0;
+  static const double tightBorderRadius = 5.0;
   static const TextStyle valueTextStyle =
       TextStyle(fontSize: Constants.measureFontSize);
   static const TextStyle valuePatternTextStyle =
@@ -29,7 +31,7 @@ abstract class Constants {
   static const TextStyle titleTextStyle =
       TextStyle(fontSize: 24, fontWeight: FontWeight.bold);
   static const double libraryEntryWidth = 340;
-  static const double libraryEntryHeight = 40;
+  static const double libraryEntryHeight = 34;
   static const Color libraryEntryColor = Color.fromARGB(255, 163, 163, 163);
 
   static const int maxTitleCharacters = 35;
@@ -37,4 +39,5 @@ abstract class Constants {
   static const IconData backIcon = Icons.arrow_back_ios_rounded;
   static const IconData builtInIcon = Icons.inventory_2_rounded;
   static const IconData saveIcon = Icons.upload_rounded;
+  static const IconData moveEntryIcon = Icons.unarchive_rounded;
 }

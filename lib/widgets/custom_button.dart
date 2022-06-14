@@ -14,7 +14,7 @@ class CustomButton extends StatelessWidget {
     this.borderRadius,
   }) : super(key: key);
 
-  final String label;
+  final String? label;
   final IconData iconData;
   final VoidCallback? onPressed;
   final double size;
@@ -27,20 +27,25 @@ class CustomButton extends StatelessWidget {
     return TextButton.icon(
       style: ElevatedButton.styleFrom(
         minimumSize: tight
-            ? const Size(Constants.minButtonWidth, Constants.minButtonHeight)
+            ? Size(
+                label == null
+                    ? Constants.minButtonOnlyIconWidth
+                    : Constants.minButtonWidth,
+                Constants.minButtonHeight)
             : null,
         padding: tight ? const EdgeInsets.all(5.0) : null,
         shape: tight
             ? RoundedRectangleBorder(
-                borderRadius: borderRadius ?? BorderRadius.circular(5.0))
+                borderRadius: borderRadius ??
+                    BorderRadius.circular(Constants.tightBorderRadius))
             : (borderRadius == null
                 ? null
                 : RoundedRectangleBorder(borderRadius: borderRadius!)),
       ),
-      label: Text(label, style: TextStyle(fontSize: size)),
+      label: Text(label ?? '', style: TextStyle(fontSize: size)),
       icon: tight
           ? SizedBox(
-              width: 6,
+              width: iconSize == null ? 6 : (iconSize! / 2),
               child: Icon(iconData, size: (iconSize ?? size) - 1),
             )
           : Icon(iconData, size: iconSize ?? size),

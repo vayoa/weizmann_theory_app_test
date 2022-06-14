@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
 
 import '../constants.dart';
+import '../widgets/file_dropper.dart';
+import '../widgets/text_and_icon.dart';
 import 'custom_button.dart';
 
 class GeneralDialog extends StatelessWidget {
@@ -85,6 +88,7 @@ class GeneralDialogChoice extends StatelessWidget {
     required this.onPressed,
     this.noButtonName = 'No',
     this.yesButtonName = 'Yes',
+    this.yesButtonIcon = Icons.check_rounded,
     this.widthFactor = GeneralDialog.defaultWidthFactor,
     this.heightFactor = GeneralDialog.defaultHeightFactor,
   }) : super(key: key);
@@ -92,6 +96,7 @@ class GeneralDialogChoice extends StatelessWidget {
   final Widget title;
   final String noButtonName;
   final String yesButtonName;
+  final IconData yesButtonIcon;
   final void Function(bool) onPressed;
   final double widthFactor;
   final double heightFactor;
@@ -118,7 +123,7 @@ class GeneralDialogChoice extends StatelessWidget {
                 ),
                 CustomButton(
                   label: yesButtonName,
-                  iconData: Icons.check_rounded,
+                  iconData: yesButtonIcon,
                   tight: true,
                   onPressed: () => onPressed(true),
                 ),
@@ -135,19 +140,33 @@ class GeneralDialogTextField extends StatefulWidget {
   const GeneralDialogTextField({
     Key? key,
     required this.title,
+    this.maxLength,
+    this.options,
+    this.invalidOptions,
     required this.onCancelled,
     required this.onSubmitted,
     this.cancelButtonName = 'Cancel',
     this.submitButtonName = 'Submit',
+    this.submitButtonIcon = Icons.check_rounded,
     this.autoFocus = false,
+    this.optionTitleBuilder,
+    this.uniqueOption,
+    this.differentSubmit,
   }) : super(key: key);
 
   final Widget title;
+  final int? maxLength;
+  final List<String>? options;
+  final List<String>? invalidOptions;
   final String cancelButtonName;
   final String submitButtonName;
+  final IconData submitButtonIcon;
   final void Function(String) onCancelled;
   final String? Function(String) onSubmitted;
   final bool autoFocus;
+  final Widget Function(BuildContext, String)? optionTitleBuilder;
+  final Widget? uniqueOption;
+  final void Function()? differentSubmit;
 
   @override
   _GeneralDialogTextFieldState createState() => _GeneralDialogTextFieldState();
@@ -155,17 +174,22 @@ class GeneralDialogTextField extends StatefulWidget {
 
 class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
   late final TextEditingController _controller;
+  late final FocusNode _focusNode;
   String? errorMessage;
+  late final bool _uniqueShown;
 
   @override
   void initState() {
     _controller = TextEditingController();
+    _focusNode = FocusNode();
+    _uniqueShown = widget.uniqueOption != null;
     super.initState();
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -174,26 +198,113 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
     return GeneralDialogChoice(
       widthFactor: GeneralDialog.defaultWidthFactor + 0.05,
       heightFactor: GeneralDialog.defaultHeightFactor + 0.05,
+      yesButtonIcon: widget.submitButtonIcon,
       title: Column(
         children: [
           widget.title,
-          TextField(
-            controller: _controller,
-            autofocus: widget.autoFocus,
-            maxLength: Constants.maxTitleCharacters,
-            maxLines: 1,
-            style: Constants.boldedValuePatternTextStyle,
-            textAlign: TextAlign.center,
-            decoration: InputDecoration(
-              isDense: true,
-              constraints: const BoxConstraints(maxWidth: 36 * 11),
-              errorText: errorMessage,
-            ),
-            onSubmitted: _submit,
-            onChanged: (text) {
-              if (errorMessage != null) {
-                setState(() => errorMessage = null);
+          RawAutocomplete<String>(
+            textEditingController: _controller,
+            focusNode: _focusNode,
+            onSelected: _submit,
+            optionsViewBuilder: (BuildContext context,
+                void Function(String) onSelected, Iterable<String> options) {
+              final int highlighted = AutocompleteHighlightedOption.of(context);
+              const borderRadius = BorderRadius.vertical(
+                bottom: Radius.circular(Constants.borderRadius),
+              );
+              return Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 10.0,
+                  borderRadius: borderRadius,
+                  child: ConstrainedBox(
+                    constraints:
+                        const BoxConstraints(maxHeight: 200, maxWidth: 396),
+                    child: ListView.builder(
+                      itemCount: options.length,
+                      shrinkWrap: true,
+                      padding: EdgeInsets.zero,
+                      itemBuilder: (BuildContext context, int index) {
+                        final String option = options.elementAt(index);
+                        late final Widget title;
+                        bool unique = false;
+                        if (_uniqueShown &&
+                            index == options.length - 1 &&
+                            !widget.options!.contains(option)) {
+                          // If a unique option was given it'll always be the last.
+                          title = widget.uniqueOption!;
+                          unique = true;
+                        } else if (widget.optionTitleBuilder != null) {
+                          title =
+                              widget.optionTitleBuilder!.call(context, option);
+                        } else {
+                          title = Text(option);
+                        }
+                        return InkWell(
+                          onTap: () =>
+                              onSelected(unique ? _controller.text : option),
+                          child: ListTile(
+                            title: title,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: index == options.length - 1
+                                  ? borderRadius
+                                  : BorderRadius.zero,
+                            ),
+                            tileColor:
+                                index == highlighted ? Colors.grey[400]! : null,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+            optionsBuilder: (TextEditingValue textEditingValue) {
+              final String text = textEditingValue.text;
+              if (text == '' ||
+                  widget.options == null ||
+                  widget.options!.isEmpty) {
+                return const Iterable<String>.empty();
+              } else {
+                List<String> r = widget.options!
+                    .where((element) =>
+                        element.toLowerCase().contains(text.toLowerCase()))
+                    .toList();
+                if (_uniqueShown && !(r.length == 1 && r.first == text)) {
+                  r.add(text);
+                }
+                if (widget.invalidOptions != null) {
+                  r = r
+                      .where(
+                          (option) => !widget.invalidOptions!.contains(option))
+                      .toList();
+                }
+                return r;
               }
+            },
+            fieldViewBuilder: (context, controller, node, onSubmit) {
+              return TextField(
+                controller: controller,
+                focusNode: node,
+                autofocus: widget.autoFocus,
+                maxLength: widget.maxLength,
+                maxLines: 1,
+                style: Constants.boldedValuePatternTextStyle,
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(
+                  isDense: true,
+                  constraints: const BoxConstraints(maxWidth: 396),
+                  errorText: errorMessage,
+                ),
+                onSubmitted: (input) =>
+                    widget.options == null ? _submit(input) : onSubmit(),
+                onChanged: (text) {
+                  if (errorMessage != null) {
+                    setState(() => errorMessage = null);
+                  }
+                },
+              );
             },
           ),
         ],
@@ -202,7 +313,11 @@ class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
       yesButtonName: widget.submitButtonName,
       onPressed: (choice) {
         if (choice) {
-          _submit(_controller.text);
+          if (widget.differentSubmit == null) {
+            _submit(_controller.text);
+          } else {
+            widget.differentSubmit!();
+          }
         } else {
           widget.onCancelled(_controller.text);
         }
@@ -276,6 +391,107 @@ class GeneralThreeChoiceDialog extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class PackageChooserDialog extends StatelessWidget {
+  const PackageChooserDialog({
+    Key? key,
+    required this.packages,
+    this.showPackageName = true,
+    this.beforePackageName = 'Move Entry From ',
+    this.afterPackageName = ' To ...',
+    this.submitButtonName = 'Submit',
+    this.alreadyInPackageError = 'Your entry is already in ',
+    this.submitButtonIcon = Icons.check_rounded,
+    this.differentSubmit,
+  }) : super(key: key);
+
+  final List<String> packages;
+  final String beforePackageName;
+  final String afterPackageName;
+  final String submitButtonName;
+  final IconData submitButtonIcon;
+  final String alreadyInPackageError;
+  final void Function()? differentSubmit;
+  final bool showPackageName;
+
+  @override
+  Widget build(BuildContext context) {
+    final String? package = packages.length == 1 ? packages[0] : null;
+    return GeneralDialogTextField(
+      title: Text.rich(
+        TextSpan(text: beforePackageName, children: [
+          if (showPackageName && package != null)
+            TextSpan(
+              text: '"$package"',
+              style: Constants.boldedValuePatternTextStyle,
+            ),
+          TextSpan(text: afterPackageName),
+        ]),
+        style: Constants.valuePatternTextStyle,
+        textAlign: TextAlign.center,
+      ),
+      submitButtonName: submitButtonName,
+      submitButtonIcon: submitButtonIcon,
+      differentSubmit: differentSubmit,
+      options: _buildOptionsList(),
+      invalidOptions: packages,
+      autoFocus: true,
+      uniqueOption:
+          const TextAndIcon(text: 'Create New', icon: Icons.add_rounded),
+      optionTitleBuilder: (context, option) {
+        if (option == ProgressionBank.builtInPackageName) {
+          return TextAndIcon(text: option, icon: Constants.builtInIcon);
+        }
+        return Text(option);
+      },
+      onCancelled: (_) => Navigator.pop(context),
+      onSubmitted: (input) {
+        if (packages.contains(input)) {
+          return '$alreadyInPackageError"$input".';
+        } else if (ProgressionBank.packageNameValid(input)) {
+          Navigator.pop(context, input);
+          return null;
+        } else {
+          return '"$input" is an invalid package name.';
+        }
+      },
+    );
+  }
+
+  List<String> _buildOptionsList() {
+    List<String> options = ProgressionBank.bank.keys
+        .where((element) => !packages.contains(element))
+        .toList();
+    if (!packages.contains(ProgressionBank.builtInPackageName) &&
+        !options.contains(ProgressionBank.builtInPackageName)) {
+      options.add(ProgressionBank.builtInPackageName);
+    }
+    return options;
+  }
+}
+
+class PackageFileDropDialog extends StatelessWidget {
+  const PackageFileDropDialog({
+    Key? key,
+    required this.onUrlsDropped,
+    required this.onCancel,
+  }) : super(key: key);
+
+  final void Function(List<String>) onUrlsDropped;
+  final void Function() onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    return GeneralDialog(
+      child: FileDropper(
+        onUrlsDropped: onUrlsDropped,
+        showFilePickButton: true,
+        hideWhenNotValid: false,
+        onCancel: onCancel,
       ),
     );
   }

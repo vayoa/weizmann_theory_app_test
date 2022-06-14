@@ -5,7 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
-import 'package:thoery_test/modals/progression.dart';
+import 'package:harmony_theory/modals/progression.dart';
 import 'package:tonic/tonic.dart';
 
 part 'audio_player_event.dart';

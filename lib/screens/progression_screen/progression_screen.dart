@@ -1,45 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thoery_test/extensions/chord_extension.dart';
-import 'package:thoery_test/modals/exceptions.dart';
-import 'package:thoery_test/modals/progression.dart';
-import 'package:thoery_test/modals/scale_degree_chord.dart';
-import 'package:thoery_test/state/progression_bank_entry.dart';
+import 'package:harmony_theory/extensions/chord_extension.dart';
+import 'package:harmony_theory/modals/exceptions.dart';
+import 'package:harmony_theory/modals/progression.dart';
+import 'package:harmony_theory/modals/scale_degree_chord.dart';
+import 'package:harmony_theory/state/progression_bank.dart';
+import 'package:harmony_theory/state/progression_bank_entry.dart';
 import 'package:tonic/tonic.dart';
-import 'package:weizmann_theory_app_test/blocs/bank/bank_bloc.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/bank_progression_button.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/bpm_input.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression_title.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/reharmonize_bar.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_window.dart';
 
 import '../../Constants.dart';
 import '../../blocs/audio_player/audio_player_bloc.dart';
+import '../../blocs/bank/bank_bloc.dart';
 import '../../blocs/progression_handler_bloc.dart';
 import '../../blocs/substitution_handler/substitution_handler_bloc.dart'
     hide TypeChanged;
 import '../../modals/progression_type.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_icon_button.dart';
+import 'widgets/bank_progression_button.dart';
+import 'widgets/bpm_input.dart';
 import 'widgets/progression/selectable_progression_view.dart';
+import 'widgets/progression_title.dart';
+import 'widgets/reharmonize_bar.dart';
 import 'widgets/scale_chooser.dart';
+import 'widgets/substitution_window.dart';
 import 'widgets/view_type_selector.dart';
 
 class ProgressionScreen extends StatelessWidget {
   const ProgressionScreen({
     Key? key,
     required this.bankBloc,
+    required this.location,
     required this.entry,
-    required this.title,
     required this.initiallyBanked,
-    required this.builtIn,
   }) : super(key: key);
 
   final BankBloc bankBloc;
+  final EntryLocation location;
   final ProgressionBankEntry entry;
-  final String title;
   final bool initiallyBanked;
-  final bool builtIn;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +48,7 @@ class ProgressionScreen extends StatelessWidget {
         BlocProvider(create: (_) => SubstitutionHandlerBloc()),
         BlocProvider(
           create: (context) => ProgressionHandlerBloc(
-            initialTitle: title,
+            initialLocation: location,
             currentProgression: entry.progression,
             substitutionHandlerBloc:
                 BlocProvider.of<SubstitutionHandlerBloc>(context),
@@ -59,9 +58,7 @@ class ProgressionScreen extends StatelessWidget {
       ],
       child: Scaffold(
         body: ProgressionScreenUI(
-          title: title,
           initiallyBanked: initiallyBanked,
-          builtIn: builtIn,
         ),
       ),
     );
@@ -71,17 +68,15 @@ class ProgressionScreen extends StatelessWidget {
 class ProgressionScreenUI extends StatelessWidget {
   const ProgressionScreenUI({
     Key? key,
-    required this.title,
     required this.initiallyBanked,
-    required this.builtIn,
   }) : super(key: key);
 
-  final String title;
   final bool initiallyBanked;
-  final bool builtIn;
 
   @override
   Widget build(BuildContext context) {
+    final EntryLocation location =
+        BlocProvider.of<ProgressionHandlerBloc>(context).location;
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
@@ -100,12 +95,23 @@ class ProgressionScreenUI extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          CustomButton(
-                            label: 'Back',
-                            tight: true,
-                            size: 12,
-                            iconData: Constants.backIcon,
-                            onPressed: () => Navigator.pop(context),
+                          BlocBuilder<ProgressionHandlerBloc,
+                              ProgressionHandlerState>(
+                            buildWhen: (prev, state) =>
+                                state is ChangedLocation,
+                            builder: (context, state) {
+                              final EntryLocation location =
+                                  BlocProvider.of<ProgressionHandlerBloc>(
+                                          context)
+                                      .location;
+                              return CustomButton(
+                                label: 'Library / ${location.package}',
+                                tight: true,
+                                size: 12,
+                                iconData: Constants.backIcon,
+                                onPressed: () => Navigator.pop(context),
+                              );
+                            },
                           ),
                           const SizedBox(width: 8),
                           BlocBuilder<BankBloc, BankState>(
@@ -129,15 +135,15 @@ class ProgressionScreenUI extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          ProgressionTitle(title: title, builtIn: builtIn),
+                          ProgressionTitle(title: location.title),
                           BankProgressionButton(
                             initiallyBanked: initiallyBanked,
                             onToggle: (active) {
                               BlocProvider.of<BankBloc>(context).add(
                                   ChangeUseInSubstitutions(
-                                      title: BlocProvider.of<
+                                      location: BlocProvider.of<
                                               ProgressionHandlerBloc>(context)
-                                          .title,
+                                          .location,
                                       useInSubstitutions: active));
                             },
                           )
@@ -313,8 +319,9 @@ class ProgressionScreenUI extends StatelessWidget {
                   listener: (context, state) {
                     if (state is ProgressionChanged) {
                       BlocProvider.of<BankBloc>(context).add(OverrideEntry(
-                        title: BlocProvider.of<ProgressionHandlerBloc>(context)
-                            .title,
+                        location:
+                            BlocProvider.of<ProgressionHandlerBloc>(context)
+                                .location,
                         progression:
                             BlocProvider.of<ProgressionHandlerBloc>(context)
                                 .currentProgression,
