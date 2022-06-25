@@ -1,9 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:harmony_theory/modals/pitch_scale.dart';
 import 'package:harmony_theory/modals/substitution.dart';
 import 'package:harmony_theory/modals/substitution_match.dart';
+import 'package:harmony_theory/modals/theory_base/pitch_scale.dart';
 import 'package:harmony_theory/modals/weights/keep_harmonic_function_weight.dart';
 import 'package:harmony_theory/modals/weights/weight.dart';
 

@@ -2,16 +2,16 @@ import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:harmony_theory/extensions/chord_extension.dart';
-import 'package:harmony_theory/modals/absolute_durations.dart';
-import 'package:harmony_theory/modals/chord_progression.dart';
-import 'package:harmony_theory/modals/exceptions.dart';
-import 'package:harmony_theory/modals/pitch_scale.dart';
-import 'package:harmony_theory/modals/progression.dart';
-import 'package:harmony_theory/modals/scale_degree_chord.dart';
-import 'package:harmony_theory/modals/scale_degree_progression.dart';
+import 'package:harmony_theory/modals/pitch_chord.dart';
+import 'package:harmony_theory/modals/progression/absolute_durations.dart';
+import 'package:harmony_theory/modals/progression/chord_progression.dart';
+import 'package:harmony_theory/modals/progression/exceptions.dart';
+import 'package:harmony_theory/modals/progression/progression.dart';
+import 'package:harmony_theory/modals/progression/scale_degree_progression.dart';
+import 'package:harmony_theory/modals/progression/time_signature.dart';
 import 'package:harmony_theory/modals/substitution.dart';
-import 'package:harmony_theory/modals/time_signature.dart';
+import 'package:harmony_theory/modals/theory_base/pitch_scale.dart';
+import 'package:harmony_theory/modals/theory_base/scale_degree/scale_degree_chord.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:tonic/tonic.dart';
 
@@ -30,7 +30,7 @@ class ProgressionHandlerBloc
   PitchScale? _currentScale;
   ChordProgression currentChords = ChordProgression.empty();
   ScaleDegreeProgression currentProgression = ScaleDegreeProgression.empty();
-  List<Progression<Chord>>? _chordMeasures;
+  List<Progression<PitchChord>>? _chordMeasures;
   List<Progression<ScaleDegreeChord>>? _progressionMeasures;
   ProgressionType type = ProgressionType.romanNumerals;
   int fromChord = 0, toChord = 0;
@@ -71,12 +71,12 @@ class ProgressionHandlerBloc
       _progressionMeasures = null;
       if (!event.newProgression.isEmpty) {
         if (event.newProgression is ChordProgression ||
-            event.newProgression is Progression<Chord> ||
-            event.newProgression[0] is Chord) {
+            event.newProgression is Progression<PitchChord> ||
+            event.newProgression[0] is PitchChord) {
           bool scaleChanged = _currentScale == null;
           if (scaleChanged) _calculateScales();
           currentChords = ChordProgression.fromProgression(
-              event.newProgression as Progression<Chord>);
+              event.newProgression as Progression<PitchChord>);
           if (event.overrideOther) {
             currentProgression = ScaleDegreeProgression.fromChords(
                 _currentScale!, currentChords);
@@ -108,7 +108,7 @@ class ProgressionHandlerBloc
         if (rangeValid) {
           final double step = currentProgression.timeSignature.step;
           final double newFrom =
-          min(fromDur, currentProgression.duration - step);
+              min(fromDur, currentProgression.duration - step);
           final double newTo = min(toDur, currentProgression.duration);
           if (newTo - newFrom >= 2 * step) {
             _recalculateRangePositions(newFrom, newTo);
@@ -164,7 +164,7 @@ class ProgressionHandlerBloc
           event.end <= prog.duration &&
           event.start < event.end) {
         List<double>? results =
-        Utilities.calculateDurationPositions(prog, event.start, event.end);
+            Utilities.calculateDurationPositions(prog, event.start, event.end);
         if (results != null) {
           fromChord = results[0].toInt();
           startDur = results[1];
@@ -208,7 +208,7 @@ class ProgressionHandlerBloc
               ? _parseScaleDegreeInputs(event.inputs, event.measureIndex)
               : _parseChordInputs(event.inputs, event.measureIndex);
           newType =
-          chords ? ProgressionType.romanNumerals : ProgressionType.chords;
+              chords ? ProgressionType.romanNumerals : ProgressionType.chords;
         } on Exception catch (_) {
           return emit(InvalidInputReceived(
               progression: currentlyViewedProgression, exception: firstError));
@@ -223,7 +223,8 @@ class ProgressionHandlerBloc
 
       if (type == ProgressionType.chords) {
         final ChordProgression chordProgression =
-        ChordProgression.fromProgression(progression as Progression<Chord>);
+            ChordProgression.fromProgression(
+                progression as Progression<PitchChord>);
         if (_currentScale == null) {
           _currentScale = chordProgression.krumhanslSchmucklerScales.first;
           emit(ScaleChanged(
@@ -279,22 +280,22 @@ class ProgressionHandlerBloc
     });
   }
 
-  Progression<ScaleDegreeChord> _parseScaleDegreeInputs(
-          List<String> inputs, int index) =>
+  Progression<ScaleDegreeChord> _parseScaleDegreeInputs(List<String> inputs,
+      int index) =>
       ScaleDegreeProgression.fromProgression(
           _parseInputsAndReplace<ScaleDegreeChord>(
-        inputs: inputs,
-        index: index,
-        parse: (input) => ScaleDegreeChord.parse(input),
-        progression: currentProgression,
-        measures: _progressionMeasures,
-      ));
+            inputs: inputs,
+            index: index,
+            parse: (input) => ScaleDegreeChord.parse(input),
+            progression: currentProgression,
+            measures: _progressionMeasures,
+          ));
 
-  Progression<Chord> _parseChordInputs(List<String> inputs, int index) =>
-      _parseInputsAndReplace<Chord>(
+  Progression<PitchChord> _parseChordInputs(List<String> inputs, int index) =>
+      _parseInputsAndReplace<PitchChord>(
         inputs: inputs,
         index: index,
-        parse: (input) => ChordExtension.parse(input),
+        parse: (input) => PitchChord.parse(input),
         progression: currentChords,
         measures: _chordMeasures,
       );
@@ -313,7 +314,7 @@ class ProgressionHandlerBloc
     return chordMeasures;
   }
 
-  List<Progression<Chord>> get chordMeasures {
+  List<Progression<PitchChord>> get chordMeasures {
     _chordMeasures ??= currentChords.splitToMeasures();
     return _chordMeasures!;
   }

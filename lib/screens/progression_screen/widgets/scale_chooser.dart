@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:harmony_theory/extensions/pitch_extension.dart';
-import 'package:harmony_theory/modals/pitch_scale.dart';
+import 'package:harmony_theory/modals/theory_base/pitch_scale.dart';
 import 'package:tonic/tonic.dart';
 
 import '../../../Constants.dart';

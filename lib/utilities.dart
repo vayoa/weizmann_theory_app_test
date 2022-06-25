@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:harmony_theory/extensions/chord_extension.dart';
-import 'package:harmony_theory/modals/progression.dart';
-import 'package:harmony_theory/modals/scale_degree_chord.dart';
-import 'package:harmony_theory/modals/tonicized_scale_degree_chord.dart';
+import 'package:harmony_theory/modals/pitch_chord.dart';
+import 'package:harmony_theory/modals/progression/progression.dart';
+import 'package:harmony_theory/modals/theory_base/scale_degree/scale_degree_chord.dart';
+import 'package:harmony_theory/modals/theory_base/scale_degree/tonicized_scale_degree_chord.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:tonic/tonic.dart';
 
@@ -12,9 +12,8 @@ import 'Constants.dart';
 import 'blocs/bank/bank_bloc.dart';
 
 abstract class Utilities {
-  static String progressionValueToString<T>(T value) => value == null
-      ? '//'
-      : (value is Chord ? value.commonName : value.toString());
+  static String progressionValueToString<T>(T value) =>
+      value == null ? '//' : value.toString();
 
   static String abbr(ChordPattern pattern) {
     switch (pattern.abbr) {
@@ -30,10 +29,10 @@ abstract class Utilities {
   }
 
   static List<String> cutProgressionValue<T>(T value) {
-    assert(value == null || value is Chord || value is ScaleDegreeChord);
+    assert(value == null || value is PitchChord || value is ScaleDegreeChord);
     if (value == null) {
       return ['//', ''];
-    } else if (value is Chord) {
+    } else if (value is PitchChord) {
       Pitch root = value.root;
       return [
         '${root.letterName}${root.accidentalsString}',
@@ -41,11 +40,11 @@ abstract class Utilities {
       ];
     } else {
       ScaleDegreeChord chord = value as ScaleDegreeChord;
-      String _rootDegreeStr = chord.rootDegreeString;
+      String _rootDegreeStr = chord.rootString;
       String _patternStr = chord.patternString;
       if (value is TonicizedScaleDegreeChord) {
-        _rootDegreeStr = value.tonicizedToTonic.rootDegreeString;
-        _patternStr += '/${value.tonic.rootDegreeString}';
+        _rootDegreeStr = value.tonicizedToTonic.rootString;
+        _patternStr += '/${value.tonic.rootString}';
       }
       return [_rootDegreeStr, _patternStr];
     }

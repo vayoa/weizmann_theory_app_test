@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:harmony_theory/modals/progression.dart';
+import 'package:harmony_theory/modals/progression/progression.dart';
 
 import '../../../../constants.dart';
 import '../../../../utilities.dart';

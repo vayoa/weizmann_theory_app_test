@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:harmony_theory/modals/progression.dart';
+import 'package:harmony_theory/modals/progression/progression.dart';
 
 import '../../../../blocs/progression_handler_bloc.dart';
 import '../../../../constants.dart';

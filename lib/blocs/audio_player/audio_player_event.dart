@@ -5,7 +5,7 @@ abstract class AudioPlayerEvent extends Equatable {
 }
 
 class Play extends AudioPlayerEvent {
-  final List<Progression<Chord>> measures;
+  final List<Progression<PitchChord>> measures;
   final bool basePlaying;
 
   @override
