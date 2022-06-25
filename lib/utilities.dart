@@ -12,8 +12,9 @@ import 'Constants.dart';
 import 'blocs/bank/bank_bloc.dart';
 
 abstract class Utilities {
-  static String progressionValueToString<T>(T value) =>
-      value == null ? '//' : value.toString();
+  static String progressionValueToEditString<T>(T value) => value == null
+      ? '//'
+      : (value is ScaleDegreeChord ? value.inputString : value.toString());
 
   static String abbr(ChordPattern pattern) {
     switch (pattern.abbr) {
@@ -36,17 +37,22 @@ abstract class Utilities {
       Pitch root = value.root;
       return [
         '${root.letterName}${root.accidentalsString}',
-        abbr(value.pattern)
+        abbr(value.pattern) + value.bassString,
       ];
     } else {
       ScaleDegreeChord chord = value as ScaleDegreeChord;
       String _rootDegreeStr = chord.rootString;
       String _patternStr = chord.patternString;
+      String _tonicization = '';
       if (value is TonicizedScaleDegreeChord) {
         _rootDegreeStr = value.tonicizedToTonic.rootString;
-        _patternStr += '/${value.tonic.rootString}';
+        _tonicization = '/${value.tonic.rootString}';
       }
-      return [_rootDegreeStr, _patternStr];
+      return [
+        _rootDegreeStr,
+        (value.hasDifferentBass ? value.bassString : _patternStr) +
+            _tonicization,
+      ];
     }
   }
 
