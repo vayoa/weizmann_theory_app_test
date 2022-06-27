@@ -20,7 +20,6 @@ import '../modals/progression_type.dart';
 import '../utilities.dart';
 
 part 'progression_handler_event.dart';
-
 part 'progression_handler_state.dart';
 
 class ProgressionHandlerBloc
@@ -250,7 +249,7 @@ class ProgressionHandlerBloc
       }
     });
     on<SurpriseMe>(
-          (event, emit) => _substitutionHandlerBloc.add(OpenSetupPage(
+      (event, emit) => _substitutionHandlerBloc.add(OpenSetupPage(
         progression: currentProgression,
         surpriseMe: true,
       )),
@@ -280,16 +279,16 @@ class ProgressionHandlerBloc
     });
   }
 
-  Progression<ScaleDegreeChord> _parseScaleDegreeInputs(List<String> inputs,
-      int index) =>
+  Progression<ScaleDegreeChord> _parseScaleDegreeInputs(
+          List<String> inputs, int index) =>
       ScaleDegreeProgression.fromProgression(
           _parseInputsAndReplace<ScaleDegreeChord>(
-            inputs: inputs,
-            index: index,
-            parse: (input) => ScaleDegreeChord.parse(input),
-            progression: currentProgression,
-            measures: _progressionMeasures,
-          ));
+        inputs: inputs,
+        index: index,
+        parse: (input) => ScaleDegreeChord.parse(input),
+        progression: currentProgression,
+        measures: _progressionMeasures,
+      ));
 
   Progression<PitchChord> _parseChordInputs(List<String> inputs, int index) =>
       _parseInputsAndReplace<PitchChord>(
@@ -381,8 +380,7 @@ class ProgressionHandlerBloc
       value == '/' || value == '//' || value == 'null';
 
   bool _adjacentValuesEqual(String val, String next) =>
-      Progression.adjacentValuesEqual(val, next) ||
-      (_valueIsNull(val) && _valueIsNull(next));
+      val == next || (_valueIsNull(val) && _valueIsNull(next));
 
   Progression<T> _parseInputsAndReplace<T>({
     required List<String> inputs,
