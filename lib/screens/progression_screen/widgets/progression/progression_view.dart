@@ -335,7 +335,7 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
   }
 
   void _updateController() =>
-      WidgetsBinding.instance?.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if (widget.startAt != null) {
           _controller.animateTo(widget.startAt! * Constants.measureWidth,
               duration: const Duration(milliseconds: 400),
@@ -367,30 +367,30 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
                 bool start = index == startMeasure;
                 bool end = index == endMeasure;
                 int? fromChord, toChord;
-                double? _startDur, _endDur;
+                double? startDur, endDur;
                 if (shouldPaint) {
                   if (start) {
                     fromChord = startIndex;
-                    _startDur = startDur;
+                    startDur = startDur;
                   } else {
                     fromChord = 0;
-                    _startDur = 0.0;
+                    startDur = 0.0;
                   }
                   if (end) {
                     toChord = endIndex;
-                    _endDur = endDur;
+                    endDur = endDur;
                   } else {
                     toChord = _measures[index].length - 1;
-                    _endDur = _measures[index].durations[toChord];
+                    endDur = _measures[index].durations[toChord];
                   }
                 }
                 return MeasureView(
                   measure: _measures[index],
                   last: index == _measures.length - 1,
                   fromChord: fromChord,
-                  startDur: _startDur,
+                  startDur: startDur,
                   toChord: toChord,
-                  endDur: _endDur,
+                  endDur: endDur,
                   selectorStart: start,
                   selectorEnd: end,
                   editable: widget.editable,

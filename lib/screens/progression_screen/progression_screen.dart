@@ -221,14 +221,6 @@ class ProgressionScreenUI extends StatelessWidget {
                                 state is ChangedTimeSignature,
                             builder: (context, state) {
                               return TextButton(
-                                child: Text(
-                                  BlocProvider.of<ProgressionHandlerBloc>(
-                                          context)
-                                      .currentProgression
-                                      .timeSignature
-                                      .toString(),
-                                  style: const TextStyle(fontSize: 16.0),
-                                ),
                                 style: TextButton.styleFrom(
                                   minimumSize: const Size(40, 36),
                                   primary: Colors.black,
@@ -244,6 +236,14 @@ class ProgressionScreenUI extends StatelessWidget {
                                         : () => BlocProvider.of<
                                                 ProgressionHandlerBloc>(context)
                                             .add(const ChangeTimeSignature()),
+                                child: Text(
+                                  BlocProvider.of<ProgressionHandlerBloc>(
+                                          context)
+                                      .currentProgression
+                                      .timeSignature
+                                      .toString(),
+                                  style: const TextStyle(fontSize: 16.0),
+                                ),
                               );
                             },
                           )
@@ -268,13 +268,13 @@ class ProgressionScreenUI extends StatelessWidget {
                                               .type ==
                                           ProgressionType.chords,
                                   onPressed: (newType) {
-                                    ProgressionHandlerBloc _bloc =
+                                    ProgressionHandlerBloc bloc =
                                         BlocProvider.of<ProgressionHandlerBloc>(
                                             context);
                                     if (newType ==
                                             ProgressionType.romanNumerals ||
-                                        _bloc.currentScale != null) {
-                                      _bloc.add(SwitchType(newType));
+                                        bloc.currentScale != null) {
+                                      bloc.add(SwitchType(newType));
                                       return true;
                                     }
                                     return false;

@@ -104,7 +104,6 @@ class _ScaleChooserState extends State<ScaleChooser> {
                         ),
                       ),
                       TextButton(
-                        child: Text(minor ? 'Minor' : 'Major'),
                         style: TextButton.styleFrom(
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.horizontal(
@@ -114,6 +113,7 @@ class _ScaleChooserState extends State<ScaleChooser> {
                         onPressed: widget.enabled
                             ? () => bloc.add(ChangeScale(current.switchPattern))
                             : null,
+                        child: Text(minor ? 'Minor' : 'Major'),
                       ),
                     ],
                   ),

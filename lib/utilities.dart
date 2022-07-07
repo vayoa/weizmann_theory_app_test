@@ -41,17 +41,16 @@ abstract class Utilities {
       ];
     } else {
       ScaleDegreeChord chord = value as ScaleDegreeChord;
-      String _rootDegreeStr = chord.rootString;
-      String _patternStr = chord.patternString;
-      String _tonicization = '';
+      String rootDegreeStr = chord.rootString;
+      String patternStr = chord.patternString;
+      String tonicization = '';
       if (value is TonicizedScaleDegreeChord) {
-        _rootDegreeStr = value.tonicizedToTonic.rootString;
-        _tonicization = '/${value.tonic.rootString}';
+        rootDegreeStr = value.tonicizedToTonic.rootString;
+        tonicization = '/${value.tonic.rootString}';
       }
       return [
-        _rootDegreeStr,
-        (value.hasDifferentBass ? value.bassString : _patternStr) +
-            _tonicization,
+        rootDegreeStr,
+        (value.hasDifferentBass ? value.bassString : patternStr) + tonicization,
       ];
     }
   }
@@ -165,7 +164,7 @@ abstract class Utilities {
     BuildContext context, {
     String package = ProgressionBank.defaultPackageName,
   }) async {
-    String? _title = await showGeneralDialog<String>(
+    String? title = await showGeneralDialog<String>(
       context: context,
       barrierLabel: 'New Entry',
       barrierDismissible: true,
@@ -193,9 +192,10 @@ abstract class Utilities {
         },
       ),
     );
-    if (_title != null) {
+    if (title != null) {
+      // TODO: Fix usage of BuildContext after async gap.
       BlocProvider.of<BankBloc>(context)
-          .add(AddNewEntry(EntryLocation(package, _title)));
+          .add(AddNewEntry(EntryLocation(package, title)));
     }
   }
 }

@@ -86,7 +86,7 @@ class _ProgressionTitleState extends State<ProgressionTitle> {
                     ),
                   );
                 }
-                if (r == true) {
+                if (r == true && mounted) {
                   final String savedTitle =
                       BlocProvider.of<ProgressionHandlerBloc>(context)
                           .location

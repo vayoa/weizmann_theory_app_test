@@ -277,14 +277,14 @@ class _PackageViewState extends State<PackageView> {
       );
       if (newPackage == null) {
         delete = false;
-      } else if (newPackage.isNotEmpty) {
+      } else if (newPackage.isNotEmpty && mounted) {
         BlocProvider.of<BankBloc>(context).add(MoveEntries(
           currentLocations: locations,
           newPackage: newPackage,
         ));
       }
     }
-    if (delete == true) {
+    if (delete == true && mounted) {
       if (deletePackage) {
         BlocProvider.of<BankBloc>(context)
             .add(DeletePackage(package: widget.package));
@@ -346,52 +346,54 @@ class _PackageViewContent extends StatelessWidget {
                     EntryLocation currentLocation =
                         EntryLocation(package, currentTitle);
                     return LibraryEntry(
-                        title: currentTitle,
-                        builtIn: ProgressionBank.isBuiltIn(currentLocation),
-                        ticked: titles.values.elementAt(index),
-                        onTick: (ticked) => onTicked(currentTitle, ticked),
-                        onOpen: () => onOpen(currentLocation),
-                        onDelete: () async {
-                          final bool? _result = await showGeneralDialog<bool>(
-                            context: context,
-                            barrierDismissible: true,
-                            barrierLabel: 'Details',
-                            pageBuilder: (context, _, __) =>
-                                GeneralDialogChoice(
-                              title: Text.rich(
-                                TextSpan(
-                                  text: 'Are you sure you want to permanently '
-                                      'delete "',
-                                  children: [
-                                    TextSpan(
-                                      text: currentTitle,
-                                      style:
-                                          Constants.boldedValuePatternTextStyle,
-                                    ),
-                                    const TextSpan(text: '"?'),
-                                  ],
-                                ),
-                                style: Constants.valuePatternTextStyle,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 3,
-                                softWrap: true,
+                      title: currentTitle,
+                      builtIn: ProgressionBank.isBuiltIn(currentLocation),
+                      ticked: titles.values.elementAt(index),
+                      onTick: (ticked) => onTicked(currentTitle, ticked),
+                      onOpen: () => onOpen(currentLocation),
+                      onDelete: () async {
+                        final bool? result = await showGeneralDialog<bool>(
+                          context: context,
+                          barrierDismissible: true,
+                          barrierLabel: 'Details',
+                          pageBuilder: (context, _, __) => GeneralDialogChoice(
+                            title: Text.rich(
+                              TextSpan(
+                                text: 'Are you sure you want to permanently '
+                                    'delete "',
+                                children: [
+                                  TextSpan(
+                                    text: currentTitle,
+                                    style:
+                                        Constants.boldedValuePatternTextStyle,
+                                  ),
+                                  const TextSpan(text: '"?'),
+                                ],
                               ),
-                              onPressed: (deleted) =>
-                                  Navigator.pop(context, deleted),
-                              noButtonName: 'Cancel',
-                              yesButtonName: 'DELETE!',
+                              style: Constants.valuePatternTextStyle,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 3,
+                              softWrap: true,
                             ),
-                          );
-                          // When a choice was made...
-                          // This is done like this (and not "if (_result) ..."
-                          // since it can be null...
-                          if (_result == true) {
-                            BlocProvider.of<BankBloc>(context)
-                                .add(DeleteEntries([currentLocation]));
-                          }
-                        });
-                  })
+                            onPressed: (deleted) =>
+                                Navigator.pop(context, deleted),
+                            noButtonName: 'Cancel',
+                            yesButtonName: 'DELETE!',
+                          ),
+                        );
+                        // When a choice was made...
+                        // This is done like this (and not "if (_result) ..."
+                        // since it can be null...
+                        if (result == true) {
+                          // TODO: Fix usage of BuildContext after async gap.
+                          BlocProvider.of<BankBloc>(context)
+                              .add(DeleteEntries([currentLocation]));
+                        }
+                      },
+                    );
+                  },
+                )
         ],
       ),
     );

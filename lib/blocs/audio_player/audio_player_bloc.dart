@@ -10,7 +10,6 @@ import 'package:harmony_theory/modals/progression/progression.dart';
 import 'package:tonic/tonic.dart';
 
 part 'audio_player_event.dart';
-
 part 'audio_player_state.dart';
 
 class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
@@ -109,8 +108,8 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
                  one (currently we just don't load anything if it's null...).
          */
         if (prog[_cC] != null) {
-          List<Pitch> _loadedP = _walk(prog[_cC]!);
-          for (var p in _loadedP) {
+          List<Pitch> loadedP = _walk(prog[_cC]!);
+          for (var p in loadedP) {
             await rootBundle.load(pitchFileName(p));
           }
         }
@@ -226,8 +225,8 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   Pitch fileAcceptable(Pitch pitch) {
     if (pitch.accidentalSemitones > 0) {
       return Pitch.parse(
-          (pitch.pitchClass + Interval.m2).toPitch().toString()[0] +
-              'b${pitch.octave - 1}');
+          '${(pitch.pitchClass + Interval.m2).toPitch().toString()[0]}b'
+          '${pitch.octave - 1}');
     }
     return pitch;
   }

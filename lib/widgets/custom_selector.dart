@@ -61,13 +61,6 @@ class _CustomSelectorState extends State<CustomSelector> {
         color: Constants.buttonBackgroundColor,
         child: ToggleButtons(
           renderBorder: false,
-          children: [
-            for (String val in widget.values)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                child: Text(val, style: const TextStyle(fontSize: 14)),
-              ),
-          ],
           isSelected: _selected,
           onPressed: (index) {
             if (index != _selectedIndex && widget.onPressed.call(index)) {
@@ -78,6 +71,13 @@ class _CustomSelectorState extends State<CustomSelector> {
               });
             }
           },
+          children: [
+            for (String val in widget.values)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                child: Text(val, style: const TextStyle(fontSize: 14)),
+              ),
+          ],
         ),
       ),
     );

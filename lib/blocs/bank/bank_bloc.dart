@@ -252,11 +252,11 @@ class BankBloc extends Bloc<BankEvent, BankState> {
   }
 
   _getKeys() {
-    Map<String, Map<String, bool>> _newTitles = {};
+    Map<String, Map<String, bool>> newTitles = {};
     for (MapEntry<String, Map<String, ProgressionBankEntry>> package
         in ProgressionBank.bank.entries) {
       if (package.key != ProgressionBank.builtInPackageName) {
-        _newTitles[package.key] = {
+        newTitles[package.key] = {
           for (String title in package.value.keys)
             title: _titles[package.key]?[title] ?? false,
         };
@@ -264,13 +264,13 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       }
     }
     if (ProgressionBank.bank.containsKey(ProgressionBank.builtInPackageName)) {
-      _newTitles[ProgressionBank.builtInPackageName] = {
+      newTitles[ProgressionBank.builtInPackageName] = {
         for (String title
             in ProgressionBank.bank[ProgressionBank.builtInPackageName]!.keys)
           title: _titles[ProgressionBank.builtInPackageName]?[title] ?? false,
       };
     }
-    _titles = _newTitles;
+    _titles = newTitles;
     _setHasTitleSelected();
   }
 
