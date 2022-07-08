@@ -367,30 +367,30 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
                 bool start = index == startMeasure;
                 bool end = index == endMeasure;
                 int? fromChord, toChord;
-                double? startDur, endDur;
+                double? buildStartDur, buildEndDur;
                 if (shouldPaint) {
                   if (start) {
                     fromChord = startIndex;
-                    startDur = startDur;
+                    buildStartDur = startDur;
                   } else {
                     fromChord = 0;
-                    startDur = 0.0;
+                    buildStartDur = 0.0;
                   }
                   if (end) {
                     toChord = endIndex;
-                    endDur = endDur;
+                    buildEndDur = endDur;
                   } else {
                     toChord = _measures[index].length - 1;
-                    endDur = _measures[index].durations[toChord];
+                    buildEndDur = _measures[index].durations[toChord];
                   }
                 }
                 return MeasureView(
                   measure: _measures[index],
                   last: index == _measures.length - 1,
                   fromChord: fromChord,
-                  startDur: startDur,
+                  startDur: buildStartDur,
                   toChord: toChord,
-                  endDur: endDur,
+                  endDur: buildEndDur,
                   selectorStart: start,
                   selectorEnd: end,
                   editable: widget.editable,
