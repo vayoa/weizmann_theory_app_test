@@ -5,13 +5,13 @@ import 'package:equatable/equatable.dart';
 import 'package:harmony_theory/modals/pitch_chord.dart';
 import 'package:harmony_theory/modals/progression/absolute_durations.dart';
 import 'package:harmony_theory/modals/progression/chord_progression.dart';
+import 'package:harmony_theory/modals/progression/degree_progression.dart';
 import 'package:harmony_theory/modals/progression/exceptions.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
-import 'package:harmony_theory/modals/progression/scale_degree_progression.dart';
 import 'package:harmony_theory/modals/progression/time_signature.dart';
 import 'package:harmony_theory/modals/substitution.dart';
+import 'package:harmony_theory/modals/theory_base/degree/degree_chord.dart';
 import 'package:harmony_theory/modals/theory_base/pitch_scale.dart';
-import 'package:harmony_theory/modals/theory_base/scale_degree/scale_degree_chord.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:tonic/tonic.dart';
 
@@ -28,9 +28,9 @@ class ProgressionHandlerBloc
   EntryLocation location;
   PitchScale? _currentScale;
   ChordProgression currentChords = ChordProgression.empty();
-  ScaleDegreeProgression currentProgression = ScaleDegreeProgression.empty();
+  DegreeProgression currentProgression = DegreeProgression.empty();
   List<Progression<PitchChord>>? _chordMeasures;
-  List<Progression<ScaleDegreeChord>>? _progressionMeasures;
+  List<Progression<DegreeChord>>? _progressionMeasures;
   ProgressionType type = ProgressionType.romanNumerals;
   int fromChord = 0, toChord = 0;
   double startDur = 0.0;
@@ -77,8 +77,8 @@ class ProgressionHandlerBloc
           currentChords = ChordProgression.fromProgression(
               event.newProgression as Progression<PitchChord>);
           if (event.overrideOther) {
-            currentProgression = ScaleDegreeProgression.fromChords(
-                _currentScale!, currentChords);
+            currentProgression =
+                DegreeProgression.fromChords(_currentScale!, currentChords);
           }
           if (scaleChanged) {
             emit(ScaleChanged(
@@ -88,7 +88,7 @@ class ProgressionHandlerBloc
         } else {
           bool scaleChanged = _currentScale == null;
           if (scaleChanged) _currentScale = defaultScale;
-          currentProgression = event.newProgression as ScaleDegreeProgression;
+          currentProgression = event.newProgression as DegreeProgression;
           if (event.overrideOther) {
             currentChords = currentProgression.inScale(_currentScale!);
           }
@@ -150,7 +150,7 @@ class ProgressionHandlerBloc
         ));
       } else {
         add(OverrideProgression(
-          ScaleDegreeProgression.fromChords(_currentScale!, currentChords),
+          DegreeProgression.fromChords(_currentScale!, currentChords),
           overrideOther: false,
         ));
       }
@@ -197,14 +197,14 @@ class ProgressionHandlerBloc
       try {
         progression = chords
             ? _parseChordInputs(event.inputs, event.measureIndex)
-            : _parseScaleDegreeInputs(event.inputs, event.measureIndex);
+            : _parseDegreeInputs(event.inputs, event.measureIndex);
       } on NonValidDuration catch (e) {
         return emit(InvalidInputReceived(
             progression: currentlyViewedProgression, exception: e));
       } on Exception catch (firstError) {
         try {
           progression = chords
-              ? _parseScaleDegreeInputs(event.inputs, event.measureIndex)
+              ? _parseDegreeInputs(event.inputs, event.measureIndex)
               : _parseChordInputs(event.inputs, event.measureIndex);
           newType =
               chords ? ProgressionType.romanNumerals : ProgressionType.chords;
@@ -259,7 +259,7 @@ class ProgressionHandlerBloc
           add(OverrideProgression(event.substitution.substitutedBase)),
     );
     on<ChangeTimeSignature>((event, emit) {
-      ScaleDegreeProgression progression;
+      DegreeProgression progression;
       bool even = currentProgression.timeSignature.numerator == 4;
       try {
         progression = currentProgression.inTimeSignature(
@@ -279,13 +279,11 @@ class ProgressionHandlerBloc
     });
   }
 
-  Progression<ScaleDegreeChord> _parseScaleDegreeInputs(
-          List<String> inputs, int index) =>
-      ScaleDegreeProgression.fromProgression(
-          _parseInputsAndReplace<ScaleDegreeChord>(
+  Progression<DegreeChord> _parseDegreeInputs(List<String> inputs, int index) =>
+      DegreeProgression.fromProgression(_parseInputsAndReplace<DegreeChord>(
         inputs: inputs,
         index: index,
-        parse: (input) => ScaleDegreeChord.parse(input),
+        parse: (input) => DegreeChord.parse(input),
         progression: currentProgression,
         measures: _progressionMeasures,
       ));
@@ -318,7 +316,7 @@ class ProgressionHandlerBloc
     return _chordMeasures!;
   }
 
-  List<Progression<ScaleDegreeChord>> get progressionMeasures {
+  List<Progression<DegreeChord>> get progressionMeasures {
     _progressionMeasures ??= currentProgression.splitToMeasures();
     return _progressionMeasures!;
   }

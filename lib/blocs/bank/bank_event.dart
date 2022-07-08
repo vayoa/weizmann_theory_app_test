@@ -53,7 +53,7 @@ class SaveToJson extends BankEvent {
 
 class OverrideEntry extends BankEvent {
   final EntryLocation location;
-  final ScaleDegreeProgression progression;
+  final DegreeProgression progression;
 
   @override
   List<Object?> get props => [location, progression];

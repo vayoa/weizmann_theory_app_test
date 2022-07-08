@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:harmony_theory/modals/pitch_chord.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
-import 'package:harmony_theory/modals/theory_base/scale_degree/scale_degree_chord.dart';
-import 'package:harmony_theory/modals/theory_base/scale_degree/tonicized_scale_degree_chord.dart';
+import 'package:harmony_theory/modals/theory_base/degree/degree_chord.dart';
+import 'package:harmony_theory/modals/theory_base/degree/tonicized_degree_chord.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:tonic/tonic.dart';
 
@@ -14,7 +14,7 @@ import 'blocs/bank/bank_bloc.dart';
 abstract class Utilities {
   static String progressionValueToEditString<T>(T value) => value == null
       ? '//'
-      : (value is ScaleDegreeChord ? value.inputString : value.toString());
+      : (value is DegreeChord ? value.inputString : value.toString());
 
   static String abbr(ChordPattern pattern) {
     switch (pattern.abbr) {
@@ -30,7 +30,7 @@ abstract class Utilities {
   }
 
   static List<String> cutProgressionValue<T>(T value) {
-    assert(value == null || value is PitchChord || value is ScaleDegreeChord);
+    assert(value == null || value is PitchChord || value is DegreeChord);
     if (value == null) {
       return ['//', ''];
     } else if (value is PitchChord) {
@@ -40,11 +40,11 @@ abstract class Utilities {
         abbr(value.pattern) + value.bassString,
       ];
     } else {
-      ScaleDegreeChord chord = value as ScaleDegreeChord;
+      DegreeChord chord = value as DegreeChord;
       String rootDegreeStr = chord.rootString;
       String patternStr = chord.patternString;
       String tonicization = '';
-      if (value is TonicizedScaleDegreeChord) {
+      if (value is TonicizedDegreeChord) {
         rootDegreeStr = value.tonicizedToTonic.rootString;
         tonicization = '/${value.tonic.rootString}';
       }

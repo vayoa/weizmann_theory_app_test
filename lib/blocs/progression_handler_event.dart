@@ -18,7 +18,7 @@ class OverrideProgression extends ProgressionHandlerEvent {
       : assert((newProgression.isEmpty ||
             newProgression[0] is PitchChord ||
             newProgression[0] == null ||
-            newProgression is ScaleDegreeProgression));
+            newProgression is DegreeProgression));
 }
 
 class SwitchType extends ProgressionHandlerEvent {

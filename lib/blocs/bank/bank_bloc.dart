@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:harmony_theory/modals/progression/scale_degree_progression.dart';
+import 'package:harmony_theory/modals/progression/degree_progression.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:harmony_theory/state/progression_bank_entry.dart';
 import 'package:path_provider/path_provider.dart';
@@ -62,7 +62,7 @@ class BankBloc extends Bloc<BankEvent, BankState> {
         package: event.location.package,
         title: event.location.title,
         entry: ProgressionBankEntry(
-          progression: ScaleDegreeProgression.empty(),
+          progression: DegreeProgression.empty(),
         ),
       );
       _addTitle(event.location);

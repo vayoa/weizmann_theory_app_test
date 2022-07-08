@@ -4,8 +4,8 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:harmony_theory/modals/progression/chord_progression.dart';
+import 'package:harmony_theory/modals/progression/degree_progression.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
-import 'package:harmony_theory/modals/progression/scale_degree_progression.dart';
 import 'package:harmony_theory/modals/substitution.dart';
 import 'package:harmony_theory/modals/theory_base/pitch_scale.dart';
 import 'package:harmony_theory/modals/weights/keep_harmonic_function_weight.dart';
@@ -30,7 +30,7 @@ class SubstitutionHandlerBloc
 
   bool get surpriseMe => _surpriseMe;
 
-  ScaleDegreeProgression? _currentProgression;
+  DegreeProgression? _currentProgression;
   int _fromChord = 0, _toChord = 0;
   double _startDur = 0.0;
   double? _endDur;
@@ -191,7 +191,7 @@ class SubstitutionHandlerBloc
 class _SubstituteByComputeModal {
   final Sound sound;
   final KeepHarmonicFunctionAmount keepAmount;
-  final ScaleDegreeProgression base;
+  final DegreeProgression base;
   final int iterations;
   final ProgressionBankComputePass computePass;
 
