@@ -15,6 +15,7 @@ import '../../blocs/substitution_handler/substitution_handler_bloc.dart'
 import '../../modals/progression_type.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_icon_button.dart';
+import '../../widgets/text_and_icon.dart';
 import 'widgets/bank_progression_button.dart';
 import 'widgets/bpm_input.dart';
 import 'widgets/progression/selectable_progression_view.dart';
@@ -93,23 +94,12 @@ class ProgressionScreenUI extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          BlocBuilder<ProgressionHandlerBloc,
-                              ProgressionHandlerState>(
-                            buildWhen: (prev, state) =>
-                                state is ChangedLocation,
-                            builder: (context, state) {
-                              final EntryLocation location =
-                                  BlocProvider.of<ProgressionHandlerBloc>(
-                                          context)
-                                      .location;
-                              return CustomButton(
-                                label: 'Library / ${location.package}',
-                                tight: true,
-                                size: 12,
-                                iconData: Constants.backIcon,
-                                onPressed: () => Navigator.pop(context),
-                              );
-                            },
+                          CustomButton(
+                            label: 'Back',
+                            tight: true,
+                            size: 12,
+                            iconData: Constants.backIcon,
+                            onPressed: () => Navigator.pop(context),
                           ),
                           const SizedBox(width: 8),
                           BlocBuilder<BankBloc, BankState>(
@@ -128,6 +118,14 @@ class ProgressionScreenUI extends StatelessWidget {
                                         .add(const SaveToJson()),
                               );
                             },
+                          ),
+                          const SizedBox(width: 8),
+                          TextAndIcon(
+                            textBefore: 'In',
+                            text: location.package,
+                            icon: Constants.packageIcon,
+                            iconSize: 12,
+                            style: const TextStyle(fontSize: 14),
                           ),
                         ],
                       ),

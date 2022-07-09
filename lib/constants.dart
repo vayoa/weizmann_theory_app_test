@@ -40,4 +40,5 @@ abstract class Constants {
   static const IconData builtInIcon = Icons.inventory_2_rounded;
   static const IconData saveIcon = Icons.upload_rounded;
   static const IconData moveEntryIcon = Icons.unarchive_rounded;
+  static const IconData packageIcon = Icons.all_inbox_rounded;
 }
