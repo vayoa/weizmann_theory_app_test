@@ -5,7 +5,8 @@ import 'package:bloc/bloc.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
-import 'package:harmony_theory/modals/progression.dart';
+import 'package:harmony_theory/modals/pitch_chord.dart';
+import 'package:harmony_theory/modals/progression/progression.dart';
 import 'package:tonic/tonic.dart';
 
 part 'audio_player_event.dart';
@@ -23,7 +24,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
 
   bool get playing => _playing;
 
-  List<Progression<Chord>>? _currentMeasures;
+  List<Progression<PitchChord>>? _currentMeasures;
 
   // Current measure.
   int _cM = 0;
@@ -101,14 +102,14 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
       for (_cM;
           _currentMeasures != null && _cM < _currentMeasures!.length;
           _cM++) {
-        Progression<Chord> prog = _currentMeasures![_cM];
+        Progression<PitchChord> prog = _currentMeasures![_cM];
         // First, load the first pitches.
         /* TODO: Load the first one, and if it's null load the first not null
                  one (currently we just don't load anything if it's null...).
          */
         if (prog[_cC] != null) {
-          List<Pitch> _loadedP = _walk(prog[_cC]!);
-          for (var p in _loadedP) {
+          List<Pitch> loadedP = _walk(prog[_cC]!);
+          for (var p in loadedP) {
             await rootBundle.load(pitchFileName(p));
           }
         }
@@ -131,7 +132,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     }
   }
 
-  List<Pitch> _playChord(Chord chord, [List<Pitch>? prev]) {
+  List<Pitch> _playChord(PitchChord chord, [List<Pitch>? prev]) {
     List<Pitch> pitches = _walk(chord, prev);
     for (int i = 0; i < maxPlayers; i++) {
       try {
@@ -153,7 +154,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   }
 
   // TODO: Actually implement this...
-  List<Pitch> _walk(Chord chord, [List<Pitch>? previous]) {
+  List<Pitch> _walk(PitchChord chord, [List<Pitch>? previous]) {
     List<Pitch> cPitches = chord.pitches;
     /* TODO: Since the chord could be in any pitch find a consistent way of
              calculating it's pitch. */
@@ -224,8 +225,8 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   Pitch fileAcceptable(Pitch pitch) {
     if (pitch.accidentalSemitones > 0) {
       return Pitch.parse(
-          (pitch.pitchClass + Interval.m2).toPitch().toString()[0] +
-              'b${pitch.octave - 1}');
+          '${(pitch.pitchClass + Interval.m2).toPitch().toString()[0]}b'
+          '${pitch.octave - 1}');
     }
     return pitch;
   }

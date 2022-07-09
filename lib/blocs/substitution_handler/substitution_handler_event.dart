@@ -8,7 +8,7 @@ abstract class SubstitutionHandlerEvent extends Equatable {
 }
 
 class OpenSetupPage extends SubstitutionHandlerEvent {
-  final ScaleDegreeProgression progression;
+  final DegreeProgression progression;
   final int fromChord;
   final int? toChord;
   final double startDur;

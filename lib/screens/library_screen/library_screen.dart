@@ -49,8 +49,8 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
 
   @override
   void onWindowClose() async {
-    bool _isPreventClose = await windowManager.isPreventClose();
-    if (_isPreventClose) {
+    bool isPreventClose = await windowManager.isPreventClose();
+    if (isPreventClose) {
       final bool? r = await showDialog<bool>(
         context: context,
         builder: (_) => GeneralThreeChoiceDialog(
@@ -66,7 +66,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
         ),
       );
       if (r != null) {
-        if (r) {
+        if (r && mounted) {
           BlocProvider.of<BankBloc>(context).add(const SaveAndCloseWindow());
         } else {
           await windowManager.destroy();
@@ -115,11 +115,11 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                             hintText: 'Search...',
                           ),
                           onChanged: (text) {
-                            Map<String, Map<String, bool>> _realPackages =
+                            Map<String, Map<String, bool>> realPackages =
                                 BlocProvider.of<BankBloc>(context).titles;
                             if (text.isEmpty) {
                               setState(() {
-                                packages = _realPackages;
+                                packages = realPackages;
                               });
                             } else {
                               setState(() {
@@ -127,7 +127,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                         not change the map in the bank, which
                                         is packages...
                                */
-                                _handleSearch(_realPackages, text);
+                                _handleSearch(realPackages, text);
                               });
                             }
                           },
@@ -200,7 +200,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                           iconData: Icons.restart_alt_rounded,
                           tight: true,
                           onPressed: () async {
-                            bool? _result = await showGeneralDialog<bool>(
+                            bool? result = await showGeneralDialog<bool>(
                               context: context,
                               barrierLabel: 'Revert All',
                               barrierDismissible: true,
@@ -234,8 +234,8 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                             );
 
                             // Again, done in this weird way since it can be null...
-                            if (_result == true) {
-                              _result = await showGeneralDialog<bool>(
+                            if (result == true) {
+                              result = await showGeneralDialog<bool>(
                                 context: context,
                                 pageBuilder: (context, _, __) =>
                                     GeneralDialogChoice(
@@ -253,7 +253,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                                   noButtonName: 'Cancel',
                                 ),
                               );
-                              if (_result!) {
+                              if (result! && mounted) {
                                 BlocProvider.of<BankBloc>(context)
                                     .add(const RevertAll());
                               }
@@ -309,8 +309,8 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                     );
                     break;
                   case ExportedPackages:
-                    var _realState = state as ExportedPackages;
-                    String failed = _realState.packages.keys
+                    var realState = state as ExportedPackages;
+                    String failed = realState.packages.keys
                         .map((e) => e.split(r'\').last)
                         .toList()
                         .toString();
@@ -318,7 +318,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                       context,
                       'Exported selected entries from: '
                       '${failed.substring(1, failed.length - 1)} '
-                      'to ${_realState.directory}.',
+                      'to ${realState.directory}.',
                       SnackBarType.success,
                     );
                 }
@@ -376,10 +376,9 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
     );
   }
 
-  void _handleSearch(
-      Map<String, Map<String, bool>> _realPackages, String text) {
+  void _handleSearch(Map<String, Map<String, bool>> realPackages, String text) {
     packages = {};
-    for (MapEntry<String, Map<String, bool>> package in _realPackages.entries) {
+    for (MapEntry<String, Map<String, bool>> package in realPackages.entries) {
       Map<String, bool> newTitles = Map.fromEntries(package.value.keys
           .where((String title) =>
               title.toLowerCase().contains(text.toLowerCase()))
@@ -391,7 +390,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
   }
 
   Future<void> _handleNewPackage(BuildContext context) async {
-    String? _result = await showGeneralDialog<String>(
+    String? result = await showGeneralDialog<String>(
       context: context,
       barrierLabel: 'New Package',
       barrierDismissible: true,
@@ -420,15 +419,15 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
         },
       ),
     );
-    if (_result != null) {
-      BlocProvider.of<BankBloc>(context).add(CreatePackage(package: _result));
+    if (result != null && mounted) {
+      BlocProvider.of<BankBloc>(context).add(CreatePackage(package: result));
     }
   }
 
   /* TODO: WE IMPORT IT TWICE SINCE THE DROPZONE BELOW THIS DIALOG STILL
            RECEIVES INPUT! */
   Future<void> _handleImport(BuildContext context) async {
-    List<String>? _result = await showGeneralDialog<List<String>>(
+    List<String>? result = await showGeneralDialog<List<String>>(
       context: context,
       barrierLabel: 'Import Package',
       barrierDismissible: true,
@@ -438,19 +437,19 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
       ),
     );
 
-    if (_result != null) {
+    if (result != null && mounted) {
       BlocProvider.of<BankBloc>(context)
-          .add(ImportPackages(jsonFileUrls: _result));
+          .add(ImportPackages(jsonFileUrls: result));
     }
   }
 
   void _handleMoveSelectedEntries(BuildContext context) async {
     // TODO: Could optimize this...
-    var _selected = BlocProvider.of<BankBloc>(context).selectedTitles;
-    List<String> packages = _selected.keys.toList();
+    var selected = BlocProvider.of<BankBloc>(context).selectedTitles;
+    List<String> packages = selected.keys.toList();
     List<EntryLocation> locations = [
       for (String package in packages)
-        for (String title in _selected[package]!) EntryLocation(package, title)
+        for (String title in selected[package]!) EntryLocation(package, title)
     ];
 
     final String? newPackage = await showGeneralDialog(
@@ -466,7 +465,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
       ),
     );
 
-    if (newPackage != null) {
+    if (newPackage != null && mounted) {
       BlocProvider.of<BankBloc>(context).add(
         MoveEntries(
           currentLocations: locations,

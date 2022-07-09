@@ -1,9 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:harmony_theory/modals/pitch_scale.dart';
 import 'package:harmony_theory/modals/substitution.dart';
 import 'package:harmony_theory/modals/substitution_match.dart';
+import 'package:harmony_theory/modals/theory_base/pitch_scale.dart';
 import 'package:harmony_theory/modals/weights/keep_harmonic_function_weight.dart';
 import 'package:harmony_theory/modals/weights/weight.dart';
 
@@ -87,7 +87,7 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
         if (state is CalculatedSubstitutions) {
           setState(() {
             // TODO: This throws an error but still works...
-            WidgetsBinding.instance?.addPostFrameCallback((_) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
               if (_controller.hasClients) {
                 _controller.jumpToPage(0);
               }
@@ -144,7 +144,7 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
             ],
           ));
         } else {
-          final bool _surpriseMe =
+          final bool surpriseMe =
               BlocProvider.of<SubstitutionHandlerBloc>(context).surpriseMe;
           return SubstitutionWindowCover(
             child: Column(
@@ -156,7 +156,7 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                 SizedBox(
                   height: 200,
                   child: Listener(
-                    onPointerSignal: _surpriseMe
+                    onPointerSignal: surpriseMe
                         ? null
                         : (signal) {
                             if (_controller.page != null &&
@@ -178,8 +178,8 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                           setState(() => _currentIndex = newIndex),
                       itemBuilder: (BuildContext context, int index) =>
                           SubstitutionView(
-                        index: index,
-                        surpriseMe: _surpriseMe,
+                            index: index,
+                        surpriseMe: surpriseMe,
                         substitution: subBloc.substitutions![index],
                       ),
                     ),
@@ -281,8 +281,8 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
   Widget build(BuildContext context) {
     SubstitutionHandlerBloc bloc =
         BlocProvider.of<SubstitutionHandlerBloc>(context);
-    bool _goDisabled = bloc.substitutions != null;
-    bool _showGo = widget.inSetup ||
+    bool goDisabled = bloc.substitutions != null;
+    bool showGo = widget.inSetup ||
         (_keepHarmonicFunction == bloc.keepHarmonicFunction &&
             _sound == bloc.sound);
     return SizedBox(
@@ -359,12 +359,12 @@ class _SubstitutionButtonBarState extends State<SubstitutionButtonBar> {
                   ],
                 ),
                 CustomButton(
-                  label: _showGo ? 'Go!' : 'Refresh',
+                  label: showGo ? 'Go!' : 'Refresh',
                   tight: true,
-                  iconData: _showGo
+                  iconData: showGo
                       ? Icons.arrow_right_alt_rounded
                       : Icons.refresh_rounded,
-                  onPressed: _showGo && _goDisabled
+                  onPressed: showGo && goDisabled
                       ? null
                       : () => setState(() {
                             bloc.add(CalculateSubstitutions(

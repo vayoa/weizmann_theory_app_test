@@ -169,10 +169,10 @@ class GeneralDialogTextField extends StatefulWidget {
   final void Function()? differentSubmit;
 
   @override
-  _GeneralDialogTextFieldState createState() => _GeneralDialogTextFieldState();
+  GeneralDialogTextFieldState createState() => GeneralDialogTextFieldState();
 }
 
-class _GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
+class GeneralDialogTextFieldState extends State<GeneralDialogTextField> {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
   String? errorMessage;

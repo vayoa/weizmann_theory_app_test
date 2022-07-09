@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:harmony_theory/extensions/chord_extension.dart';
-import 'package:harmony_theory/modals/exceptions.dart';
-import 'package:harmony_theory/modals/progression.dart';
-import 'package:harmony_theory/modals/scale_degree_chord.dart';
+import 'package:harmony_theory/modals/pitch_chord.dart';
+import 'package:harmony_theory/modals/progression/exceptions.dart';
+import 'package:harmony_theory/modals/progression/progression.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:harmony_theory/state/progression_bank_entry.dart';
-import 'package:tonic/tonic.dart';
 
 import '../../Constants.dart';
 import '../../blocs/audio_player/audio_player_bloc.dart';
@@ -182,7 +180,7 @@ class ProgressionScreenUI extends StatelessWidget {
                                         if (state is Playing) {
                                           bloc.add(const Pause());
                                         } else {
-                                          List<Progression<Chord>> chords =
+                                          List<Progression<PitchChord>> chords =
                                               BlocProvider.of<
                                                           ProgressionHandlerBloc>(
                                                       context)
@@ -223,14 +221,6 @@ class ProgressionScreenUI extends StatelessWidget {
                                 state is ChangedTimeSignature,
                             builder: (context, state) {
                               return TextButton(
-                                child: Text(
-                                  BlocProvider.of<ProgressionHandlerBloc>(
-                                          context)
-                                      .currentProgression
-                                      .timeSignature
-                                      .toString(),
-                                  style: const TextStyle(fontSize: 16.0),
-                                ),
                                 style: TextButton.styleFrom(
                                   minimumSize: const Size(40, 36),
                                   primary: Colors.black,
@@ -246,6 +236,14 @@ class ProgressionScreenUI extends StatelessWidget {
                                         : () => BlocProvider.of<
                                                 ProgressionHandlerBloc>(context)
                                             .add(const ChangeTimeSignature()),
+                                child: Text(
+                                  BlocProvider.of<ProgressionHandlerBloc>(
+                                          context)
+                                      .currentProgression
+                                      .timeSignature
+                                      .toString(),
+                                  style: const TextStyle(fontSize: 16.0),
+                                ),
                               );
                             },
                           )
@@ -270,13 +268,13 @@ class ProgressionScreenUI extends StatelessWidget {
                                               .type ==
                                           ProgressionType.chords,
                                   onPressed: (newType) {
-                                    ProgressionHandlerBloc _bloc =
+                                    ProgressionHandlerBloc bloc =
                                         BlocProvider.of<ProgressionHandlerBloc>(
                                             context);
                                     if (newType ==
                                             ProgressionType.romanNumerals ||
-                                        _bloc.currentScale != null) {
-                                      _bloc.add(SwitchType(newType));
+                                        bloc.currentScale != null) {
+                                      bloc.add(SwitchType(newType));
                                       return true;
                                     }
                                     return false;
@@ -335,12 +333,7 @@ class ProgressionScreenUI extends StatelessWidget {
                             state.exception as NonValidDuration;
                         String value = e.value is String
                             ? e.value
-                            : (e.value == null
-                                ? '//'
-                                : (e.value is Chord
-                                    ? (e.value as Chord).commonName
-                                    : (e.value as ScaleDegreeChord)
-                                        .toString()));
+                            : (e.value == null ? '//' : e.value.toString());
                         message = 'An invalid duration was inputted:'
                             '\nA value of $value in a duration of '
                             '${(e.duration * e.timeSignature.denominator).toInt()}'

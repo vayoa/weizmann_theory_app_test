@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:harmony_theory/extensions/chord_extension.dart';
-import 'package:harmony_theory/modals/progression.dart';
-import 'package:harmony_theory/modals/scale_degree_chord.dart';
-import 'package:harmony_theory/modals/tonicized_scale_degree_chord.dart';
+import 'package:harmony_theory/modals/pitch_chord.dart';
+import 'package:harmony_theory/modals/progression/progression.dart';
+import 'package:harmony_theory/modals/theory_base/degree/degree_chord.dart';
+import 'package:harmony_theory/modals/theory_base/degree/tonicized_degree_chord.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:tonic/tonic.dart';
 
@@ -12,9 +12,9 @@ import 'Constants.dart';
 import 'blocs/bank/bank_bloc.dart';
 
 abstract class Utilities {
-  static String progressionValueToString<T>(T value) => value == null
+  static String progressionValueToEditString<T>(T value) => value == null
       ? '//'
-      : (value is Chord ? value.commonName : value.toString());
+      : (value is DegreeChord ? value.inputString : value.toString());
 
   static String abbr(ChordPattern pattern) {
     switch (pattern.abbr) {
@@ -30,24 +30,28 @@ abstract class Utilities {
   }
 
   static List<String> cutProgressionValue<T>(T value) {
-    assert(value == null || value is Chord || value is ScaleDegreeChord);
+    assert(value == null || value is PitchChord || value is DegreeChord);
     if (value == null) {
       return ['//', ''];
-    } else if (value is Chord) {
+    } else if (value is PitchChord) {
       Pitch root = value.root;
       return [
         '${root.letterName}${root.accidentalsString}',
-        abbr(value.pattern)
+        abbr(value.pattern) + value.bassString,
       ];
     } else {
-      ScaleDegreeChord chord = value as ScaleDegreeChord;
-      String _rootDegreeStr = chord.rootDegreeString;
-      String _patternStr = chord.patternString;
-      if (value is TonicizedScaleDegreeChord) {
-        _rootDegreeStr = value.tonicizedToTonic.rootDegreeString;
-        _patternStr += '/${value.tonic.rootDegreeString}';
+      DegreeChord chord = value as DegreeChord;
+      String rootDegreeStr = chord.rootString;
+      String patternStr = chord.patternString;
+      String tonicization = '';
+      if (value is TonicizedDegreeChord) {
+        rootDegreeStr = value.tonicizedToTonic.rootString;
+        tonicization = '/${value.tonic.rootString}';
       }
-      return [_rootDegreeStr, _patternStr];
+      return [
+        rootDegreeStr,
+        (value.hasDifferentBass ? value.bassString : patternStr) + tonicization,
+      ];
     }
   }
 
@@ -160,7 +164,7 @@ abstract class Utilities {
     BuildContext context, {
     String package = ProgressionBank.defaultPackageName,
   }) async {
-    String? _title = await showGeneralDialog<String>(
+    String? title = await showGeneralDialog<String>(
       context: context,
       barrierLabel: 'New Entry',
       barrierDismissible: true,
@@ -188,9 +192,10 @@ abstract class Utilities {
         },
       ),
     );
-    if (_title != null) {
+    if (title != null) {
+      // TODO: Fix usage of BuildContext after async gap.
       BlocProvider.of<BankBloc>(context)
-          .add(AddNewEntry(EntryLocation(package, _title)));
+          .add(AddNewEntry(EntryLocation(package, title)));
     }
   }
 }

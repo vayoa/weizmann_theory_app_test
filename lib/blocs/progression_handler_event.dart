@@ -16,9 +16,9 @@ class OverrideProgression extends ProgressionHandlerEvent {
 
   OverrideProgression(this.newProgression, {this.overrideOther = true})
       : assert((newProgression.isEmpty ||
-            newProgression[0] is Chord ||
+            newProgression[0] is PitchChord ||
             newProgression[0] == null ||
-            newProgression is ScaleDegreeProgression));
+            newProgression is DegreeProgression));
 }
 
 class SwitchType extends ProgressionHandlerEvent {

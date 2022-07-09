@@ -17,10 +17,10 @@ class BankProgressionButton extends StatefulWidget {
   final bool initiallyBanked;
 
   @override
-  _BankProgressionButtonState createState() => _BankProgressionButtonState();
+  BankProgressionButtonState createState() => BankProgressionButtonState();
 }
 
-class _BankProgressionButtonState extends State<BankProgressionButton> {
+class BankProgressionButtonState extends State<BankProgressionButton> {
   bool hovering = false;
   late bool active;
   late bool canBank;
@@ -28,29 +28,29 @@ class _BankProgressionButtonState extends State<BankProgressionButton> {
 
   @override
   void initState() {
-    String? _error = _getError(context);
-    canBank = widget.initiallyBanked || _error == null;
-    error = _error ?? '';
+    String? error = _getError(context);
+    canBank = widget.initiallyBanked || error == null;
+    error = error ?? '';
     active = canBank && widget.initiallyBanked;
     super.initState();
   }
 
   String? _getError(BuildContext context) {
-    String? _error;
-    ProgressionHandlerBloc _bloc =
+    String? error;
+    ProgressionHandlerBloc bloc =
         BlocProvider.of<ProgressionHandlerBloc>(context);
-    int id = _bloc.currentProgression.id;
+    int id = bloc.currentProgression.id;
     if (ProgressionBank.idFreeInSubs(
-        location: _bloc.location.toString(), id: id)) {
-      if (!ProgressionBank.canBeSubstitution(_bloc.currentProgression)) {
-        _error = 'Progression does not consist of 2 - 8 chords';
+        location: bloc.location.toString(), id: id)) {
+      if (!ProgressionBank.canBeSubstitution(bloc.currentProgression)) {
+        error = 'Progression does not consist of 2 - 8 chords';
       }
     } else {
       String title =
-          ProgressionBank.substitutionsIDBank[_bloc.currentProgression.id]!;
-      _error = 'Progression already exists as "$title".';
+          ProgressionBank.substitutionsIDBank[bloc.currentProgression.id]!;
+      error = 'Progression already exists as "$title".';
     }
-    return _error;
+    return error;
   }
 
   @override
@@ -60,17 +60,17 @@ class _BankProgressionButtonState extends State<BankProgressionButton> {
       listener: (context, state) {
         EntryLocation location =
             BlocProvider.of<ProgressionHandlerBloc>(context).location;
-        String? _error = _getError(context);
-        bool _canBank = _error == null;
-        if (!_canBank &&
+        String? error = _getError(context);
+        bool canBank = error == null;
+        if (!canBank &&
             ProgressionBank
                 .bank[location.package]![location.title]!.usedInSubstitutions) {
           BlocProvider.of<BankBloc>(context).add(ChangeUseInSubstitutions(
               location: location, useInSubstitutions: false));
         }
         setState(() {
-          canBank = _canBank;
-          error = _error ?? '';
+          canBank = canBank;
+          error = error ?? '';
         });
       },
       child: SizedBox(

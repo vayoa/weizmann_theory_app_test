@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:harmony_theory/modals/progression.dart';
+import 'package:harmony_theory/modals/progression/progression.dart';
 
 import '../../../../blocs/progression_handler_bloc.dart';
 import '../../../../constants.dart';
@@ -335,7 +335,7 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
   }
 
   void _updateController() =>
-      WidgetsBinding.instance?.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if (widget.startAt != null) {
           _controller.animateTo(widget.startAt! * Constants.measureWidth,
               duration: const Duration(milliseconds: 400),
@@ -367,30 +367,30 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
                 bool start = index == startMeasure;
                 bool end = index == endMeasure;
                 int? fromChord, toChord;
-                double? _startDur, _endDur;
+                double? buildStartDur, buildEndDur;
                 if (shouldPaint) {
                   if (start) {
                     fromChord = startIndex;
-                    _startDur = startDur;
+                    buildStartDur = startDur;
                   } else {
                     fromChord = 0;
-                    _startDur = 0.0;
+                    buildStartDur = 0.0;
                   }
                   if (end) {
                     toChord = endIndex;
-                    _endDur = endDur;
+                    buildEndDur = endDur;
                   } else {
                     toChord = _measures[index].length - 1;
-                    _endDur = _measures[index].durations[toChord];
+                    buildEndDur = _measures[index].durations[toChord];
                   }
                 }
                 return MeasureView(
                   measure: _measures[index],
                   last: index == _measures.length - 1,
                   fromChord: fromChord,
-                  startDur: _startDur,
+                  startDur: buildStartDur,
                   toChord: toChord,
-                  endDur: _endDur,
+                  endDur: buildEndDur,
                   selectorStart: start,
                   selectorEnd: end,
                   editable: widget.editable,

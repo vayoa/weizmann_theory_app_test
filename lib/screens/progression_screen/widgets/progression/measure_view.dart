@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:harmony_theory/modals/progression.dart';
+import 'package:harmony_theory/modals/progression/progression.dart';
 
 import '../../../../constants.dart';
 import '../../../../utilities.dart';
@@ -334,7 +334,7 @@ class _EditedMeasureState<T> extends State<EditedMeasure<T>> {
             controller: controller,
             inputFormatters: [
               FilteringTextInputFormatter.allow(
-                  RegExp(r"[\w\d, /+°øØ#b♯♭𝄪𝄫]"))
+                  RegExp(r"[\w\d, /^/+°øØ#b♯♭𝄪𝄫]"))
             ],
             decoration: InputDecoration(
               hintText: initial,
@@ -366,7 +366,7 @@ class _EditedMeasureState<T> extends State<EditedMeasure<T>> {
     initial = '';
     final double step = widget.measure.timeSignature.step;
     for (int i = 0; i < widget.measure.length; i++) {
-      initial += Utilities.progressionValueToString(widget.measure[i]);
+      initial += Utilities.progressionValueToEditString(widget.measure[i]);
       int times = widget.measure.durations[i] ~/ step;
       if (times > 1) initial += ' $times';
       initial += sep;

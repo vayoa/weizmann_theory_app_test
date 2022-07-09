@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:harmony_theory/extensions/pitch_extension.dart';
-import 'package:harmony_theory/modals/pitch_scale.dart';
+import 'package:harmony_theory/modals/theory_base/pitch_scale.dart';
 import 'package:tonic/tonic.dart';
 
 import '../../../Constants.dart';
@@ -104,7 +104,6 @@ class _ScaleChooserState extends State<ScaleChooser> {
                         ),
                       ),
                       TextButton(
-                        child: Text(minor ? 'Minor' : 'Major'),
                         style: TextButton.styleFrom(
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.horizontal(
@@ -114,6 +113,7 @@ class _ScaleChooserState extends State<ScaleChooser> {
                         onPressed: widget.enabled
                             ? () => bloc.add(ChangeScale(current.switchPattern))
                             : null,
+                        child: Text(minor ? 'Minor' : 'Major'),
                       ),
                     ],
                   ),

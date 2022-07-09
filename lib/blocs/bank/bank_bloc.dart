@@ -4,13 +4,12 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:harmony_theory/modals/scale_degree_progression.dart';
+import 'package:harmony_theory/modals/progression/degree_progression.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:harmony_theory/state/progression_bank_entry.dart';
 import 'package:path_provider/path_provider.dart';
 
 part 'bank_event.dart';
-
 part 'bank_state.dart';
 
 class BankBloc extends Bloc<BankEvent, BankState> {
@@ -63,7 +62,7 @@ class BankBloc extends Bloc<BankEvent, BankState> {
         package: event.location.package,
         title: event.location.title,
         entry: ProgressionBankEntry(
-          progression: ScaleDegreeProgression.empty(),
+          progression: DegreeProgression.empty(),
         ),
       );
       _addTitle(event.location);
@@ -253,11 +252,11 @@ class BankBloc extends Bloc<BankEvent, BankState> {
   }
 
   _getKeys() {
-    Map<String, Map<String, bool>> _newTitles = {};
+    Map<String, Map<String, bool>> newTitles = {};
     for (MapEntry<String, Map<String, ProgressionBankEntry>> package
         in ProgressionBank.bank.entries) {
       if (package.key != ProgressionBank.builtInPackageName) {
-        _newTitles[package.key] = {
+        newTitles[package.key] = {
           for (String title in package.value.keys)
             title: _titles[package.key]?[title] ?? false,
         };
@@ -265,13 +264,13 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       }
     }
     if (ProgressionBank.bank.containsKey(ProgressionBank.builtInPackageName)) {
-      _newTitles[ProgressionBank.builtInPackageName] = {
+      newTitles[ProgressionBank.builtInPackageName] = {
         for (String title
             in ProgressionBank.bank[ProgressionBank.builtInPackageName]!.keys)
           title: _titles[ProgressionBank.builtInPackageName]?[title] ?? false,
       };
     }
-    _titles = _newTitles;
+    _titles = newTitles;
     _setHasTitleSelected();
   }
 
