@@ -12,7 +12,7 @@ abstract class Constants {
   static const Color selectedColor = Color.fromARGB(255, 187, 187, 187);
   static const Color measureColor = Color.fromARGB(255, 171, 171, 171);
   static const double measureWidth = 315;
-  static const double measureHeight = 66;
+  static const double measureHeight = 56;
   static const double measureSpacing = measureHeight / 2;
   static const double measurePadding = 10;
   static const double measureFontSize = 26;

@@ -38,7 +38,8 @@ class Measure extends StatelessWidget {
       child: FittedBox(
         child: Container(
           width: Constants.measureWidth,
-          padding: const EdgeInsets.all(Constants.measurePadding),
+          padding:
+              const EdgeInsets.symmetric(horizontal: Constants.measurePadding),
           child: child,
         ),
       ),
