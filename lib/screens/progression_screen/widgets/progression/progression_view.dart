@@ -244,6 +244,8 @@ class HorizontalProgressionView extends StatefulWidget {
     this.endDur,
     this.startAt,
     this.editable = false,
+    this.padding,
+    this.extent,
   }) : super(key: key);
 
   final Progression progression;
@@ -254,6 +256,8 @@ class HorizontalProgressionView extends StatefulWidget {
   final double? endDur;
   final int? startAt;
   final bool editable;
+  final EdgeInsets? padding;
+  final double? extent;
 
   @override
   State<HorizontalProgressionView> createState() =>
@@ -334,8 +338,7 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
     _canPaint = widget.fromChord != null && widget.toChord != null;
   }
 
-  void _updateController() =>
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+  void _updateController() => WidgetsBinding.instance.addPostFrameCallback((_) {
         if (widget.startAt != null) {
           _controller.animateTo(widget.startAt! * Constants.measureWidth,
               duration: const Duration(milliseconds: 400),
@@ -361,6 +364,8 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
               scrollDirection: Axis.horizontal,
               itemCount: _measures.length,
               shrinkWrap: true,
+              padding: widget.padding,
+              itemExtent: widget.extent,
               itemBuilder: (context, index) {
                 bool shouldPaint =
                     _canPaint && index >= startMeasure && index <= endMeasure;

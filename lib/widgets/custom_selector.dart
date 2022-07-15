@@ -7,13 +7,17 @@ class CustomSelector extends StatefulWidget {
     Key? key,
     required this.values,
     required this.value,
-    this.tight = false,
     required this.onPressed,
+    this.fontSize,
+    this.tight = false,
+    this.small = false,
   }) : super(key: key);
 
   final List<String> values;
   final String value;
+  final double? fontSize;
   final bool tight;
+  final bool small;
   final bool Function(int) onPressed;
 
   @override
@@ -54,12 +58,20 @@ class _CustomSelectorState extends State<CustomSelector> {
 
   @override
   Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.circular(
+      widget.small ? Constants.tightBorderRadius : Constants.borderRadius,
+    );
     return SizedBox(
-      height: widget.tight ? Constants.minButtonHeight : null,
+      height: widget.tight
+          ? (widget.small
+              ? Constants.minSmallButtonHeight
+              : Constants.minButtonHeight)
+          : null,
       child: Material(
-        borderRadius: BorderRadius.circular(Constants.borderRadius),
+        borderRadius: borderRadius,
         color: Constants.buttonBackgroundColor,
         child: ToggleButtons(
+          borderRadius: borderRadius,
           renderBorder: false,
           isSelected: _selected,
           onPressed: (index) {
@@ -75,7 +87,10 @@ class _CustomSelectorState extends State<CustomSelector> {
             for (String val in widget.values)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                child: Text(val, style: const TextStyle(fontSize: 14)),
+                child: Text(val,
+                    style: TextStyle(
+                        fontSize:
+                            widget.fontSize ?? (widget.small ? 12.0 : 14.0))),
               ),
           ],
         ),

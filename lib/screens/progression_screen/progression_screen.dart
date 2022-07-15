@@ -15,13 +15,14 @@ import '../../blocs/substitution_handler/substitution_handler_bloc.dart'
 import '../../modals/progression_type.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_icon_button.dart';
-import '../../widgets/text_and_icon.dart';
 import 'widgets/bank_progression_button.dart';
 import 'widgets/bpm_input.dart';
 import 'widgets/progression/selectable_progression_view.dart';
+import 'widgets/progression_screen_top_bar.dart';
 import 'widgets/progression_title.dart';
 import 'widgets/reharmonize_bar.dart';
 import 'widgets/scale_chooser.dart';
+import 'widgets/substitution_drawer/substitution_drawer.dart';
 import 'widgets/substitution_window.dart';
 import 'widgets/view_type_selector.dart';
 
@@ -56,9 +57,30 @@ class ProgressionScreen extends StatelessWidget {
         BlocProvider(create: (_) => AudioPlayerBloc()),
       ],
       child: Scaffold(
-        body: ProgressionScreenUI(
-          initiallyBanked: initiallyBanked,
-        ),
+        body: LayoutBuilder(builder: (context, constraints) {
+          const double smallWidth = 700 + Constants.measureWidth;
+          if (constraints.maxWidth > smallWidth) {
+            return Row(
+              children: [
+                const SubstitutionDrawer(popup: false),
+                Expanded(
+                  child: ProgressionScreenUI(
+                    initiallyBanked: initiallyBanked,
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return Stack(
+              children: [
+                ProgressionScreenUI(
+                  initiallyBanked: initiallyBanked,
+                ),
+                const SubstitutionDrawer(popup: true),
+              ],
+            );
+          }
+        }),
       ),
     );
   }
@@ -79,9 +101,9 @@ class ProgressionScreenUI extends StatelessWidget {
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 20.0, right: 30.0, left: 30.0),
-          child: Center(
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 20.0, right: 30.0, left: 30.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -92,43 +114,7 @@ class ProgressionScreenUI extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          CustomButton(
-                            label: 'Back',
-                            tight: true,
-                            size: 12,
-                            iconData: Constants.backIcon,
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                          const SizedBox(width: 8),
-                          BlocBuilder<BankBloc, BankState>(
-                            builder: (context, state) {
-                              final bool loading = state is BankLoading;
-                              return CustomButton(
-                                label: loading ? 'Saving...' : 'Save',
-                                tight: true,
-                                size: 12,
-                                iconData: loading
-                                    ? Icons.hourglass_bottom_rounded
-                                    : Constants.saveIcon,
-                                onPressed: loading
-                                    ? null
-                                    : () => BlocProvider.of<BankBloc>(context)
-                                        .add(const SaveToJson()),
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          TextAndIcon(
-                            textBefore: 'In',
-                            text: location.package,
-                            icon: Constants.packageIcon,
-                            iconSize: 12,
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ],
-                      ),
+                      ProgressionScreenTopBar(location: location),
                       Row(
                         children: [
                           ProgressionTitle(title: location.title),

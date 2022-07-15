@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../constants.dart';
@@ -11,6 +13,7 @@ class CustomButton extends StatelessWidget {
     this.size = 14,
     this.iconSize,
     this.tight = false,
+    this.small = false,
     this.borderRadius,
   }) : super(key: key);
 
@@ -20,19 +23,27 @@ class CustomButton extends StatelessWidget {
   final double size;
   final double? iconSize;
   final bool tight;
+
+  /// Depends on [tight].
+  final bool small;
   final BorderRadius? borderRadius;
 
   @override
   Widget build(BuildContext context) {
+    final maxSmallSize = Size(
+      label == null
+          ? max(24.0, 11.0 + max(iconSize ?? size, size))
+          : Constants.minButtonWidth,
+      Constants.minSmallButtonHeight - 2.0,
+    );
     return TextButton.icon(
       style: ElevatedButton.styleFrom(
         minimumSize: tight
             ? Size(
-                label == null
-                    ? Constants.minButtonOnlyIconWidth
-                    : Constants.minButtonWidth,
-                Constants.minButtonHeight)
+                label == null ? maxSmallSize.width : Constants.minButtonWidth,
+                small ? maxSmallSize.height : Constants.minButtonHeight)
             : null,
+        maximumSize: small ? maxSmallSize : null,
         padding: tight ? const EdgeInsets.all(5.0) : null,
         shape: tight
             ? RoundedRectangleBorder(
@@ -45,9 +56,9 @@ class CustomButton extends StatelessWidget {
       label: Text(label ?? '', style: TextStyle(fontSize: size)),
       icon: tight
           ? SizedBox(
-              width: iconSize == null ? 6 : (iconSize! / 2),
-              child: Icon(iconData, size: (iconSize ?? size) - 1),
-            )
+        width: iconSize == null ? 6 : (iconSize! / 2),
+        child: Icon(iconData, size: (iconSize ?? size) - 1),
+      )
           : Icon(iconData, size: iconSize ?? size),
       onPressed: onPressed,
     );
