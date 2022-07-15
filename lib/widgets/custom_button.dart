@@ -32,7 +32,7 @@ class CustomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final maxSmallSize = Size(
       label == null
-          ? max(24.0, 11.0 + max(iconSize ?? size, size))
+          ? max(24.0, 10.0 + max(iconSize ?? size, size))
           : Constants.minButtonWidth,
       Constants.minSmallButtonHeight - 2.0,
     );
@@ -48,7 +48,9 @@ class CustomButton extends StatelessWidget {
         shape: tight
             ? RoundedRectangleBorder(
                 borderRadius: borderRadius ??
-                    BorderRadius.circular(Constants.tightBorderRadius))
+                    BorderRadius.circular(small
+                        ? Constants.smallBorderRadius
+                        : Constants.tightBorderRadius))
             : (borderRadius == null
                 ? null
                 : RoundedRectangleBorder(borderRadius: borderRadius!)),
@@ -56,9 +58,9 @@ class CustomButton extends StatelessWidget {
       label: Text(label ?? '', style: TextStyle(fontSize: size)),
       icon: tight
           ? SizedBox(
-        width: iconSize == null ? 6 : (iconSize! / 2),
-        child: Icon(iconData, size: (iconSize ?? size) - 1),
-      )
+              width: iconSize == null ? 6 : (iconSize! / 2),
+              child: Icon(iconData, size: (iconSize ?? size) - 1),
+            )
           : Icon(iconData, size: iconSize ?? size),
       onPressed: onPressed,
     );

@@ -88,7 +88,7 @@ class _HarmonizationSetting extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(right: 5.0),
-          child: Text(title, style: const TextStyle(fontSize: 14.0)),
+          child: Text(title, style: const TextStyle(fontSize: 13.0)),
         ),
         CustomSelector(
           tight: true,

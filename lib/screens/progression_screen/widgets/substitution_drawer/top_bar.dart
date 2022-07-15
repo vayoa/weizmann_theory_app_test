@@ -15,7 +15,7 @@ class _TopBar extends StatelessWidget {
     return Row(
       children: [
         CustomButton(
-          label: null,
+          label: 'Back',
           tight: true,
           iconData: Constants.backIcon,
           // TODO: Once a block controls this don't pass this function and just call the block.
@@ -25,7 +25,7 @@ class _TopBar extends StatelessWidget {
         if (popup) ...[
           const SizedBox(width: 8.0),
           CustomButton(
-            label: null,
+            label: 'Pin',
             tight: true,
             iconData: Icons.push_pin_rounded,
             size: 12,

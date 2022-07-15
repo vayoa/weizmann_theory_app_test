@@ -11,13 +11,44 @@ import '../../../../utilities.dart';
 import '../progression/measure_view.dart';
 
 class ProgressionView<T> extends StatefulWidget {
+  ProgressionView.fromProgression({
+    Key? key,
+    required Progression progression,
+    double? rangeSelectPadding,
+    bool? interactable,
+    int? measuresInLine,
+    int? fromChord,
+    int? toChord,
+    EdgeInsets? padding,
+    double? mainAxisSpacing,
+    double? maxCrossAxisExtent,
+    double? mainAxisExtent,
+  }) : this(
+          key: key,
+          measures: progression.splitToMeasures(),
+          rangeSelectPadding: rangeSelectPadding ?? 8.0,
+          measuresInLine: measuresInLine ?? 4,
+          interactable: interactable ?? true,
+          fromChord: fromChord,
+          toChord: toChord,
+          padding: padding,
+          mainAxisSpacing: mainAxisSpacing ?? Constants.measureSpacing,
+          maxCrossAxisExtent: maxCrossAxisExtent,
+          mainAxisExtent: mainAxisExtent,
+        );
+
   const ProgressionView({
     Key? key,
     required this.measures,
     this.rangeSelectPadding = 8.0,
     this.measuresInLine = 4,
+    this.interactable = true,
     this.fromChord,
     this.toChord,
+    this.padding,
+    this.mainAxisSpacing = Constants.measureSpacing,
+    this.maxCrossAxisExtent,
+    this.mainAxisExtent,
   }) : super(key: key);
 
   final List<Progression> measures;
@@ -25,6 +56,11 @@ class ProgressionView<T> extends StatefulWidget {
   final int measuresInLine;
   final int? fromChord;
   final int? toChord;
+  final bool interactable;
+  final EdgeInsets? padding;
+  final double mainAxisSpacing;
+  final double? maxCrossAxisExtent;
+  final double? mainAxisExtent;
 
   @override
   State<ProgressionView<T>> createState() => _ProgressionViewState<T>();
@@ -111,72 +147,82 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
     return SizedBox(
       width: widget.measuresInLine * Constants.measureWidth,
       child: Listener(
-        onPointerMove: (event) {
-          if (editedMeasure == -1 && event.buttons == kPrimaryButton) {
-            if (holdMeasure != -1 && holdPos != -1) {
-              int measureDur = _getMeasureDur(event.localPosition);
-              int measure = _getIndexFromPosition(event.localPosition);
-              if (measure != -1 && measureDur != -1) {
-                double selectorEndDur, selectorStartDur;
-                if (holdMeasure > measure ||
-                    (holdMeasure == measure && holdPos > measureDur)) {
-                  selectorEndDur = _calcPosDur(holdMeasure, holdPos + 1);
-                  selectorStartDur = _calcPosDur(measure, measureDur);
-                } else {
-                  selectorEndDur = _calcPosDur(measure, measureDur + 1);
-                  selectorStartDur = startHold;
-                }
-                if (selectorEndDur > 0 &&
-                    selectorEndDur <= maxDur &&
-                    selectorStartDur >= 0 &&
-                    selectorStartDur < maxDur) {
-                  if (selectorEndDur - selectorStartDur >= minSelectDur) {
-                    BlocProvider.of<ProgressionHandlerBloc>(context).add(
-                        ChangeRangeDuration(
-                            start: selectorStartDur, end: selectorEndDur));
-                  } else {
-                    BlocProvider.of<ProgressionHandlerBloc>(context)
-                        .add(const DisableRange(disable: true));
+        onPointerMove: !widget.interactable
+            ? (_) {}
+            : (event) {
+                if (editedMeasure == -1 && event.buttons == kPrimaryButton) {
+                  if (holdMeasure != -1 && holdPos != -1) {
+                    int measureDur = _getMeasureDur(event.localPosition);
+                    int measure = _getIndexFromPosition(event.localPosition);
+                    if (measure != -1 && measureDur != -1) {
+                      double selectorEndDur, selectorStartDur;
+                      if (holdMeasure > measure ||
+                          (holdMeasure == measure && holdPos > measureDur)) {
+                        selectorEndDur = _calcPosDur(holdMeasure, holdPos + 1);
+                        selectorStartDur = _calcPosDur(measure, measureDur);
+                      } else {
+                        selectorEndDur = _calcPosDur(measure, measureDur + 1);
+                        selectorStartDur = startHold;
+                      }
+                      if (selectorEndDur > 0 &&
+                          selectorEndDur <= maxDur &&
+                          selectorStartDur >= 0 &&
+                          selectorStartDur < maxDur) {
+                        if (selectorEndDur - selectorStartDur >= minSelectDur) {
+                          BlocProvider.of<ProgressionHandlerBloc>(context).add(
+                              ChangeRangeDuration(
+                                  start: selectorStartDur,
+                                  end: selectorEndDur));
+                        } else {
+                          BlocProvider.of<ProgressionHandlerBloc>(context)
+                              .add(const DisableRange(disable: true));
+                        }
+                      }
+                    }
                   }
                 }
-              }
-            }
-          }
-        },
-        onPointerHover: (event) {
-          int index = _getIndexFromPosition(event.localPosition);
-          setState(() {
-            hoveredPos = _getMeasureDur(event.localPosition);
-          });
-          if (index != hoveredMeasure) {
-            setState(() {
-              hoveredMeasure = index;
-            });
-          }
-        },
-        onPointerDown: (event) {
-          if (event.buttons == kPrimaryButton) {
-            double hold = _calcPosDur(hoveredMeasure, hoveredPos);
-            if (hold >= 0 && hold <= maxDur) {
-              setState(() {
-                holdMeasure = hoveredMeasure;
-                holdPos = hoveredPos;
-                startHold = hold;
-              });
-            }
-          } else if (event.buttons == kSecondaryButton) {
-            int index = _getIndexFromPosition(event.localPosition);
-            setState(() {
-              editedMeasure = index;
-            });
-          }
-        },
+              },
+        onPointerHover: !widget.interactable
+            ? (_) {}
+            : (event) {
+                int index = _getIndexFromPosition(event.localPosition);
+                setState(() {
+                  hoveredPos = _getMeasureDur(event.localPosition);
+                });
+                if (index != hoveredMeasure) {
+                  setState(() {
+                    hoveredMeasure = index;
+                  });
+                }
+              },
+        onPointerDown: !widget.interactable
+            ? (_) {}
+            : (event) {
+                if (event.buttons == kPrimaryButton) {
+                  double hold = _calcPosDur(hoveredMeasure, hoveredPos);
+                  if (hold >= 0 && hold <= maxDur) {
+                    setState(() {
+                      holdMeasure = hoveredMeasure;
+                      holdPos = hoveredPos;
+                      startHold = hold;
+                    });
+                  }
+                } else if (event.buttons == kSecondaryButton) {
+                  int index = _getIndexFromPosition(event.localPosition);
+                  setState(() {
+                    editedMeasure = index;
+                  });
+                }
+              },
         child: GridView.builder(
             itemCount: widget.measures.length,
             shrinkWrap: true,
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: Constants.measureWidth,
-              mainAxisSpacing: Constants.measureSpacing,
+            padding: widget.padding,
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              mainAxisExtent: widget.mainAxisExtent,
+              maxCrossAxisExtent:
+                  widget.maxCrossAxisExtent ?? Constants.measureWidth,
+              mainAxisSpacing: widget.mainAxisSpacing,
               childAspectRatio:
                   Constants.measureWidth / Constants.measureHeight,
             ),
@@ -193,7 +239,7 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
                   : null;
               double paintStartDur = index == startMeasure ? startDur : 0.0;
               double? paintEndDur = index == endMeasure ? endDur : null;
-              if (index == editedMeasure) {
+              if (widget.interactable && index == editedMeasure) {
                 return EditedMeasure(
                   measure: widget.measures[index],
                   last: last,

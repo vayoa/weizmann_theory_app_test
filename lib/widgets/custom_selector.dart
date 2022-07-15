@@ -17,6 +17,8 @@ class CustomSelector extends StatefulWidget {
   final String value;
   final double? fontSize;
   final bool tight;
+
+  /// Depends on [tight].
   final bool small;
   final bool Function(int) onPressed;
 

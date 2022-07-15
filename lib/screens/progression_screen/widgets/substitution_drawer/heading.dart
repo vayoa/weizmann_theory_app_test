@@ -1,40 +1,50 @@
 part of 'substitution_drawer.dart';
 
 class _Heading extends StatelessWidget {
-  const _Heading({Key? key}) : super(key: key);
+  const _Heading({
+    Key? key,
+    required this.location,
+    required this.type,
+  }) : super(key: key);
+
+  final EntryLocation location;
+  final SubstitutionMatchType type;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
+      children: [
         TextAndIcon(
-          textBefore: 'From',
           icon: Constants.packageIcon,
-          text: 'Package',
-          style: TextStyle(fontSize: 14.0),
+          text: location.package,
+          style: const TextStyle(fontSize: 12.0),
+          iconSize: 12.0,
         ),
         Text.rich(
           TextSpan(
             children: [
               TextSpan(
-                  text: '"Title" ',
+                  text: '${location.title} ',
                   style: const TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w500,
                   )),
               TextSpan(
-                  text: 'tonicization',
+                  text: type.name,
                   style: const TextStyle(
-                      fontStyle: FontStyle.italic, fontSize: 14.0)),
-              WidgetSpan(
+                      fontStyle: FontStyle.italic, fontSize: 13.0)),
+              const WidgetSpan(
                 baseline: TextBaseline.ideographic,
                 alignment: PlaceholderAlignment.aboveBaseline,
                 child: Padding(
-                    padding: const EdgeInsets.only(left: 4.0),
-                    child:
-                        const SizedBox() // WeightPreviewButton(substitution: substitution),
-                    ),
+                  padding: EdgeInsets.only(left: 4.0),
+                  child: Icon(
+                    Icons.notes_rounded,
+                    size: 13.0,
+                  ),
+                  // WeightPreviewButton(substitution: substitution),
+                ),
               ),
             ],
           ),

@@ -23,6 +23,7 @@ abstract class Constants {
   static const double minSmallButtonHeight = 18.0;
   static const double borderRadius = 10.0;
   static const double tightBorderRadius = 5.0;
+  static const double smallBorderRadius = 3.0;
   static const TextStyle valueTextStyle =
       TextStyle(fontSize: Constants.measureFontSize);
   static const TextStyle valuePatternTextStyle =
