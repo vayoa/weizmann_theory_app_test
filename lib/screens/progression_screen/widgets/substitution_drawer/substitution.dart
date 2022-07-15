@@ -46,32 +46,6 @@ class _Substitution extends StatelessWidget {
   }
 }
 
-class _Collapsed extends StatelessWidget {
-  const _Collapsed({
-    Key? key,
-    required this.location,
-    required this.type,
-  }) : super(key: key);
-
-  final EntryLocation location;
-  final SubstitutionMatchType type;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: SubstitutionDrawer.horizontalPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _Heading(location: location, type: type),
-          const Divider(height: 5.0),
-        ],
-      ),
-    );
-  }
-}
-
 class _Expanded extends StatelessWidget {
   const _Expanded({
     Key? key,
@@ -93,6 +67,7 @@ class _Expanded extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          const SizedBox(height: 8.0),
           Padding(
             padding: const EdgeInsets.symmetric(
                 horizontal: SubstitutionDrawer.horizontalPadding),
@@ -130,35 +105,62 @@ class _Expanded extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 5.0),
-          SizedBox(
-            width: Constants.measureWidth,
-            child: Expanded(
-              child: ProgressionView.fromProgression(
-                progression: progression,
-                interactable: false,
-                measuresInLine: measuresInLine,
-                padding: const EdgeInsets.only(
-                  left: SubstitutionDrawer.horizontalPadding,
-                  right: SubstitutionDrawer.horizontalPadding,
-                ),
-                mainAxisSpacing: 10.0,
-                maxCrossAxisExtent: measuresInLine == 1 ? null : 200.0,
-                mainAxisExtent: measuresInLine == 1 ? 40.0 : null,
+          Flexible(
+            flex: 1,
+            child: ProgressionView.fromProgression(
+              progression: progression,
+              interactable: false,
+              measuresInLine: measuresInLine,
+              padding: const EdgeInsets.only(
+                left: SubstitutionDrawer.horizontalPadding,
+                right: SubstitutionDrawer.horizontalPadding,
               ),
-              // child: SizedBox(
-              //   height: 40.0,
-              //   child: HorizontalProgressionView(
-              //     progression: DegreeProgression.parse(r"I 2, V 2, I 4"),
-              //     padding: const EdgeInsets.only(
-              //       left: SubstitutionDrawer.horizontalPadding,
-              //       right: SubstitutionDrawer.horizontalPadding * 1.4,
-              //     ),
-              //     extent: 200.0,
-              //   ),
-              // ),
+              mainAxisSpacing: 10.0,
+              maxCrossAxisExtent: measuresInLine == 1 ? null : 200.0,
+              mainAxisExtent: measuresInLine == 1 ? 40.0 : null,
             ),
+            // child: SizedBox(
+            //   height: 40.0,
+            //   child: HorizontalProgressionView(
+            //     progression: DegreeProgression.parse(r"I 2, V 2, I 4"),
+            //     padding: const EdgeInsets.only(
+            //       left: SubstitutionDrawer.horizontalPadding,
+            //       right: SubstitutionDrawer.horizontalPadding * 1.4,
+            //     ),
+            //     extent: 200.0,
+            //   ),
+            // ),
           ),
-          const SizedBox(height: 10.0),
+          const SizedBox(height: 13.0),
+          const Divider(height: 1.0),
+        ],
+      ),
+    );
+  }
+}
+
+class _Collapsed extends StatelessWidget {
+  const _Collapsed({
+    Key? key,
+    required this.location,
+    required this.type,
+  }) : super(key: key);
+
+  final EntryLocation location;
+  final SubstitutionMatchType type;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: SubstitutionDrawer.horizontalPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8.0),
+          _Heading(location: location, type: type),
+          const SizedBox(height: 4.0),
+          const Divider(height: 1.0),
         ],
       ),
     );

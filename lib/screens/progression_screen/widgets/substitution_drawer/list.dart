@@ -41,29 +41,26 @@ class _ListState extends State<_List> {
               itemCount: 40,
               padding: const EdgeInsets.only(
                   top: SubstitutionDrawer.horizontalPadding / 2),
-              itemBuilder: (context, index) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: ExpandableNotifier(
-                  controller: index == _expandedIndex ? _lastExpanded : null,
-                  child: _Substitution(
-                    location: EntryLocation(
-                      nouns[nouns.length - index - 1].capitalize(),
-                      nouns[index].capitalize(),
-                    ),
-                    type: index % 2 == 0
-                        ? SubstitutionMatchType.dry
-                        : SubstitutionMatchType.tonicization,
-                    onPressed: (context, controller) {
-                      if (!identical(controller, _lastExpanded)) {
-                        _lastExpanded?.expanded = false;
-                      }
-                      controller?.toggle();
-                      _expandedIndex = index;
-                      context.findRenderObject()?.showOnScreen(
-                          duration: const Duration(milliseconds: 500));
-                      _lastExpanded = controller;
-                    },
+              itemBuilder: (context, index) => ExpandableNotifier(
+                controller: index == _expandedIndex ? _lastExpanded : null,
+                child: _Substitution(
+                  location: EntryLocation(
+                    nouns[nouns.length - index - 1].capitalize(),
+                    nouns[index].capitalize(),
                   ),
+                  type: index % 2 == 0
+                      ? SubstitutionMatchType.dry
+                      : SubstitutionMatchType.tonicization,
+                  onPressed: (context, controller) {
+                    if (!identical(controller, _lastExpanded)) {
+                      _lastExpanded?.expanded = false;
+                    }
+                    controller?.toggle();
+                    _expandedIndex = index;
+                    context.findRenderObject()?.showOnScreen(
+                        duration: const Duration(milliseconds: 500));
+                    _lastExpanded = controller;
+                  },
                 ),
               ),
             ),
