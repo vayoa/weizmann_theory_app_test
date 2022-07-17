@@ -53,8 +53,8 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
       onEnter: (_) {
         if (widget.popup && !_showing) _show();
       },
-      onExit: (_) {
-        if (widget.popup && _showing) _show();
+      onExit: (event) {
+        if (!event.down && widget.popup && _showing) _show();
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: durationMilliseconds),
