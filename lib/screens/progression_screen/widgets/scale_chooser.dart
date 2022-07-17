@@ -5,8 +5,8 @@ import 'package:harmony_theory/extensions/pitch_extension.dart';
 import 'package:harmony_theory/modals/theory_base/pitch_scale.dart';
 import 'package:tonic/tonic.dart';
 
-import '../../../Constants.dart';
 import '../../../blocs/progression_handler_bloc.dart';
+import '../../../constants.dart';
 import '../../../widgets/custom_button.dart';
 
 class ScaleChooser extends StatefulWidget {

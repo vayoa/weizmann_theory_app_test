@@ -8,8 +8,8 @@ import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:tonic/tonic.dart';
 
 import '../widgets/dialogs.dart';
-import 'Constants.dart';
 import 'blocs/bank/bank_bloc.dart';
+import 'constants.dart';
 
 abstract class Utilities {
   static String progressionValueToEditString<T>(T value) => value == null

@@ -16,8 +16,8 @@ import 'package:weizmann_theory_app_test/widgets/custom_icon_button.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_selector.dart';
 import 'package:weizmann_theory_app_test/widgets/text_and_icon.dart';
 
-import '../../../../Constants.dart';
 import '../../../../blocs/substitution_handler/substitution_handler_bloc.dart';
+import '../../../../constants.dart';
 
 part 'content.dart';
 part 'heading.dart';
@@ -76,35 +76,35 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
             opacity: animation,
             child: SlideTransition(
               position: Tween<Offset>(
-                  begin: const Offset(-1.0, 0.0), end: Offset.zero)
+                      begin: const Offset(-1.0, 0.0), end: Offset.zero)
                   .animate(animation),
               child: child,
             ),
           ),
           child: !_showing
               ? GestureDetector(
-            onTap: _show,
-            child: const Align(
-              alignment: Alignment.topCenter,
-              child: Padding(
-                padding:
-                EdgeInsets.only(top: SubstitutionDrawer.topPadding),
-                child: Icon(Icons.arrow_forward_ios_rounded, size: 12.0),
-              ),
-            ),
-          )
+                  onTap: _show,
+                  child: const Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding:
+                          EdgeInsets.only(top: SubstitutionDrawer.topPadding),
+                      child: Icon(Icons.arrow_forward_ios_rounded, size: 12.0),
+                    ),
+                  ),
+                )
               : SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const NeverScrollableScrollPhysics(),
-            child: SizedBox(
-              // TODO: Sort this without a sized box somehow, in a cleaner way...
-              width: SubstitutionDrawer.drawerWidth,
-              child: _Content(
-                popup: widget.popup,
-                onClose: _show,
-              ),
-            ),
-          ),
+                  scrollDirection: Axis.horizontal,
+                  physics: const NeverScrollableScrollPhysics(),
+                  child: SizedBox(
+                    // TODO: Sort this without a sized box somehow, in a cleaner way...
+                    width: SubstitutionDrawer.drawerWidth,
+                    child: _Content(
+                      popup: widget.popup,
+                      onClose: _show,
+                    ),
+                  ),
+                ),
         ),
       ),
     );

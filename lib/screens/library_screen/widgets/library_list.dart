@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 
-import '../../../Constants.dart';
 import '../../../blocs/bank/bank_bloc.dart';
+import '../../../constants.dart';
 import '../../../widgets/file_dropper.dart';
 import 'package_view.dart';
 

@@ -6,12 +6,12 @@ import 'package:harmony_theory/modals/progression/progression.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:harmony_theory/state/progression_bank_entry.dart';
 
-import '../../Constants.dart';
 import '../../blocs/audio_player/audio_player_bloc.dart';
 import '../../blocs/bank/bank_bloc.dart';
 import '../../blocs/progression_handler_bloc.dart';
 import '../../blocs/substitution_handler/substitution_handler_bloc.dart'
     hide TypeChanged;
+import '../../constants.dart';
 import '../../modals/progression_type.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_icon_button.dart';
@@ -350,10 +350,10 @@ class ProgressionScreenUI extends StatelessWidget {
           ),
         ),
         const SubstitutionWindow(),
-        Positioned(
+        const Positioned(
           left: 76.0,
           top: 222.0,
-          child: const SubstitutionOverlay(),
+          child: SubstitutionOverlay(),
         ),
       ],
     );

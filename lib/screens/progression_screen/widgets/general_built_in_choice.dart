@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../Constants.dart';
+import '../../../constants.dart';
 import '../../../widgets/dialogs.dart';
 
 class GeneralBuiltInChoice extends StatelessWidget {
