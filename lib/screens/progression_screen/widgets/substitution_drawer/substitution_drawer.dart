@@ -11,6 +11,7 @@ import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_view.dart';
 import 'package:weizmann_theory_app_test/utilities.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
+import 'package:weizmann_theory_app_test/widgets/custom_icon_button.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_selector.dart';
 import 'package:weizmann_theory_app_test/widgets/text_and_icon.dart';
 
@@ -21,11 +22,8 @@ part 'content.dart';
 part 'heading.dart';
 part 'list.dart';
 part 'middle_bar.dart';
-
 part 'preferences.dart';
-
 part 'substitution.dart';
-
 part 'top_bar.dart';
 
 class SubstitutionDrawer extends StatefulWidget {
@@ -61,12 +59,12 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
         duration: const Duration(milliseconds: durationMilliseconds),
         curve: curve,
         height: double.infinity,
-        width: _showing ? SubstitutionDrawer.drawerWidth : 14.0,
+        width: _showing ? SubstitutionDrawer.drawerWidth : 20.0,
         decoration: BoxDecoration(
           color: Constants.libraryEntryColor,
           borderRadius: _showing
               ? const BorderRadius.only(
-              topRight: Radius.circular(Constants.borderRadius))
+                  topRight: Radius.circular(Constants.borderRadius))
               : BorderRadius.zero,
         ),
         child: AnimatedSwitcher(

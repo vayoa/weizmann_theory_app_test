@@ -31,16 +31,19 @@ class _Substitution extends StatelessWidget {
           DegreeProgression.parse(r"I 2, V 2, I 4, vi 2, V 2, I 4"),
         ][location.package.codeUnitAt(0) % 3],
       ),
-      collapsed: InkWell(
-        onTap: () => onPressed(
-          context,
-          ExpandableController.of(
+      collapsed: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => onPressed(
             context,
-            required: true,
-            rebuildOnChange: false,
+            ExpandableController.of(
+              context,
+              required: true,
+              rebuildOnChange: false,
+            ),
           ),
+          child: _Collapsed(location: location, type: type),
         ),
-        child: _Collapsed(location: location, type: type),
       ),
     );
   }
@@ -61,7 +64,7 @@ class _Expanded extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final int measuresInLine = progression.measureCount == 1 ? 1 : 2;
-    return Material(
+    return Card(
       color: Constants.selectedColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,6 +114,7 @@ class _Expanded extends StatelessWidget {
               progression: progression,
               interactable: false,
               measuresInLine: measuresInLine,
+              physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.only(
                 left: SubstitutionDrawer.horizontalPadding,
                 right: SubstitutionDrawer.horizontalPadding,
@@ -153,11 +157,11 @@ class _Collapsed extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: SubstitutionDrawer.horizontalPadding),
+          horizontal: SubstitutionDrawer.horizontalPadding + 4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 8.0),
+          const SizedBox(height: 12.0),
           _Heading(location: location, type: type),
           const SizedBox(height: 4.0),
           const Divider(height: 1.0),

@@ -39,8 +39,6 @@ class _ListState extends State<_List> {
               controller: _controller,
               shrinkWrap: true,
               itemCount: 40,
-              padding: const EdgeInsets.only(
-                  top: SubstitutionDrawer.horizontalPadding / 2),
               itemBuilder: (context, index) => ExpandableNotifier(
                 controller: index == _expandedIndex ? _lastExpanded : null,
                 child: _Substitution(

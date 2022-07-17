@@ -15,7 +15,7 @@ class _TopBar extends StatelessWidget {
     return Row(
       children: [
         CustomButton(
-          label: 'Back',
+          label: 'Collapse',
           tight: true,
           iconData: Constants.backIcon,
           // TODO: Once a block controls this don't pass this function and just call the block.
@@ -32,12 +32,13 @@ class _TopBar extends StatelessWidget {
             onPressed: () {},
           ),
         ],
-        const SizedBox(width: 8.0),
+        const Spacer(),
         CustomButton(
-          label: 'Quit',
+          label: ' Quit',
           tight: true,
           iconData: Icons.disabled_by_default_rounded,
           size: 12,
+          iconSize: 16.0,
           onPressed: () {},
         ),
       ],

@@ -34,14 +34,15 @@ class _Heading extends StatelessWidget {
                   text: type.name,
                   style: const TextStyle(
                       fontStyle: FontStyle.italic, fontSize: 13.0)),
-              const WidgetSpan(
+              WidgetSpan(
                 baseline: TextBaseline.ideographic,
                 alignment: PlaceholderAlignment.aboveBaseline,
                 child: Padding(
-                  padding: EdgeInsets.only(left: 4.0),
-                  child: Icon(
-                    Icons.notes_rounded,
+                  padding: const EdgeInsets.only(left: 4.0),
+                  child: TIconButton(
+                    iconData: Icons.notes_rounded,
                     size: 13.0,
+                    onPressed: () {},
                   ),
                   // WeightPreviewButton(substitution: substitution),
                 ),

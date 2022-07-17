@@ -23,6 +23,7 @@ class ProgressionView<T> extends StatefulWidget {
     double? mainAxisSpacing,
     double? maxCrossAxisExtent,
     double? mainAxisExtent,
+    ScrollPhysics? physics,
   }) : this(
           key: key,
           measures: progression.splitToMeasures(),
@@ -35,6 +36,7 @@ class ProgressionView<T> extends StatefulWidget {
           mainAxisSpacing: mainAxisSpacing ?? Constants.measureSpacing,
           maxCrossAxisExtent: maxCrossAxisExtent,
           mainAxisExtent: mainAxisExtent,
+          physics: physics,
         );
 
   const ProgressionView({
@@ -49,6 +51,7 @@ class ProgressionView<T> extends StatefulWidget {
     this.mainAxisSpacing = Constants.measureSpacing,
     this.maxCrossAxisExtent,
     this.mainAxisExtent,
+    this.physics,
   }) : super(key: key);
 
   final List<Progression> measures;
@@ -61,6 +64,7 @@ class ProgressionView<T> extends StatefulWidget {
   final double mainAxisSpacing;
   final double? maxCrossAxisExtent;
   final double? mainAxisExtent;
+  final ScrollPhysics? physics;
 
   @override
   State<ProgressionView<T>> createState() => _ProgressionViewState<T>();
@@ -218,6 +222,7 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
             itemCount: widget.measures.length,
             shrinkWrap: true,
             padding: widget.padding,
+            physics: widget.physics,
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               mainAxisExtent: widget.mainAxisExtent,
               maxCrossAxisExtent:
@@ -292,6 +297,7 @@ class HorizontalProgressionView extends StatefulWidget {
     this.editable = false,
     this.padding,
     this.extent,
+    this.physics,
   }) : super(key: key);
 
   final Progression progression;
@@ -304,6 +310,7 @@ class HorizontalProgressionView extends StatefulWidget {
   final bool editable;
   final EdgeInsets? padding;
   final double? extent;
+  final ScrollPhysics? physics;
 
   @override
   State<HorizontalProgressionView> createState() =>
@@ -412,6 +419,7 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
               shrinkWrap: true,
               padding: widget.padding,
               itemExtent: widget.extent,
+              physics: widget.physics,
               itemBuilder: (context, index) {
                 bool shouldPaint =
                     _canPaint && index >= startMeasure && index <= endMeasure;
