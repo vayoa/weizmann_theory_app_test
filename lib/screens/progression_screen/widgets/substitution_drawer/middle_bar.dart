@@ -7,22 +7,10 @@ class _MiddleBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        CustomButton(
-          label: null,
-          tight: true,
-          small: true,
-          iconData: Icons.expand_more_rounded,
-          iconSize: 16.0,
-          onPressed: () {},
-        ),
-        const SizedBox(width: 8),
-        CustomButton(
-          label: null,
-          tight: true,
-          small: true,
-          iconData: Icons.expand_less_rounded,
-          iconSize: 16.0,
-          onPressed: () {},
+        NavigationButtonsBar(
+          vertical: true,
+          onBackwards: () {},
+          onForward: () {},
         ),
         const SizedBox(width: 8),
         CustomButton(

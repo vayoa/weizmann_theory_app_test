@@ -9,6 +9,7 @@ import 'package:harmony_theory/modals/weights/keep_harmonic_function_weight.dart
 import 'package:harmony_theory/modals/weights/weight.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_view.dart';
+import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_drawer/navigation_buttons.dart';
 import 'package:weizmann_theory_app_test/utilities.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_icon_button.dart';

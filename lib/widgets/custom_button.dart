@@ -32,8 +32,8 @@ class CustomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final maxSmallSize = Size(
       label == null
-          ? max(24.0, 10.0 + max(iconSize ?? size, size))
-          : Constants.minButtonWidth,
+          ? max(24.0, 11.0 + max(iconSize ?? size, size))
+          : Constants.minButtonWidth * 2,
       Constants.minSmallButtonHeight - 2.0,
     );
     return TextButton.icon(

@@ -23,6 +23,7 @@ import 'widgets/progression_title.dart';
 import 'widgets/reharmonize_bar.dart';
 import 'widgets/scale_chooser.dart';
 import 'widgets/substitution_drawer/substitution_drawer.dart';
+import 'widgets/substitution_drawer/substitution_overlay/substitution_overlay.dart';
 import 'widgets/substitution_window.dart';
 import 'widgets/view_type_selector.dart';
 
@@ -349,6 +350,11 @@ class ProgressionScreenUI extends StatelessWidget {
           ),
         ),
         const SubstitutionWindow(),
+        Positioned(
+          left: 76.0,
+          top: 222.0,
+          child: const SubstitutionOverlay(),
+        ),
       ],
     );
   }
