@@ -125,7 +125,7 @@ class _ListState extends State<_List> {
                     child: Text(
                       ' ${widget.selected + 1} / '
                       '${widget.substitutions.length}',
-                      style: TextStyle(fontSize: 11.0),
+                      style: const TextStyle(fontSize: 11.0),
                     ),
                   ),
                 ],

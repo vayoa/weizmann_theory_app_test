@@ -85,7 +85,7 @@ class SubstitutionHandlerBloc
           changedSettings) {
         int from = _currentIndex;
         _currentIndex = 0;
-        emit(ChangedSubstitutionIndex(_currentIndex, _currentIndex));
+        emit(ChangedSubstitutionIndex(from, _currentIndex));
         if (changedSettings) {
           _keepHarmonicFunction = event.keepHarmonicFunction;
           _sound = event.sound;
