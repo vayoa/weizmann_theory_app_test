@@ -52,6 +52,14 @@ class SubstitutionHandlerBloc
 
   bool get showingWindow => _substitutions != null || _inSetup;
 
+  bool _showingDrawer = false;
+
+  bool get showingDrawer => _showingDrawer;
+
+  int _currentIndex = 0;
+
+  int get currentIndex => _currentIndex;
+
   SubstitutionHandlerBloc() : super(SubstitutionHandlerInitial()) {
     on<OpenSetupPage>((event, emit) {
       _currentProgression = event.progression;
@@ -61,6 +69,8 @@ class SubstitutionHandlerBloc
       _endDur = event.endDur;
       _inSetup = true;
       _surpriseMe = event.surpriseMe;
+      _showingDrawer = true;
+      emit(const ShowingSubstitutions());
       return emit(SetupPage(surpriseMe: event.surpriseMe));
     });
     on<SwitchSubType>((event, emit) {
@@ -107,6 +117,9 @@ class SubstitutionHandlerBloc
       _endDur = null;
       _chordProgressions = null;
       _inSetup = false;
+      _currentIndex = 0;
+      _showingDrawer = false;
+      emit(const HidSubstitutions());
       if (_substituteByIsolate != null) {
         _substituteByIsolate!.kill(priority: Isolate.immediate);
         _substituteByIsolate = null;
@@ -116,6 +129,21 @@ class SubstitutionHandlerBloc
     on<SetKeepHarmonicFunction>((event, emit) {
       _keepHarmonicFunction = event.keepHarmonicFunction;
       return emit(ChangedSubstitutionSettings());
+    });
+    on<HideSubstitutions>((event, emit) {
+      _showingDrawer = false;
+      return emit(const HidSubstitutions());
+    });
+    on<ShowSubstitutions>((event, emit) {
+      _showingDrawer = true;
+      return emit(const ShowingSubstitutions());
+    });
+    on<ChangeSubstitutionIndex>((event, emit) {
+      if (_substitutions != null && _substitutions!.isNotEmpty) {
+        int from = _currentIndex;
+        _currentIndex = event.changeTo % _substitutions!.length;
+        return emit(ChangedSubstitutionIndex(from, _currentIndex));
+      }
     });
   }
 

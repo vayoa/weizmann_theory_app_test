@@ -50,7 +50,9 @@ class CalculateSubstitutions extends SubstitutionHandlerEvent {
   });
 }
 
-class ClearSubstitutions extends SubstitutionHandlerEvent {}
+class ClearSubstitutions extends SubstitutionHandlerEvent {
+  const ClearSubstitutions();
+}
 
 class SetKeepHarmonicFunction extends SubstitutionHandlerEvent {
   final KeepHarmonicFunctionAmount keepHarmonicFunction;
@@ -59,4 +61,17 @@ class SetKeepHarmonicFunction extends SubstitutionHandlerEvent {
   List<Object?> get props => [keepHarmonicFunction];
 
   const SetKeepHarmonicFunction(this.keepHarmonicFunction);
+}
+
+class HideSubstitutions extends SubstitutionHandlerEvent {}
+
+class ShowSubstitutions extends SubstitutionHandlerEvent {}
+
+class ChangeSubstitutionIndex extends SubstitutionHandlerEvent {
+  final int changeTo;
+
+  @override
+  List<Object?> get props => [changeTo];
+
+  const ChangeSubstitutionIndex(this.changeTo);
 }

@@ -20,18 +20,17 @@ import '../substitution_window.dart';
 
 part 'content.dart';
 
-part 'heading.dart';
+part 'harmonization_setting.dart';
 
+part 'heading.dart';
 part 'list.dart';
 
 part 'middle_bar.dart';
 
-part 'preferences.dart';
+part 'preferences_bar.dart';
 
 part 'substitution.dart';
-
 part 'top_bar.dart';
-
 part 'wrapper.dart';
 
 class SubstitutionDrawer extends StatelessWidget {
@@ -68,8 +67,18 @@ class SubstitutionDrawer extends StatelessWidget {
         } else {
           return _Wrapper(
             popup: popup,
-            show: true,
-            onUpdate: handleShowing,
+            show: subBloc.showingDrawer,
+            showNav: !subBloc.inSetup &&
+                state is! CalculatingSubstitutions &&
+                subBloc.substitutions!.isNotEmpty,
+            goDisabled: subBloc.substitutions != null,
+            onUpdate: (shouldShow) => handleShowing(shouldShow, subBloc),
+            onQuit: () => subBloc.add(const ClearSubstitutions()),
+            onNavigation: (forward) => subBloc.add(
+              ChangeSubstitutionIndex(
+                subBloc.currentIndex + (forward ? 1 : -1),
+              ),
+            ),
             child: subBloc.inSetup
                 ? const SizedBox()
                 : (state is CalculatingSubstitutions
@@ -77,6 +86,9 @@ class SubstitutionDrawer extends StatelessWidget {
                     : (subBloc.substitutions!.isEmpty
                         ? const _NoSubsFound()
                         : _List(
+                            selected: subBloc.currentIndex,
+                            onSelected: (index) =>
+                                subBloc.add(ChangeSubstitutionIndex(index)),
                             substitutions: subBloc.substitutions!,
                           ))),
           );
@@ -85,7 +97,8 @@ class SubstitutionDrawer extends StatelessWidget {
     );
   }
 
-  void handleShowing(bool shouldShow) {}
+  void handleShowing(bool shouldShow, SubstitutionHandlerBloc bloc) =>
+      bloc.add(shouldShow ? ShowSubstitutions() : HideSubstitutions());
 }
 
 class _LoadingSubs extends StatelessWidget {

@@ -59,3 +59,21 @@ class ChangedSubstitutionSettings extends SubstitutionHandlerState {
   @override
   List<Object?> get props => [];
 }
+
+class HidSubstitutions extends SubstitutionHandlerState {
+  const HidSubstitutions();
+}
+
+class ShowingSubstitutions extends SubstitutionHandlerState {
+  const ShowingSubstitutions();
+}
+
+class ChangedSubstitutionIndex extends SubstitutionHandlerState {
+  final int fromIndex;
+  final int newIndex;
+
+  @override
+  List<Object?> get props => [fromIndex, newIndex];
+
+  const ChangedSubstitutionIndex(this.fromIndex, this.newIndex);
+}

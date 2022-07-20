@@ -5,16 +5,25 @@ class _Wrapper extends StatelessWidget {
     Key? key,
     required this.popup,
     required this.show,
+    required this.showNav,
+    required this.goDisabled,
     required this.onUpdate,
+    required this.onQuit,
+    required this.onNavigation,
     required this.child,
   }) : super(key: key);
 
   static const double topPadding = 24.0;
   static const double horizontalPadding = 10.0;
   static const double drawerWidth = Constants.measureWidth;
+
   final bool popup;
   final bool show;
+  final bool showNav;
+  final bool goDisabled;
   final void Function(bool) onUpdate;
+  final void Function() onQuit;
+  final void Function(bool forward) onNavigation;
   final Widget child;
 
   @override
@@ -72,7 +81,11 @@ class _Wrapper extends StatelessWidget {
                     width: _Wrapper.drawerWidth,
                     child: _Content(
                       popup: popup,
+                      showNav: showNav,
+                      goDisabled: goDisabled,
                       onClose: () => onUpdate(false),
+                      onQuit: onQuit,
+                      onNavigation: onNavigation,
                       child: child,
                     ),
                   ),

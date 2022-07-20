@@ -4,10 +4,12 @@ class _TopBar extends StatelessWidget {
   const _TopBar({
     Key? key,
     required this.onClose,
+    required this.onQuit,
     required this.popup,
   }) : super(key: key);
 
   final void Function() onClose;
+  final void Function() onQuit;
   final bool popup;
 
   @override
@@ -39,7 +41,7 @@ class _TopBar extends StatelessWidget {
           iconData: Icons.disabled_by_default_rounded,
           size: 12,
           iconSize: 16.0,
-          onPressed: () {},
+          onPressed: onQuit,
         ),
       ],
     );

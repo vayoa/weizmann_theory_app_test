@@ -99,7 +99,7 @@ class ProgressionHandlerBloc
           }
         }
       }
-      _substitutionHandlerBloc.add(ClearSubstitutions());
+      _substitutionHandlerBloc.add(const ClearSubstitutions());
       emit(ProgressionChanged(currentlyViewedProgression));
       final bool rangeValid = _rangeValid();
       if (!rangeDisabled &&

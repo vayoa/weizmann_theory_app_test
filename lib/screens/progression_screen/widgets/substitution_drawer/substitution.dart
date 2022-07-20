@@ -1,6 +1,6 @@
 part of 'substitution_drawer.dart';
 
-class _Substitution extends StatelessWidget {
+class _Substitution extends StatefulWidget {
   const _Substitution({
     Key? key,
     required this.substitution,
@@ -12,6 +12,11 @@ class _Substitution extends StatelessWidget {
       onPressed;
 
   @override
+  State<_Substitution> createState() => _SubstitutionState();
+}
+
+class _SubstitutionState extends State<_Substitution> {
+  @override
   Widget build(BuildContext context) {
     return Expandable(
       theme: const ExpandableThemeData(
@@ -21,12 +26,12 @@ class _Substitution extends StatelessWidget {
         tapBodyToCollapse: true,
       ),
       expanded: _Expanded(
-        substitution: substitution,
+        substitution: widget.substitution,
       ),
       collapsed: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => onPressed(
+          onTap: () => widget.onPressed(
             context,
             ExpandableController.of(
               context,
@@ -35,7 +40,7 @@ class _Substitution extends StatelessWidget {
             ),
           ),
           child: _Collapsed(
-            substitution: substitution,
+            substitution: widget.substitution,
           ),
         ),
       ),

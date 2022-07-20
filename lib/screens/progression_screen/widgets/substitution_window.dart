@@ -396,7 +396,7 @@ class _CancelButton extends StatelessWidget {
       iconData: Icons.cancel_rounded,
       onPressed: () {
         BlocProvider.of<SubstitutionHandlerBloc>(context)
-            .add(ClearSubstitutions());
+            .add(const ClearSubstitutions());
       },
     );
   }
