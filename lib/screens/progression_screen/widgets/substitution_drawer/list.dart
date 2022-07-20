@@ -48,7 +48,10 @@ class _ListState extends State<_List> {
       if (_lastExpanded == null) {
         // if it's null then we just initialized and the selected
         // index is (if we didn't get it in "from") 0...
-        ExpandableController.of(_keys[from ?? 0].currentContext!)!.toggle();
+        int index = from ?? 0;
+        if (_keys[index].currentContext != null) {
+          ExpandableController.of(_keys[index].currentContext!)?.toggle();
+        }
       } else if (!identical(controller, _lastExpanded)) {
         _lastExpanded?.expanded = false;
       }
