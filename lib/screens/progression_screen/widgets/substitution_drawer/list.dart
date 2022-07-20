@@ -44,18 +44,16 @@ class _ListState extends State<_List> {
 
   _handleSelected(int index) {
     if (_keys[index].currentState?.mounted ?? false) {
-      setState(() {
-        var context = _keys[index].currentContext!;
-        var controller = ExpandableController.of(context);
-        if (!identical(controller, _lastExpanded)) {
-          _lastExpanded?.expanded = false;
-        }
-        controller?.toggle();
-        context
-            .findRenderObject()
-            ?.showOnScreen(duration: const Duration(milliseconds: 500));
-        _lastExpanded = controller;
-      });
+      var context = _keys[index].currentContext!;
+      var controller = ExpandableController.of(context);
+      if (!identical(controller, _lastExpanded)) {
+        _lastExpanded?.expanded = false;
+      }
+      controller?.toggle();
+      context
+          .findRenderObject()
+          ?.showOnScreen(duration: const Duration(milliseconds: 500));
+      _lastExpanded = controller;
     }
   }
 
