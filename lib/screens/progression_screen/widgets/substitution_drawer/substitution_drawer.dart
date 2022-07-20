@@ -19,16 +19,11 @@ import '../progression/progression_grid.dart';
 import '../substitution_window.dart';
 
 part 'content.dart';
-
 part 'harmonization_setting.dart';
-
 part 'heading.dart';
 part 'list.dart';
-
 part 'middle_bar.dart';
-
 part 'preferences_bar.dart';
-
 part 'substitution.dart';
 part 'top_bar.dart';
 part 'wrapper.dart';
@@ -72,6 +67,7 @@ class SubstitutionDrawer extends StatelessWidget {
                 state is! CalculatingSubstitutions &&
                 subBloc.substitutions!.isNotEmpty,
             goDisabled: subBloc.substitutions != null,
+            expandPreferences: subBloc.inSetup,
             onUpdate: (shouldShow) => handleShowing(shouldShow, subBloc),
             onQuit: () => subBloc.add(const ClearSubstitutions()),
             onNavigation: (forward) => subBloc.add(
@@ -80,7 +76,7 @@ class SubstitutionDrawer extends StatelessWidget {
               ),
             ),
             child: subBloc.inSetup
-                ? const SizedBox()
+                ? const _InSetup()
                 : (state is CalculatingSubstitutions
                     ? const _LoadingSubs()
                     : (subBloc.substitutions!.isEmpty
@@ -106,12 +102,20 @@ class _LoadingSubs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: const [
-          CircularProgressIndicator(),
-          SizedBox(width: 20),
+          SizedBox(
+            height: 14.0,
+            width: 14.0,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              color: Constants.buttonUnfocusedColor,
+            ),
+          ),
+          SizedBox(width: 10.0),
           Text('Loading...'),
         ],
       ),
@@ -124,10 +128,70 @@ class _NoSubsFound extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'No Substitutions Were found.',
-        style: Constants.valuePatternTextStyle,
+    return const _InfoBlock(
+      TextSpan(text: 'No Substitutions Were found.'),
+    );
+  }
+}
+
+class _InSetup extends StatelessWidget {
+  const _InSetup({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const _InfoBlock(
+      TextSpan(
+          text: 'Please choose reharmonization preferences and '
+              'then press ',
+          children: [
+            TextSpan(
+              text: 'Go!',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            )
+          ]),
+    );
+  }
+}
+
+class _InfoBlock extends StatelessWidget {
+  const _InfoBlock(
+    this.text, {
+    Key? key,
+    this.icon = Icons.help_outline_rounded,
+  }) : super(key: key);
+
+  final TextSpan text;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Material(
+        borderRadius: BorderRadius.circular(5.0),
+        elevation: 5.0,
+        color: Constants.buttonUnfocusedColor,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Icon(
+                icon,
+                size: 24.0,
+                color: Constants.buttonUnfocusedTextColor,
+              ),
+            ),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text.rich(text, textAlign: TextAlign.center),
+              ),
+            ),
+            const SizedBox(width: 24),
+          ],
+        ),
       ),
     );
   }

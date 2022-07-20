@@ -6,6 +6,7 @@ class _Content extends StatelessWidget {
     required this.popup,
     required this.showNav,
     required this.goDisabled,
+    required this.expandPreferences,
     required this.onClose,
     required this.onQuit,
     required this.onNavigation,
@@ -15,6 +16,7 @@ class _Content extends StatelessWidget {
   final bool popup;
   final bool showNav;
   final bool goDisabled;
+  final bool expandPreferences;
   final void Function() onClose;
   final void Function() onQuit;
   final void Function(bool forward) onNavigation;
@@ -40,7 +42,11 @@ class _Content extends StatelessWidget {
             ],
           ),
         ),
-        _PreferencesBar(showNav: showNav, onNavigation: onNavigation),
+        _PreferencesBar(
+          expanded: expandPreferences,
+          showNav: showNav,
+          onNavigation: onNavigation,
+        ),
         child,
       ],
     );

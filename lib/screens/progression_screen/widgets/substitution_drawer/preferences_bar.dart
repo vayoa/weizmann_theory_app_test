@@ -4,10 +4,12 @@ class _PreferencesBar extends StatefulWidget {
   const _PreferencesBar({
     Key? key,
     required this.showNav,
+    required this.expanded,
     required this.onNavigation,
   }) : super(key: key);
 
   final bool showNav;
+  final bool expanded;
   final void Function(bool forward) onNavigation;
 
   @override
@@ -15,6 +17,7 @@ class _PreferencesBar extends StatefulWidget {
 }
 
 class _PreferencesBarState extends State<_PreferencesBar> {
+  late final ExpandableController _controller;
   late KeepHarmonicFunctionAmount _keepHarmonicFunction;
   late Sound _sound;
 
@@ -29,10 +32,22 @@ class _PreferencesBarState extends State<_PreferencesBar> {
 
   @override
   void initState() {
+    _controller = ExpandableController(initialExpanded: widget.expanded);
     _keepHarmonicFunction =
         BlocProvider.of<SubstitutionHandlerBloc>(context).keepHarmonicFunction;
     _sound = BlocProvider.of<SubstitutionHandlerBloc>(context).sound;
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant _PreferencesBar oldWidget) {
+    if (oldWidget.expanded != widget.expanded) {
+      Future.delayed(
+        const Duration(milliseconds: 400),
+        () => _controller.toggle(),
+      );
+    }
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -46,6 +61,7 @@ class _PreferencesBarState extends State<_PreferencesBar> {
     return Material(
       color: Colors.transparent,
       child: ExpandablePanel(
+        controller: _controller,
         theme: const ExpandableThemeData(hasIcon: false),
         header: Padding(
           padding: const EdgeInsets.fromLTRB(
@@ -63,16 +79,16 @@ class _PreferencesBarState extends State<_PreferencesBar> {
                   const Text(
                     'Preferences',
                     style:
-                        TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
+                    TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
                   ),
                   _MiddleBar(
                     showNav: widget.showNav,
                     onGo: goDisabled
                         ? null
                         : () => bloc.add(CalculateSubstitutions(
-                              sound: _sound,
-                              keepHarmonicFunction: _keepHarmonicFunction,
-                            )),
+                      sound: _sound,
+                      keepHarmonicFunction: _keepHarmonicFunction,
+                    )),
                     onNavigation: widget.onNavigation,
                   ),
                 ],
@@ -98,7 +114,7 @@ class _PreferencesBarState extends State<_PreferencesBar> {
                     value: _keepHarmonicFunction.name,
                     onPressed: (index) {
                       KeepHarmonicFunctionAmount amount =
-                          KeepHarmonicFunctionAmount.values[index];
+                      KeepHarmonicFunctionAmount.values[index];
                       if (_keepHarmonicFunction != amount) {
                         setState(() {
                           _keepHarmonicFunction = amount;
