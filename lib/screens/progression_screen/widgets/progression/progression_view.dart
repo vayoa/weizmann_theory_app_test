@@ -11,33 +11,6 @@ import '../../../../utilities.dart';
 import '../progression/measure_view.dart';
 
 class ProgressionView<T> extends StatefulWidget {
-  ProgressionView.fromProgression({
-    Key? key,
-    required Progression progression,
-    double? rangeSelectPadding,
-    bool? interactable,
-    int? measuresInLine,
-    int? fromChord,
-    int? toChord,
-    EdgeInsets? padding,
-    double? mainAxisSpacing,
-    double? maxCrossAxisExtent,
-    double? mainAxisExtent,
-    ScrollPhysics? physics,
-  }) : this(
-          key: key,
-          measures: progression.splitToMeasures(),
-          rangeSelectPadding: rangeSelectPadding ?? 8.0,
-          measuresInLine: measuresInLine ?? 4,
-          interactable: interactable ?? true,
-          fromChord: fromChord,
-          toChord: toChord,
-          padding: padding,
-          mainAxisSpacing: mainAxisSpacing ?? Constants.measureSpacing,
-          maxCrossAxisExtent: maxCrossAxisExtent,
-          mainAxisExtent: mainAxisExtent,
-          physics: physics,
-        );
 
   const ProgressionView({
     Key? key,

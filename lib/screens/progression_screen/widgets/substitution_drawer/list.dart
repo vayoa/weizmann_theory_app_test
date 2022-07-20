@@ -1,7 +1,12 @@
 part of 'substitution_drawer.dart';
 
 class _List extends StatefulWidget {
-  const _List({Key? key}) : super(key: key);
+  const _List({
+    Key? key,
+    required this.substitutions,
+  }) : super(key: key);
+
+  final List<Substitution> substitutions;
 
   @override
   State<_List> createState() => _ListState();
@@ -38,17 +43,11 @@ class _ListState extends State<_List> {
             child: ListView.builder(
               controller: _controller,
               shrinkWrap: true,
-              itemCount: 40,
+              itemCount: widget.substitutions.length,
               itemBuilder: (context, index) => ExpandableNotifier(
                 controller: index == _expandedIndex ? _lastExpanded : null,
                 child: _Substitution(
-                  location: EntryLocation(
-                    nouns[nouns.length - index - 1].capitalize(),
-                    nouns[index].capitalize(),
-                  ),
-                  type: index % 2 == 0
-                      ? SubstitutionMatchType.dry
-                      : SubstitutionMatchType.tonicization,
+                  substitution: widget.substitutions[index],
                   onPressed: (context, controller) {
                     if (!identical(controller, _lastExpanded)) {
                       _lastExpanded?.expanded = false;

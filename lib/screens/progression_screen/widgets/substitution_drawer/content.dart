@@ -5,10 +5,12 @@ class _Content extends StatelessWidget {
     Key? key,
     required this.onClose,
     required this.popup,
+    required this.child,
   }) : super(key: key);
 
   final void Function() onClose;
   final bool popup;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -16,9 +18,9 @@ class _Content extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(
-            SubstitutionDrawer.horizontalPadding,
-            SubstitutionDrawer.topPadding,
-            SubstitutionDrawer.horizontalPadding,
+            _Wrapper.horizontalPadding,
+            _Wrapper.topPadding,
+            _Wrapper.horizontalPadding,
             0.0,
           ),
           child: Column(
@@ -36,9 +38,9 @@ class _Content extends StatelessWidget {
             theme: const ExpandableThemeData(hasIcon: false),
             header: Padding(
               padding: const EdgeInsets.fromLTRB(
-                SubstitutionDrawer.horizontalPadding,
+                _Wrapper.horizontalPadding,
                 7.0,
-                SubstitutionDrawer.horizontalPadding,
+                _Wrapper.horizontalPadding,
                 0.0,
               ),
               child: Column(
@@ -63,7 +65,7 @@ class _Content extends StatelessWidget {
             collapsed: const SizedBox(),
             expanded: Padding(
               padding: const EdgeInsets.symmetric(
-                  horizontal: SubstitutionDrawer.horizontalPadding),
+                  horizontal: _Wrapper.horizontalPadding),
               child: Column(
                 children: const [
                   SizedBox(height: 6.0),
@@ -74,7 +76,7 @@ class _Content extends StatelessWidget {
             ),
           ),
         ),
-        const _List(),
+        child,
       ],
     );
   }

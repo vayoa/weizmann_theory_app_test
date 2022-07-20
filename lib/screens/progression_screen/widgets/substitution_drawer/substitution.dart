@@ -3,13 +3,11 @@ part of 'substitution_drawer.dart';
 class _Substitution extends StatelessWidget {
   const _Substitution({
     Key? key,
-    required this.location,
-    required this.type,
+    required this.substitution,
     required this.onPressed,
   }) : super(key: key);
 
-  final EntryLocation location;
-  final SubstitutionMatchType type;
+  final Substitution substitution;
   final void Function(BuildContext context, ExpandableController? controller)
       onPressed;
 
@@ -23,13 +21,7 @@ class _Substitution extends StatelessWidget {
         tapBodyToCollapse: true,
       ),
       expanded: _Expanded(
-        location: location,
-        type: type,
-        progression: [
-          DegreeProgression.parse(r"I 2, V 2"),
-          DegreeProgression.parse(r"I 2, V 2, I 4"),
-          DegreeProgression.parse(r"I 2, V 2, I 4, vi 2, V 2, I 4"),
-        ][location.package.codeUnitAt(0) % 3],
+        substitution: substitution,
       ),
       collapsed: Material(
         color: Colors.transparent,
@@ -42,7 +34,9 @@ class _Substitution extends StatelessWidget {
               rebuildOnChange: false,
             ),
           ),
-          child: _Collapsed(location: location, type: type),
+          child: _Collapsed(
+            substitution: substitution,
+          ),
         ),
       ),
     );
@@ -52,17 +46,14 @@ class _Substitution extends StatelessWidget {
 class _Expanded extends StatelessWidget {
   const _Expanded({
     Key? key,
-    required this.location,
-    required this.type,
-    required this.progression,
+    required this.substitution,
   }) : super(key: key);
 
-  final EntryLocation location;
-  final SubstitutionMatchType type;
-  final Progression progression;
+  final Substitution substitution;
 
   @override
   Widget build(BuildContext context) {
+    final DegreeProgression progression = substitution.originalSubstitution;
     final int measuresInLine = progression.measureCount == 1 ? 1 : 2;
     return Card(
       color: Constants.selectedColor,
@@ -73,10 +64,10 @@ class _Expanded extends StatelessWidget {
           const SizedBox(height: 8.0),
           Padding(
             padding: const EdgeInsets.symmetric(
-                horizontal: SubstitutionDrawer.horizontalPadding),
+                horizontal: _Wrapper.horizontalPadding),
             child: Stack(
               children: [
-                _Heading(location: location, type: type),
+                _Heading(substitution: substitution),
                 Padding(
                   padding: const EdgeInsets.only(top: 4.0),
                   child: Row(
@@ -110,14 +101,13 @@ class _Expanded extends StatelessWidget {
           const SizedBox(height: 5.0),
           Flexible(
             flex: 1,
-            child: ProgressionView.fromProgression(
+            child: ProgressionGrid(
               progression: progression,
-              interactable: false,
               measuresInLine: measuresInLine,
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.only(
-                left: SubstitutionDrawer.horizontalPadding,
-                right: SubstitutionDrawer.horizontalPadding,
+                left: _Wrapper.horizontalPadding,
+                right: _Wrapper.horizontalPadding,
               ),
               mainAxisSpacing: 10.0,
               maxCrossAxisExtent: measuresInLine == 1 ? null : 200.0,
@@ -146,23 +136,21 @@ class _Expanded extends StatelessWidget {
 class _Collapsed extends StatelessWidget {
   const _Collapsed({
     Key? key,
-    required this.location,
-    required this.type,
+    required this.substitution,
   }) : super(key: key);
 
-  final EntryLocation location;
-  final SubstitutionMatchType type;
+  final Substitution substitution;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: SubstitutionDrawer.horizontalPadding + 4.0),
+          horizontal: _Wrapper.horizontalPadding + 4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 12.0),
-          _Heading(location: location, type: type),
+          _Heading(substitution: substitution),
           const SizedBox(height: 4.0),
           const Divider(height: 1.0),
         ],
