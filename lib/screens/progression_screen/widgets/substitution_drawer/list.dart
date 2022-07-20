@@ -18,8 +18,7 @@ class _List extends StatefulWidget {
 
 class _ListState extends State<_List> {
   final ScrollController _controller = ScrollController();
-  ExpandableController? _lastExpanded =
-      ExpandableController(initialExpanded: true);
+  ExpandableController? _lastExpanded;
 
   /* TODO: Find a better way than saving a list of global keys...
           using a list of ExpandableControllers isn't possible since
@@ -37,16 +36,20 @@ class _ListState extends State<_List> {
   @override
   void didUpdateWidget(_List oldWidget) {
     if (oldWidget.selected != widget.selected) {
-      _handleSelected(widget.selected);
+      _handleSelected(widget.selected, oldWidget.selected);
     }
     super.didUpdateWidget(oldWidget);
   }
 
-  _handleSelected(int index) {
+  _handleSelected(int index, [int? from]) {
     if (_keys[index].currentState?.mounted ?? false) {
       var context = _keys[index].currentContext!;
       var controller = ExpandableController.of(context);
-      if (!identical(controller, _lastExpanded)) {
+      if (_lastExpanded == null) {
+        // if it's null then we just initialized and the selected
+        // index is (if we didn't get it in "from") 0...
+        ExpandableController.of(_keys[from ?? 0].currentContext!)!.toggle();
+      } else if (!identical(controller, _lastExpanded)) {
         _lastExpanded?.expanded = false;
       }
       controller?.toggle();
@@ -67,10 +70,10 @@ class _ListState extends State<_List> {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      /* TODO: Remove the SizedBox somehow...
-               without it we get errors when we scroll */
       child: SizedBox(
         width: double.infinity,
+        /* TODO: Remove the SizedBox somehow...
+               without it we get errors when we scroll */
         child: Column(
           children: [
             Flexible(
@@ -88,8 +91,7 @@ class _ListState extends State<_List> {
                       itemCount: widget.substitutions.length,
                       itemBuilder: (context, index) {
                         return ExpandableNotifier(
-                          controller:
-                              index == widget.selected ? _lastExpanded : null,
+                          initialExpanded: index == widget.selected,
                           child: _Substitution(
                             key: _keys[index],
                             substitution: widget.substitutions[index],
