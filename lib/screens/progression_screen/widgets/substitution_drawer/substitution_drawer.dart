@@ -28,13 +28,20 @@ part 'substitution.dart';
 part 'top_bar.dart';
 part 'wrapper.dart';
 
-class SubstitutionDrawer extends StatelessWidget {
+class SubstitutionDrawer extends StatefulWidget {
   const SubstitutionDrawer({
     Key? key,
     required this.popup,
   }) : super(key: key);
 
   final bool popup;
+
+  @override
+  State<SubstitutionDrawer> createState() => _SubstitutionDrawerState();
+}
+
+class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
+  bool _pinned = false;
 
   @override
   Widget build(BuildContext context) {
@@ -61,14 +68,17 @@ class SubstitutionDrawer extends StatelessWidget {
           return const SizedBox();
         } else {
           return _Wrapper(
-            popup: popup,
+            pinned: _pinned,
+            popup: widget.popup,
             show: subBloc.showingDrawer,
             showNav: !subBloc.inSetup &&
                 state is! CalculatingSubstitutions &&
                 subBloc.substitutions!.isNotEmpty,
             goDisabled: subBloc.substitutions != null,
             expandPreferences: subBloc.inSetup,
-            onUpdate: (shouldShow) => handleShowing(shouldShow, subBloc),
+            onUpdate: (shouldShow, fromHover) =>
+                handleShowing(shouldShow, fromHover, subBloc),
+            onPin: () => setState(() => _pinned = !_pinned),
             onQuit: () => subBloc.add(const ClearSubstitutions()),
             onNavigation: (forward) => subBloc.add(
               ChangeSubstitutionIndex(
@@ -93,8 +103,13 @@ class SubstitutionDrawer extends StatelessWidget {
     );
   }
 
-  void handleShowing(bool shouldShow, SubstitutionHandlerBloc bloc) =>
-      bloc.add(shouldShow ? ShowSubstitutions() : HideSubstitutions());
+  void handleShowing(
+      bool shouldShow, bool fromHover, SubstitutionHandlerBloc bloc) {
+    // If we're hovering make sure we're pinned...
+    if (!fromHover || !_pinned) {
+      bloc.add(UpdateShowSubstitutions(shouldShow));
+    }
+  }
 }
 
 class _LoadingSubs extends StatelessWidget {

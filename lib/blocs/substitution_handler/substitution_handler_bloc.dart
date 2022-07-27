@@ -70,7 +70,7 @@ class SubstitutionHandlerBloc
       _inSetup = true;
       _surpriseMe = event.surpriseMe;
       _showingDrawer = true;
-      emit(const ShowingSubstitutions());
+      emit(const UpdatedShowSubstitutions(true));
       return emit(SetupPage(surpriseMe: event.surpriseMe));
     });
     on<SwitchSubType>((event, emit) {
@@ -122,7 +122,7 @@ class SubstitutionHandlerBloc
       _inSetup = false;
       _currentIndex = 0;
       _showingDrawer = false;
-      emit(const HidSubstitutions());
+      emit(const UpdatedShowSubstitutions(false));
       if (_substituteByIsolate != null) {
         _substituteByIsolate!.kill(priority: Isolate.immediate);
         _substituteByIsolate = null;
@@ -133,13 +133,11 @@ class SubstitutionHandlerBloc
       _keepHarmonicFunction = event.keepHarmonicFunction;
       return emit(ChangedSubstitutionSettings());
     });
-    on<HideSubstitutions>((event, emit) {
-      _showingDrawer = false;
-      return emit(const HidSubstitutions());
-    });
-    on<ShowSubstitutions>((event, emit) {
-      _showingDrawer = true;
-      return emit(const ShowingSubstitutions());
+    on<UpdateShowSubstitutions>((event, emit) {
+      if (event.show != _showingDrawer) {
+        _showingDrawer = event.show;
+        return emit(UpdatedShowSubstitutions(event.show));
+      }
     });
     on<ChangeSubstitutionIndex>((event, emit) {
       if (_substitutions != null && _substitutions!.isNotEmpty) {

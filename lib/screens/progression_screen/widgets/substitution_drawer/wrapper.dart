@@ -5,10 +5,12 @@ class _Wrapper extends StatelessWidget {
     Key? key,
     required this.popup,
     required this.show,
+    required this.pinned,
     required this.showNav,
     required this.goDisabled,
     required this.expandPreferences,
     required this.onUpdate,
+    required this.onPin,
     required this.onQuit,
     required this.onNavigation,
     required this.child,
@@ -19,11 +21,13 @@ class _Wrapper extends StatelessWidget {
   static const double drawerWidth = Constants.measureWidth;
 
   final bool popup;
+  final bool pinned;
   final bool show;
   final bool showNav;
   final bool goDisabled;
   final bool expandPreferences;
-  final void Function(bool) onUpdate;
+  final void Function(bool shouldShow, bool fromHover) onUpdate;
+  final void Function() onPin;
   final void Function() onQuit;
   final void Function(bool forward) onNavigation;
   final Widget child;
@@ -34,10 +38,10 @@ class _Wrapper extends StatelessWidget {
     const Curve curve = Curves.easeInOut;
     return MouseRegion(
       onEnter: (_) {
-        if (popup && !show) onUpdate(true);
+        if (popup && !show) onUpdate(true, true);
       },
       onExit: (event) {
-        if (!event.down && popup && show) onUpdate(false);
+        if (!event.down && popup && show) onUpdate(false, true);
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: durationMilliseconds),
@@ -66,7 +70,7 @@ class _Wrapper extends StatelessWidget {
           ),
           child: !show
               ? GestureDetector(
-                  onTap: () => onUpdate(!show),
+            onTap: () => onUpdate(!show, false),
                   child: const Align(
                     alignment: Alignment.topCenter,
                     child: Padding(
@@ -83,10 +87,12 @@ class _Wrapper extends StatelessWidget {
                     width: _Wrapper.drawerWidth,
                     child: _Content(
                       popup: popup,
+                      pinned: pinned,
                       showNav: showNav,
                       goDisabled: goDisabled,
                       expandPreferences: expandPreferences,
-                      onClose: () => onUpdate(false),
+                      onClose: () => onUpdate(false, false),
+                      onPin: onPin,
                       onQuit: onQuit,
                       onNavigation: onNavigation,
                       child: child,

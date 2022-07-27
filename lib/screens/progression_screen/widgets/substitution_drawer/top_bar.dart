@@ -3,14 +3,18 @@ part of 'substitution_drawer.dart';
 class _TopBar extends StatelessWidget {
   const _TopBar({
     Key? key,
-    required this.onClose,
-    required this.onQuit,
     required this.popup,
+    required this.pinned,
+    required this.onClose,
+    required this.onPin,
+    required this.onQuit,
   }) : super(key: key);
 
-  final void Function() onClose;
-  final void Function() onQuit;
   final bool popup;
+  final bool pinned;
+  final void Function() onClose;
+  final void Function() onPin;
+  final void Function() onQuit;
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +31,12 @@ class _TopBar extends StatelessWidget {
         if (popup) ...[
           const SizedBox(width: 8.0),
           CustomButton(
-            label: 'Pin',
+            label: null,
             tight: true,
-            iconData: Icons.push_pin_rounded,
-            size: 12,
-            onPressed: () {},
+            iconData:
+                pinned ? Icons.lock_outline_rounded : Icons.lock_open_rounded,
+            size: 14,
+            onPressed: onPin,
           ),
         ],
         const Spacer(),

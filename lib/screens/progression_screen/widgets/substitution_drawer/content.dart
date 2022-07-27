@@ -4,20 +4,24 @@ class _Content extends StatelessWidget {
   const _Content({
     Key? key,
     required this.popup,
+    required this.pinned,
     required this.showNav,
     required this.goDisabled,
     required this.expandPreferences,
     required this.onClose,
+    required this.onPin,
     required this.onQuit,
     required this.onNavigation,
     required this.child,
   }) : super(key: key);
 
   final bool popup;
+  final bool pinned;
   final bool showNav;
   final bool goDisabled;
   final bool expandPreferences;
   final void Function() onClose;
+  final void Function() onPin;
   final void Function() onQuit;
   final void Function(bool forward) onNavigation;
   final Widget child;
@@ -36,7 +40,13 @@ class _Content extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _TopBar(popup: popup, onClose: onClose, onQuit: onQuit),
+              _TopBar(
+                popup: popup,
+                pinned: pinned,
+                onClose: onClose,
+                onPin: onPin,
+                onQuit: onQuit,
+              ),
               const SizedBox(height: 7.0),
               const Divider(height: 1.0),
             ],

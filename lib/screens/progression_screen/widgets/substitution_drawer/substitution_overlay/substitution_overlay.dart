@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_drawer/navigation_buttons.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 
@@ -42,7 +44,8 @@ class SubstitutionOverlay extends StatelessWidget {
             small: true,
             iconSize: 14.0,
             iconData: Icons.read_more_rounded,
-            onPressed: () {},
+            onPressed: () => BlocProvider.of<SubstitutionHandlerBloc>(context)
+                .add(const UpdateShowSubstitutions(true)),
           ),
         ],
       ),

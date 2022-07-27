@@ -63,9 +63,14 @@ class SetKeepHarmonicFunction extends SubstitutionHandlerEvent {
   const SetKeepHarmonicFunction(this.keepHarmonicFunction);
 }
 
-class HideSubstitutions extends SubstitutionHandlerEvent {}
+class UpdateShowSubstitutions extends SubstitutionHandlerEvent {
+  final bool show;
 
-class ShowSubstitutions extends SubstitutionHandlerEvent {}
+  @override
+  List<Object> get props => [show];
+
+  const UpdateShowSubstitutions(this.show);
+}
 
 class ChangeSubstitutionIndex extends SubstitutionHandlerEvent {
   final int changeTo;
