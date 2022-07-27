@@ -79,7 +79,7 @@ class _ListState extends State<_List> {
                without it we get errors when we scroll */
         child: Column(
           children: [
-            Flexible(
+            Expanded(
               child: ScrollbarTheme(
                 data: ScrollbarThemeData(
                   interactive: true,

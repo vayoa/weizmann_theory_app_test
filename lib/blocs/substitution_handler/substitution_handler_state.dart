@@ -60,6 +60,11 @@ class ChangedSubstitutionSettings extends SubstitutionHandlerState {
   List<Object?> get props => [];
 }
 
+/* TODO: Emitting this mid loading will override the state...
+         perhaps it's a better idea to have these ui-only
+         states somewhere else (not the loading, the
+         show/hide...)
+ */
 class UpdatedShowSubstitutions extends SubstitutionHandlerState {
   final bool showing;
 

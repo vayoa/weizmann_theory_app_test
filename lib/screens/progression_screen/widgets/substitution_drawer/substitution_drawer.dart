@@ -85,10 +85,10 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
                 subBloc.currentIndex + (forward ? 1 : -1),
               ),
             ),
-            child: subBloc.inSetup
-                ? const _InSetup()
-                : (state is CalculatingSubstitutions
-                    ? const _LoadingSubs()
+            child: state is CalculatingSubstitutions
+                ? const _LoadingSubs()
+                : (subBloc.inSetup
+                    ? const _InSetup()
                     : (subBloc.substitutions!.isEmpty
                         ? const _NoSubsFound()
                         : _List(
@@ -164,14 +164,21 @@ class _InSetup extends StatelessWidget {
   Widget build(BuildContext context) {
     return const _InfoBlock(
       TextSpan(
-          text: 'Please choose reharmonization preferences and '
-              'then press ',
-          children: [
-            TextSpan(
-              text: 'Go!',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            )
-          ]),
+        text: 'Please choose reharmonization ',
+        children: [
+          TextSpan(
+            text: 'Preferences ',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          TextSpan(
+            text: 'and then press ',
+          ),
+          TextSpan(
+            text: 'Go!',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          )
+        ],
+      ),
     );
   }
 }
