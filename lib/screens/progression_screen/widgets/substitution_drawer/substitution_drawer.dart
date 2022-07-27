@@ -144,7 +144,15 @@ class _NoSubsFound extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const _InfoBlock(
-      TextSpan(text: 'No Substitutions Were found.'),
+      TextSpan(
+          text: 'No substitutions were found.\n'
+              'Try changing ',
+          children: [
+            TextSpan(
+              text: 'Preferences ',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ]),
     );
   }
 }
