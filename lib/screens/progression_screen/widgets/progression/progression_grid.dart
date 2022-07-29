@@ -23,7 +23,15 @@ class ProgressionGrid extends StatefulWidget {
     this.maxCrossAxisExtent,
     this.mainAxisExtent,
     this.physics,
-  }) : super(key: key);
+    this.rangeDisabled = false,
+    this.hoveredMeasure,
+    this.hoveredPos,
+    this.editedMeasure,
+    this.onDoneEdit,
+    this.onEdit,
+  })  : assert((editedMeasure == null) == (onDoneEdit == null) &&
+            (editedMeasure == null) == (onEdit == null)),
+        super(key: key);
 
   final Progression progression;
   final List<Progression>? measures;
@@ -34,11 +42,17 @@ class ProgressionGrid extends StatefulWidget {
   final int? toChord;
   final double? endDur;
   final int? startAt;
+  final bool rangeDisabled;
   final EdgeInsets? padding;
   final double mainAxisSpacing;
   final double? maxCrossAxisExtent;
   final double? mainAxisExtent;
   final ScrollPhysics? physics;
+  final int? hoveredMeasure;
+  final int? hoveredPos;
+  final int? editedMeasure;
+  final void Function(bool rebuild, List<String> values, int index)? onDoneEdit;
+  final void Function(int measure)? onEdit;
 
   @override
   State<ProgressionGrid> createState() => _ProgressionGridState();
@@ -122,8 +136,20 @@ class _ProgressionGridState extends State<ProgressionGrid> {
         childAspectRatio: Constants.measureWidth / Constants.measureHeight,
       ),
       itemBuilder: (context, index) {
-        bool shouldPaint =
-            _canPaint && index >= startMeasure && index <= endMeasure;
+        final bool last = (index == _measures.length - 1) ||
+            (index + 1) % widget.measuresInLine == 0;
+        if (index == widget.editedMeasure) {
+          return EditedMeasure(
+            measure: _measures[index],
+            last: last,
+            onDone: (rebuild, values) =>
+                widget.onDoneEdit?.call(rebuild, values, index),
+          );
+        }
+        bool shouldPaint = !widget.rangeDisabled &&
+            _canPaint &&
+            index >= startMeasure &&
+            index <= endMeasure;
         bool start = index == startMeasure;
         bool end = index == endMeasure;
         int? fromChord, toChord;
@@ -144,17 +170,21 @@ class _ProgressionGridState extends State<ProgressionGrid> {
             buildEndDur = _measures[index].durations[toChord];
           }
         }
+        final bool editable = index == widget.hoveredMeasure;
         return MeasureView(
           measure: _measures[index],
-          last: index == _measures.length - 1,
+          last: last,
           fromChord: fromChord,
           startDur: buildStartDur,
           toChord: toChord,
           endDur: buildEndDur,
           selectorStart: start,
           selectorEnd: end,
-          editable: false,
-          onEdit: () {},
+          disabled: widget.rangeDisabled,
+          editable: editable,
+          cursorPos:
+              editable && widget.hoveredPos != -1 ? widget.hoveredPos : null,
+          onEdit: () => widget.onEdit?.call(index),
         );
       },
     );

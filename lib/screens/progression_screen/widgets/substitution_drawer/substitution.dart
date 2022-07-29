@@ -27,6 +27,9 @@ class _SubstitutionState extends State<_Substitution> {
       ),
       expanded: _Expanded(
         substitution: widget.substitution,
+        onApply: () => BlocProvider.of<ProgressionHandlerBloc>(context)
+            .add(ApplySubstitution(widget.substitution)),
+        onChangeVisibility: () {},
       ),
       collapsed: Material(
         color: Colors.transparent,
@@ -52,9 +55,13 @@ class _Expanded extends StatelessWidget {
   const _Expanded({
     Key? key,
     required this.substitution,
+    required this.onApply,
+    required this.onChangeVisibility,
   }) : super(key: key);
 
   final Substitution substitution;
+  final void Function() onApply;
+  final void Function() onChangeVisibility;
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +92,7 @@ class _Expanded extends StatelessWidget {
                         size: 12.0,
                         iconSize: 16.0,
                         iconData: Icons.check_rounded,
-                        onPressed: () {},
+                        onPressed: onApply,
                       ),
                       const SizedBox(width: 5.0),
                       CustomButton(
@@ -95,7 +102,7 @@ class _Expanded extends StatelessWidget {
                         size: 12.0,
                         iconSize: 16.0,
                         iconData: Icons.visibility_rounded,
-                        onPressed: () {},
+                        onPressed: onChangeVisibility,
                       ),
                     ],
                   ),

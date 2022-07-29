@@ -10,8 +10,8 @@ import '../../../../constants.dart';
 import '../../../../utilities.dart';
 import '../progression/measure_view.dart';
 
+@Deprecated('Use SelectableProgressionView instead.')
 class ProgressionView<T> extends StatefulWidget {
-
   const ProgressionView({
     Key? key,
     required this.measures,

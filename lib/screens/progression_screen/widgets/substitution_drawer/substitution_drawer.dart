@@ -7,6 +7,7 @@ import 'package:harmony_theory/modals/substitution_match.dart';
 import 'package:harmony_theory/modals/weights/keep_harmonic_function_weight.dart';
 import 'package:harmony_theory/modals/weights/weight.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
+import 'package:weizmann_theory_app_test/blocs/progression_handler_bloc.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_drawer/navigation_buttons.dart';
 import 'package:weizmann_theory_app_test/utilities.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
@@ -80,11 +81,8 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
                 handleShowing(shouldShow, fromHover, subBloc),
             onPin: () => setState(() => _pinned = !_pinned),
             onQuit: () => subBloc.add(const ClearSubstitutions()),
-            onNavigation: (forward) => subBloc.add(
-              ChangeSubstitutionIndex(
-                subBloc.currentIndex + (forward ? 1 : -1),
-              ),
-            ),
+            onNavigation: (forward) =>
+                subBloc.add(ChangeSubstitutionIndexInOrder(forward)),
             child: state is CalculatingSubstitutions
                 ? const _LoadingSubs()
                 : (subBloc.inSetup

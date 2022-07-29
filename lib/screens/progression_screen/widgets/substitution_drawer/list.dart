@@ -26,6 +26,7 @@ class _ListState extends State<_List> {
           visible...
    */
   late List<GlobalKey<_SubstitutionState>> _keys;
+  static const double entryHeight = 57.0;
 
   @override
   void initState() {

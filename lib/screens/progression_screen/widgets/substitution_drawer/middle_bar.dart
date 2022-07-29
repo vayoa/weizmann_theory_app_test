@@ -19,8 +19,7 @@ class _MiddleBar extends StatelessWidget {
         if (showNav) ...[
           NavigationButtonsBar(
             vertical: true,
-            onBackwards: () => onNavigation(false),
-            onForward: () => onNavigation(true),
+            onNavigation: onNavigation,
           ),
           const SizedBox(width: 8),
         ],

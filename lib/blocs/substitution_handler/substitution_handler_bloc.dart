@@ -141,11 +141,20 @@ class SubstitutionHandlerBloc
     });
     on<ChangeSubstitutionIndex>((event, emit) {
       if (_substitutions != null && _substitutions!.isNotEmpty) {
-        int from = _currentIndex;
-        _currentIndex = event.changeTo % _substitutions!.length;
-        return emit(ChangedSubstitutionIndex(from, _currentIndex));
+        return _handleChangeIndex(emit, event.changeTo);
       }
     });
+    on<ChangeSubstitutionIndexInOrder>((event, emit) {
+      if (_substitutions != null && _substitutions!.isNotEmpty) {
+        _handleChangeIndex(emit, _currentIndex + (event.forward ? 1 : -1));
+      }
+    });
+  }
+
+  void _handleChangeIndex(Emitter<SubstitutionHandlerState> emit, int to) {
+    int from = _currentIndex;
+    _currentIndex = to % _substitutions!.length;
+    return emit(ChangedSubstitutionIndex(from, _currentIndex));
   }
 
   void _handleCalculatedSubstitutions(Emitter<SubstitutionHandlerState> emit) {

@@ -7,13 +7,11 @@ class NavigationButtonsBar extends StatelessWidget {
   const NavigationButtonsBar({
     Key? key,
     this.vertical = false,
-    required this.onBackwards,
-    required this.onForward,
+    required this.onNavigation,
   }) : super(key: key);
 
   final bool vertical;
-  final void Function() onBackwards;
-  final void Function() onForward;
+  final void Function(bool forward) onNavigation;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +27,7 @@ class NavigationButtonsBar extends StatelessWidget {
           iconData: vertical
               ? Icons.expand_less_rounded
               : Icons.arrow_back_ios_rounded,
-          onPressed: onBackwards,
+          onPressed: () => onNavigation(false),
         ),
         const SizedBox(
           height: 15.0,
@@ -46,7 +44,7 @@ class NavigationButtonsBar extends StatelessWidget {
           iconData: vertical
               ? Icons.expand_more_rounded
               : Icons.arrow_forward_ios_rounded,
-          onPressed: onForward,
+          onPressed: () => onNavigation(true),
         ),
       ],
     );

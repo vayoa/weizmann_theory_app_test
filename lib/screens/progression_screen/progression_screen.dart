@@ -339,9 +339,22 @@ class ProgressionScreenUI extends StatelessWidget {
                     ProgressionHandlerBloc bloc =
                         BlocProvider.of<ProgressionHandlerBloc>(context);
                     return SelectableProgressionView(
+                      progression: bloc.currentlyViewedProgression,
                       measures: bloc.currentlyViewedMeasures,
                       fromChord: bloc.fromChord,
                       toChord: bloc.toChord,
+                      startDur: bloc.startDur,
+                      endDur: bloc.endDur,
+                      rangeDisabled: bloc.rangeDisabled,
+                      onChangeRange: (start, end) {
+                        if (start == null || end == null) {
+                          BlocProvider.of<ProgressionHandlerBloc>(context)
+                              .add(const DisableRange(disable: true));
+                        } else {
+                          BlocProvider.of<ProgressionHandlerBloc>(context)
+                              .add(ChangeRangeDuration(start: start, end: end));
+                        }
+                      },
                     );
                   },
                 ),

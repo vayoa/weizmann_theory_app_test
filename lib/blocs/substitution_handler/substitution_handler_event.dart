@@ -80,3 +80,12 @@ class ChangeSubstitutionIndex extends SubstitutionHandlerEvent {
 
   const ChangeSubstitutionIndex(this.changeTo);
 }
+
+class ChangeSubstitutionIndexInOrder extends SubstitutionHandlerEvent {
+  final bool forward;
+
+  @override
+  List<Object?> get props => [forward];
+
+  const ChangeSubstitutionIndexInOrder(this.forward);
+}

@@ -34,8 +34,9 @@ class SubstitutionOverlay extends StatelessWidget {
           ),
           const SizedBox(width: 5.0),
           NavigationButtonsBar(
-            onBackwards: () {},
-            onForward: () {},
+            onNavigation: (forward) =>
+                BlocProvider.of<SubstitutionHandlerBloc>(context)
+                    .add(ChangeSubstitutionIndexInOrder(forward)),
           ),
           const SizedBox(width: 5.0),
           CustomButton(

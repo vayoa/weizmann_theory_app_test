@@ -96,6 +96,8 @@ class Selector extends StatelessWidget {
     this.endDur,
     this.selectorStart = false,
     this.selectorEnd = false,
+    this.startSelect = 0,
+    this.endSelect = 1.0,
   }) : super(key: key);
 
   final Progression measure;
@@ -105,6 +107,8 @@ class Selector extends StatelessWidget {
   final double? endDur;
   final bool selectorStart;
   final bool selectorEnd;
+  final double startSelect;
+  final double endSelect;
 
   @override
   Widget build(BuildContext context) {
