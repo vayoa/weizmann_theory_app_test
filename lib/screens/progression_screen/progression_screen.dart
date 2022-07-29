@@ -338,22 +338,38 @@ class ProgressionScreenUI extends StatelessWidget {
                   builder: (context, state) {
                     ProgressionHandlerBloc bloc =
                         BlocProvider.of<ProgressionHandlerBloc>(context);
-                    return SelectableProgressionView(
-                      progression: bloc.currentlyViewedProgression,
-                      measures: bloc.currentlyViewedMeasures,
-                      fromChord: bloc.fromChord,
-                      toChord: bloc.toChord,
-                      startDur: bloc.startDur,
-                      endDur: bloc.endDur,
-                      rangeDisabled: bloc.rangeDisabled,
-                      onChangeRange: (start, end) {
-                        if (start == null || end == null) {
-                          BlocProvider.of<ProgressionHandlerBloc>(context)
-                              .add(const DisableRange(disable: true));
-                        } else {
-                          BlocProvider.of<ProgressionHandlerBloc>(context)
-                              .add(ChangeRangeDuration(start: start, end: end));
-                        }
+                    return BlocBuilder<SubstitutionHandlerBloc,
+                        SubstitutionHandlerState>(
+                      builder: (context, state) {
+                        SubstitutionHandlerBloc subBloc =
+                            BlocProvider.of<SubstitutionHandlerBloc>(context);
+                        final bool showSubs =
+                            (subBloc.substitutions?.isNotEmpty ?? false) &&
+                                subBloc.visible;
+                        return SelectableProgressionView(
+                          progression: showSubs
+                              ? subBloc.currentlyViewedSubstitution(
+                                  bloc.currentScale, bloc.type)
+                              : bloc.currentlyViewedProgression,
+                          measures:
+                              showSubs ? null : bloc.currentlyViewedMeasures,
+                          fromChord: bloc.fromChord,
+                          toChord: bloc.toChord,
+                          startDur: bloc.startDur,
+                          endDur: bloc.endDur,
+                          rangeDisabled: bloc.rangeDisabled,
+                          interactable: !showSubs,
+                          onChangeRange: (start, end) {
+                            if (start == null || end == null) {
+                              BlocProvider.of<ProgressionHandlerBloc>(context)
+                                  .add(const DisableRange(disable: true));
+                            } else {
+                              BlocProvider.of<ProgressionHandlerBloc>(context)
+                                  .add(ChangeRangeDuration(
+                                      start: start, end: end));
+                            }
+                          },
+                        );
                       },
                     );
                   },
@@ -363,10 +379,36 @@ class ProgressionScreenUI extends StatelessWidget {
           ),
         ),
         const SubstitutionWindow(),
-        const Positioned(
+        Positioned(
           left: 76.0,
           top: 222.0,
-          child: SubstitutionOverlay(),
+          child: BlocBuilder<SubstitutionHandlerBloc, SubstitutionHandlerState>(
+            buildWhen: (prev, state) => state is ChangedVisibility,
+            builder: (context, state) {
+              final bool visible =
+                  state is ChangedVisibility ? state.visible : true;
+              return SubstitutionOverlay(
+                visible: visible,
+                onApply: () {
+                  final sub = BlocProvider.of<SubstitutionHandlerBloc>(context)
+                      .currentSubstitution;
+                  if (sub != null) {
+                    BlocProvider.of<ProgressionHandlerBloc>(context)
+                        .add(ApplySubstitution(sub));
+                  }
+                },
+                onNavigation: (bool forward) =>
+                    BlocProvider.of<SubstitutionHandlerBloc>(context)
+                        .add(ChangeSubstitutionIndexInOrder(forward)),
+                onChangeVisibility: () =>
+                    BlocProvider.of<SubstitutionHandlerBloc>(context)
+                        .add(ChangeVisibility(!visible)),
+                onOpenDrawer: () =>
+                    BlocProvider.of<SubstitutionHandlerBloc>(context)
+                        .add(const UpdateShowSubstitutions(true)),
+              );
+            },
+          ),
         ),
       ],
     );

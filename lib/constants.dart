@@ -11,6 +11,9 @@ abstract class Constants {
       Color.fromARGB(100, 206, 206, 206);
   static const Color selectedColor = Color.fromARGB(255, 187, 187, 187);
   static const Color measureColor = Color.fromARGB(255, 171, 171, 171);
+  static const Color libraryEntryColor = Color.fromARGB(255, 163, 163, 163);
+  static const Color substitutionColor = Colors.blueGrey;
+
   static const double measureWidth = 315;
   static const double measureHeight = 56;
   static const double measureSpacing = measureHeight / 2;
@@ -34,7 +37,6 @@ abstract class Constants {
       TextStyle(fontSize: 24, fontWeight: FontWeight.bold);
   static const double libraryEntryWidth = 340;
   static const double libraryEntryHeight = 34;
-  static const Color libraryEntryColor = Color.fromARGB(255, 163, 163, 163);
 
   static const int maxTitleCharacters = 35;
 

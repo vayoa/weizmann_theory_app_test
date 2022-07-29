@@ -13,7 +13,7 @@ class SelectableProgressionView<T> extends StatelessWidget {
   const SelectableProgressionView({
     Key? key,
     required this.progression,
-    required this.measures,
+    this.measures,
     this.rangeSelectPadding = 8.0,
     this.fromChord = 0,
     this.toChord = 0,
@@ -21,10 +21,11 @@ class SelectableProgressionView<T> extends StatelessWidget {
     required this.startDur,
     required this.endDur,
     required this.rangeDisabled,
+    this.interactable = true,
   }) : super(key: key);
 
   final Progression progression;
-  final List<Progression> measures;
+  final List<Progression>? measures;
   final double rangeSelectPadding;
   final int fromChord;
   final double startDur;
@@ -32,6 +33,7 @@ class SelectableProgressionView<T> extends StatelessWidget {
   final double endDur;
   final void Function(double? start, double? end) onChangeRange;
   final bool rangeDisabled;
+  final bool interactable;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +64,7 @@ class SelectableProgressionView<T> extends StatelessWidget {
                 startDur: startDur,
                 endDur: endDur,
                 rangeDisabled: rangeDisabled,
+                interactable: interactable,
               ),
             ),
           );
@@ -83,10 +86,11 @@ class _SelectableProgression extends StatefulWidget {
     required this.startDur,
     required this.endDur,
     required this.rangeDisabled,
+    this.interactable = true,
   }) : super(key: key);
 
   final Progression progression;
-  final List<Progression> measures;
+  final List<Progression>? measures;
   final int measuresInLine;
   final int fromChord;
   final double startDur;
@@ -94,12 +98,14 @@ class _SelectableProgression extends StatefulWidget {
   final double endDur;
   final bool rangeDisabled;
   final void Function(double? start, double? end) onChangeRange;
+  final bool interactable;
 
   @override
   State<_SelectableProgression> createState() => _SelectableProgressionState();
 }
 
 class _SelectableProgressionState extends State<_SelectableProgression> {
+  late List<Progression> _measures;
   late double stepW;
   late double minSelectDur;
   int editedMeasure = -1;
@@ -126,17 +132,18 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
   }
 
   double _calcPosDur(int measure, int duration) =>
-      measure != -1 && widget.measures.length > measure && duration != -1
-          ? (measure * widget.measures[0].timeSignature.decimal) +
-              (duration * widget.measures[0].timeSignature.step)
+      measure != -1 && _measures.length > measure && duration != -1
+          ? (measure * _measures[0].timeSignature.decimal) +
+              (duration * _measures[0].timeSignature.step)
           : -1;
 
   _setup() {
-    stepW = max / widget.measures[0].timeSignature.numerator;
-    minSelectDur = widget.measures[0].timeSignature.step * 2;
-    maxDur = math.max(widget.measures.length - 1, 0) *
-            widget.measures[0].timeSignature.decimal +
-        (widget.measures.last.duration);
+    _measures = widget.measures ?? widget.progression.splitToMeasures();
+    stepW = max / _measures[0].timeSignature.numerator;
+    minSelectDur = _measures[0].timeSignature.step * 2;
+    maxDur =
+        math.max(_measures.length - 1, 0) * _measures[0].timeSignature.decimal +
+            (_measures.last.duration);
   }
 
   @override
@@ -156,9 +163,15 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
     return SizedBox(
       width: widget.measuresInLine * Constants.measureWidth,
       child: Listener(
-        onPointerMove: (event) => _onPointerMove(event, context),
-        onPointerHover: (event) => _onPointerHover(event, context),
-        onPointerDown: (event) => _onPointerDown(event, context),
+        onPointerMove: (event) {
+          if (widget.interactable) _onPointerMove(event, context);
+        },
+        onPointerHover: (event) {
+          if (widget.interactable) _onPointerHover(event, context);
+        },
+        onPointerDown: (event) {
+          if (widget.interactable) _onPointerDown(event, context);
+        },
         child: ProgressionGrid(
           progression: widget.progression,
           measures: widget.measures,

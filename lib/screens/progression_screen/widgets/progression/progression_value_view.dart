@@ -7,9 +7,11 @@ class ProgressionValueView<T> extends StatelessWidget {
   const ProgressionValueView({
     Key? key,
     required this.value,
+    this.highlight = false,
   }) : super(key: key);
 
   final T? value;
+  final bool highlight;
 
   @override
   Widget build(BuildContext context) {
@@ -20,11 +22,26 @@ class ProgressionValueView<T> extends StatelessWidget {
         children: [
           TextSpan(
             text: cut[1],
-            style: Constants.valuePatternTextStyle,
+            style: _handleHighlight(Constants.valuePatternTextStyle),
           )
         ],
       ),
-      style: Constants.valueTextStyle,
+      style: _handleHighlight(Constants.valueTextStyle),
     );
   }
+
+  TextStyle _handleHighlight(TextStyle style) => highlight
+      ? style.copyWith(
+          fontWeight: FontWeight.w700,
+          fontStyle: FontStyle.italic,
+          color: Constants.substitutionColor,
+          shadows: const [
+            Shadow(
+              offset: Offset(2.0, 2.0),
+              blurRadius: 15.0,
+              color: Colors.black38,
+            )
+          ],
+        )
+      : style;
 }

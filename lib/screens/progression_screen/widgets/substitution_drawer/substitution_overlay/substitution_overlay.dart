@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:weizmann_theory_app_test/blocs/substitution_handler/substitution_handler_bloc.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_drawer/navigation_buttons.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 
 class SubstitutionOverlay extends StatelessWidget {
-  const SubstitutionOverlay({Key? key}) : super(key: key);
+  const SubstitutionOverlay({
+    Key? key,
+    required this.visible,
+    required this.onNavigation,
+    required this.onApply,
+    required this.onOpenDrawer,
+    required this.onChangeVisibility,
+  }) : super(key: key);
+
+  final bool visible;
+  final void Function(bool forward) onNavigation;
+  final void Function() onApply;
+  final void Function() onOpenDrawer;
+  final void Function() onChangeVisibility;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +32,7 @@ class SubstitutionOverlay extends StatelessWidget {
             size: 12.0,
             iconSize: 14.0,
             iconData: Icons.check_rounded,
-            onPressed: () {},
+            onPressed: onApply,
           ),
           const SizedBox(width: 5.0),
           CustomButton(
@@ -29,14 +40,14 @@ class SubstitutionOverlay extends StatelessWidget {
             tight: true,
             small: true,
             iconSize: 14.0,
-            iconData: Icons.visibility_rounded,
-            onPressed: () {},
+            iconData: visible
+                ? Icons.visibility_rounded
+                : Icons.visibility_off_rounded,
+            onPressed: onChangeVisibility,
           ),
           const SizedBox(width: 5.0),
           NavigationButtonsBar(
-            onNavigation: (forward) =>
-                BlocProvider.of<SubstitutionHandlerBloc>(context)
-                    .add(ChangeSubstitutionIndexInOrder(forward)),
+            onNavigation: onNavigation,
           ),
           const SizedBox(width: 5.0),
           CustomButton(
@@ -45,8 +56,7 @@ class SubstitutionOverlay extends StatelessWidget {
             small: true,
             iconSize: 14.0,
             iconData: Icons.read_more_rounded,
-            onPressed: () => BlocProvider.of<SubstitutionHandlerBloc>(context)
-                .add(const UpdateShowSubstitutions(true)),
+            onPressed: onOpenDrawer,
           ),
         ],
       ),

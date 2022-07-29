@@ -182,6 +182,8 @@ class _ProgressionGridState extends State<ProgressionGrid> {
           selectorEnd: end,
           disabled: widget.rangeDisabled,
           editable: editable,
+          paintFrom: fromChord,
+          paintTo: toChord,
           cursorPos:
               editable && widget.hoveredPos != -1 ? widget.hoveredPos : null,
           onEdit: () => widget.onEdit?.call(index),

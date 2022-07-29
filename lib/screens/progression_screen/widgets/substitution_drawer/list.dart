@@ -5,12 +5,18 @@ class _List extends StatefulWidget {
     Key? key,
     required this.substitutions,
     required this.selected,
+    required this.visible,
     required this.onSelected,
+    required this.onApply,
+    required this.onChangeVisibility,
   }) : super(key: key);
 
   final List<Substitution> substitutions;
   final int selected;
+  final bool visible;
   final void Function(int index) onSelected;
+  final void Function() onApply;
+  final void Function() onChangeVisibility;
 
   @override
   State<_List> createState() => _ListState();
@@ -99,9 +105,12 @@ class _ListState extends State<_List> {
                           child: _Substitution(
                             key: _keys[index],
                             substitution: widget.substitutions[index],
+                            visible: widget.visible,
                             onPressed: (context, controller) {
                               widget.onSelected(index);
                             },
+                            onApply: widget.onApply,
+                            onChangeVisibility: widget.onChangeVisibility,
                           ),
                         );
                       }),

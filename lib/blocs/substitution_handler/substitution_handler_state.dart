@@ -83,3 +83,12 @@ class ChangedSubstitutionIndex extends SubstitutionHandlerState {
 
   const ChangedSubstitutionIndex(this.fromIndex, this.newIndex);
 }
+
+class ChangedVisibility extends SubstitutionHandlerState {
+  final bool visible;
+
+  @override
+  List<Object> get props => [visible];
+
+  const ChangedVisibility(this.visible);
+}

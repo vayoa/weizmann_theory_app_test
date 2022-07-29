@@ -30,6 +30,10 @@ class SubstitutionHandlerBloc
 
   bool get surpriseMe => _surpriseMe;
 
+  bool _visible = true;
+
+  bool get visible => _visible;
+
   DegreeProgression? _currentProgression;
   int _fromChord = 0, _toChord = 0;
   double _startDur = 0.0;
@@ -71,6 +75,8 @@ class SubstitutionHandlerBloc
       _surpriseMe = event.surpriseMe;
       _showingDrawer = true;
       emit(const UpdatedShowSubstitutions(true));
+      _visible = true;
+      emit(ChangedVisibility(_visible));
       return emit(SetupPage(surpriseMe: event.surpriseMe));
     });
     on<SwitchSubType>((event, emit) {
@@ -123,6 +129,8 @@ class SubstitutionHandlerBloc
       _currentIndex = 0;
       _showingDrawer = false;
       emit(const UpdatedShowSubstitutions(false));
+      _visible = true;
+      emit(ChangedVisibility(_visible));
       if (_substituteByIsolate != null) {
         _substituteByIsolate!.kill(priority: Isolate.immediate);
         _substituteByIsolate = null;
@@ -149,11 +157,19 @@ class SubstitutionHandlerBloc
         _handleChangeIndex(emit, _currentIndex + (event.forward ? 1 : -1));
       }
     });
+    on<ChangeVisibility>((event, emit) {
+      _visible = event.visible;
+      return emit(ChangedVisibility(_visible));
+    });
   }
+
+  Substitution? get currentSubstitution => _substitutions?[_currentIndex];
 
   void _handleChangeIndex(Emitter<SubstitutionHandlerState> emit, int to) {
     int from = _currentIndex;
     _currentIndex = to % _substitutions!.length;
+    _visible = true;
+    emit(ChangedVisibility(_visible));
     return emit(ChangedSubstitutionIndex(from, _currentIndex));
   }
 
@@ -166,7 +182,11 @@ class SubstitutionHandlerBloc
     ));
   }
 
-  Progression getSubstitutedBase(PitchScale? scale, int index) {
+  Progression getSubstitutedBase(PitchScale? scale, int index) =>
+      _getSubstitutedBase(scale, index, type);
+
+  Progression _getSubstitutedBase(
+      PitchScale? scale, int index, ProgressionType type) {
     if (scale == null || type == ProgressionType.romanNumerals) {
       return _substitutions![index].substitutedBase;
     } else {
@@ -224,6 +244,10 @@ class SubstitutionHandlerBloc
       keepHarmonicFunction: modal.keepAmount,
     ));
   }
+
+  Progression currentlyViewedSubstitution(
+          PitchScale? scale, ProgressionType type) =>
+      _getSubstitutedBase(scale, _currentIndex, type);
 }
 
 class _SubstituteByComputeModal {

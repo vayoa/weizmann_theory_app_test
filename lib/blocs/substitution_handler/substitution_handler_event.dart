@@ -89,3 +89,12 @@ class ChangeSubstitutionIndexInOrder extends SubstitutionHandlerEvent {
 
   const ChangeSubstitutionIndexInOrder(this.forward);
 }
+
+class ChangeVisibility extends SubstitutionHandlerEvent {
+  final bool visible;
+
+  @override
+  List<Object?> get props => [visible];
+
+  const ChangeVisibility(this.visible);
+}

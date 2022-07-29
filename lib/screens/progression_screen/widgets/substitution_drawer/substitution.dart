@@ -5,11 +5,17 @@ class _Substitution extends StatefulWidget {
     Key? key,
     required this.substitution,
     required this.onPressed,
+    required this.onApply,
+    required this.onChangeVisibility,
+    required this.visible,
   }) : super(key: key);
 
   final Substitution substitution;
+  final bool visible;
   final void Function(BuildContext context, ExpandableController? controller)
       onPressed;
+  final void Function() onApply;
+  final void Function() onChangeVisibility;
 
   @override
   State<_Substitution> createState() => _SubstitutionState();
@@ -27,9 +33,9 @@ class _SubstitutionState extends State<_Substitution> {
       ),
       expanded: _Expanded(
         substitution: widget.substitution,
-        onApply: () => BlocProvider.of<ProgressionHandlerBloc>(context)
-            .add(ApplySubstitution(widget.substitution)),
-        onChangeVisibility: () {},
+        visible: widget.visible,
+        onApply: widget.onApply,
+        onChangeVisibility: widget.onChangeVisibility,
       ),
       collapsed: Material(
         color: Colors.transparent,
@@ -57,11 +63,13 @@ class _Expanded extends StatelessWidget {
     required this.substitution,
     required this.onApply,
     required this.onChangeVisibility,
+    required this.visible,
   }) : super(key: key);
 
   final Substitution substitution;
   final void Function() onApply;
   final void Function() onChangeVisibility;
+  final bool visible;
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +109,9 @@ class _Expanded extends StatelessWidget {
                         small: true,
                         size: 12.0,
                         iconSize: 16.0,
-                        iconData: Icons.visibility_rounded,
+                        iconData: visible
+                            ? Icons.visibility_rounded
+                            : Icons.visibility_off_rounded,
                         onPressed: onChangeVisibility,
                       ),
                     ],
@@ -125,17 +135,6 @@ class _Expanded extends StatelessWidget {
               maxCrossAxisExtent: measuresInLine == 1 ? null : 200.0,
               mainAxisExtent: measuresInLine == 1 ? 40.0 : null,
             ),
-            // child: SizedBox(
-            //   height: 40.0,
-            //   child: HorizontalProgressionView(
-            //     progression: DegreeProgression.parse(r"I 2, V 2, I 4"),
-            //     padding: const EdgeInsets.only(
-            //       left: SubstitutionDrawer.horizontalPadding,
-            //       right: SubstitutionDrawer.horizontalPadding * 1.4,
-            //     ),
-            //     extent: 200.0,
-            //   ),
-            // ),
           ),
           const SizedBox(height: 13.0),
           const Divider(height: 1.0),

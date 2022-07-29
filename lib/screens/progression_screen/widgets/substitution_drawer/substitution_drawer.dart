@@ -90,10 +90,17 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
                     : (subBloc.substitutions!.isEmpty
                         ? const _NoSubsFound()
                         : _List(
+              substitutions: subBloc.substitutions!,
                             selected: subBloc.currentIndex,
+                            visible: subBloc.visible,
                             onSelected: (index) =>
                                 subBloc.add(ChangeSubstitutionIndex(index)),
-                            substitutions: subBloc.substitutions!,
+                            onApply: () =>
+                                BlocProvider.of<ProgressionHandlerBloc>(context)
+                                    .add(ApplySubstitution(
+                                        subBloc.currentSubstitution!)),
+                            onChangeVisibility: () =>
+                                subBloc.add(ChangeVisibility(!subBloc.visible)),
                           ))),
           );
         }

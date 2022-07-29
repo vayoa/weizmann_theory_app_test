@@ -169,7 +169,10 @@ class MeasureView<T> extends StatelessWidget {
     this.selectorStart = false,
     this.selectorEnd = false,
     this.disabled = false,
-  }) : super(key: key);
+    this.paintFrom,
+    this.paintTo,
+  })  : assert((paintFrom == null) == (paintTo == null)),
+        super(key: key);
 
   final Progression<T> measure;
   final void Function() onEdit;
@@ -183,6 +186,8 @@ class MeasureView<T> extends StatelessWidget {
   final bool selectorStart;
   final bool selectorEnd;
   final bool disabled;
+  final int? paintFrom;
+  final int? paintTo;
 
   @override
   Widget build(BuildContext context) {
@@ -238,13 +243,18 @@ class MeasureView<T> extends StatelessWidget {
   List<Widget> buildList() {
     List<Widget> widgets = [];
     final double step = measure.timeSignature.step;
+    final bool shouldPaint = paintFrom != null && paintTo != null;
     for (int i = 0; i < measure.length; i++) {
+      final bool highlight = shouldPaint && i >= paintFrom! && i <= paintTo!;
       widgets.add(
         Flexible(
           flex: measure.durations[i] ~/ step,
           child: SizedBox(
             width: double.infinity,
-            child: ProgressionValueView(value: measure[i]),
+            child: ProgressionValueView(
+              value: measure[i],
+              highlight: highlight,
+            ),
           ),
         ),
       );
