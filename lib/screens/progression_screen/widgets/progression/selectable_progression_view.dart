@@ -15,11 +15,9 @@ class SelectableProgressionView<T> extends StatelessWidget {
     required this.progression,
     this.measures,
     this.rangeSelectPadding = 8.0,
-    this.fromChord = 0,
-    this.toChord = 0,
     required this.onChangeRange,
-    required this.startDur,
-    required this.endDur,
+    required this.startRange,
+    required this.endRange,
     required this.rangeDisabled,
     this.interactable = true,
   }) : super(key: key);
@@ -27,10 +25,8 @@ class SelectableProgressionView<T> extends StatelessWidget {
   final Progression progression;
   final List<Progression>? measures;
   final double rangeSelectPadding;
-  final int fromChord;
-  final double startDur;
-  final int toChord;
-  final double endDur;
+  final double startRange;
+  final double endRange;
   final void Function(double? start, double? end) onChangeRange;
   final bool rangeDisabled;
   final bool interactable;
@@ -58,11 +54,9 @@ class SelectableProgressionView<T> extends StatelessWidget {
                 measuresInLine: measuresInLine,
                 progression: progression,
                 measures: measures,
-                fromChord: fromChord,
-                toChord: toChord,
+                startRange: startRange,
+                endRange: endRange,
                 onChangeRange: onChangeRange,
-                startDur: startDur,
-                endDur: endDur,
                 rangeDisabled: rangeDisabled,
                 interactable: interactable,
               ),
@@ -80,11 +74,9 @@ class _SelectableProgression extends StatefulWidget {
     required this.measuresInLine,
     required this.progression,
     required this.measures,
-    required this.fromChord,
-    required this.toChord,
+    required this.startRange,
+    required this.endRange,
     required this.onChangeRange,
-    required this.startDur,
-    required this.endDur,
     required this.rangeDisabled,
     this.interactable = true,
   }) : super(key: key);
@@ -92,10 +84,8 @@ class _SelectableProgression extends StatefulWidget {
   final Progression progression;
   final List<Progression>? measures;
   final int measuresInLine;
-  final int fromChord;
-  final double startDur;
-  final int toChord;
-  final double endDur;
+  final double startRange;
+  final double endRange;
   final bool rangeDisabled;
   final void Function(double? start, double? end) onChangeRange;
   final bool interactable;
@@ -176,10 +166,8 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
           progression: widget.progression,
           measures: widget.measures,
           measuresInLine: widget.measuresInLine,
-          fromChord: widget.fromChord,
-          startDur: widget.startDur,
-          toChord: widget.toChord,
-          endDur: widget.endDur,
+          startRange: widget.startRange,
+          endRange: widget.endRange,
           rangeDisabled: widget.rangeDisabled,
           hoveredMeasure: hoveredMeasure,
           hoveredPos: hoveredPos,

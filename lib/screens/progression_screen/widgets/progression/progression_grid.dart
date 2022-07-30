@@ -13,10 +13,8 @@ class ProgressionGrid extends StatefulWidget {
     this.measures,
     this.rangeSelectPadding = 8.0,
     this.measuresInLine = 4,
-    this.fromChord,
-    this.startDur = 0.0,
-    this.toChord,
-    this.endDur,
+    this.startRange,
+    this.endRange,
     this.startAt,
     this.padding,
     this.mainAxisSpacing = Constants.measureSpacing,
@@ -37,10 +35,8 @@ class ProgressionGrid extends StatefulWidget {
   final List<Progression>? measures;
   final double rangeSelectPadding;
   final int measuresInLine;
-  final int? fromChord;
-  final double startDur;
-  final int? toChord;
-  final double? endDur;
+  final double? startRange;
+  final double? endRange;
   final int? startAt;
   final bool rangeDisabled;
   final EdgeInsets? padding;
@@ -81,15 +77,23 @@ class _ProgressionGridState extends State<ProgressionGrid> {
   void _updateMeasures() {
     _measures = widget.measures ?? widget.progression.splitToMeasures();
     final Progression prog = widget.progression;
-    if (widget.fromChord != null && widget.toChord != null) {
-      int toChord = widget.toChord!;
+    if (widget.startRange != null && widget.endRange != null) {
+      /* TODO: Improve this to only get the startRange + endRange without
+               calculating fromChord + toChord. */
+      int fromChord = prog.getPlayingIndex(widget.startRange!);
+      int toChord = prog
+          .getPlayingIndex(widget.endRange! - (prog.timeSignature.step / 2));
+      double widgetStartDur = widget.startRange! -
+          (prog.durations.real(fromChord) - prog.durations[fromChord]);
+      double widgetEndDur = widget.endRange! -
+          (prog.durations.real(toChord) - prog.durations[toChord]);
       List<int> results = Utilities.calculateRangePositions(
         progression: widget.progression,
         measures: _measures,
-        fromChord: widget.fromChord!,
-        startDur: widget.startDur,
+        fromChord: fromChord,
+        startDur: widgetStartDur,
         toChord: toChord,
-        endDur: widget.endDur,
+        endDur: widgetEndDur,
       );
       startMeasure = results[0];
       startIndex = results[1];
@@ -100,9 +104,9 @@ class _ProgressionGridState extends State<ProgressionGrid> {
       if (startMeasure != -1 && endMeasure != -1) {
         startDur = prog.isEmpty
             ? 0.0
-            : prog.durations.real(widget.fromChord!) -
-                prog.durations[widget.fromChord!] +
-                widget.startDur;
+            : prog.durations.real(fromChord) -
+                prog.durations[fromChord] +
+                widgetStartDur;
         if (startDur != 0) {
           double durBefore = _measures[0].timeSignature.decimal * startMeasure;
           durBefore += _measures[startMeasure].durations.real(startIndex) -
@@ -110,16 +114,16 @@ class _ProgressionGridState extends State<ProgressionGrid> {
           startDur -= durBefore;
         }
         endDur = prog.isEmpty ? 0.0 : prog.durations.real(toChord);
-        if (widget.endDur != null) {
-          endDur += widget.endDur! - prog.durations[toChord];
-        }
+        // if (widget.endDur != null) {
+        endDur += widgetEndDur - prog.durations[toChord];
+        // }
         double durBefore = _measures[0].timeSignature.decimal * endMeasure;
         durBefore += _measures[endMeasure].durations.real(endIndex) -
             _measures[endMeasure].durations[endIndex];
         endDur -= durBefore;
       }
     }
-    _canPaint = widget.fromChord != null && widget.toChord != null;
+    _canPaint = widget.startRange != null && widget.endRange != null;
   }
 
   @override

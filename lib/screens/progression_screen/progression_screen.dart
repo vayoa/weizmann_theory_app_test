@@ -353,10 +353,8 @@ class ProgressionScreenUI extends StatelessWidget {
                               : bloc.currentlyViewedProgression,
                           measures:
                               showSubs ? null : bloc.currentlyViewedMeasures,
-                          fromChord: bloc.fromChord,
-                          toChord: bloc.toChord,
-                          startDur: bloc.startDur,
-                          endDur: bloc.endDur,
+                          startRange: bloc.fromDur,
+                          endRange: bloc.toDur,
                           rangeDisabled: bloc.rangeDisabled,
                           interactable: !showSubs,
                           onChangeRange: (start, end) {
