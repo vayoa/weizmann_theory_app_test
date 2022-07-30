@@ -16,17 +16,24 @@ class ProgressionValueView<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<String> cut = Utilities.cutProgressionValue(value);
-    return Text.rich(
-      TextSpan(
-        text: cut[0],
-        children: [
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2.0),
+        child: Text.rich(
           TextSpan(
-            text: cut[1],
-            style: _handleHighlight(Constants.valuePatternTextStyle),
-          )
-        ],
+            text: cut[0],
+            children: [
+              TextSpan(
+                text: cut[1],
+                style: _handleHighlight(Constants.valuePatternTextStyle),
+              )
+            ],
+          ),
+          style: _handleHighlight(Constants.valueTextStyle),
+        ),
       ),
-      style: _handleHighlight(Constants.valueTextStyle),
     );
   }
 

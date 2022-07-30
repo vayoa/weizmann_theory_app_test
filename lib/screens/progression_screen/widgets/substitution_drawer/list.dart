@@ -106,12 +106,8 @@ class _ListState extends State<_List> {
                             key: _keys[index],
                             substitution: widget.substitutions[index],
                             visible: widget.visible,
-                            onPressed: (context, controller) {
-                              print(
-                                  '${widget.substitutions[index].changedStart} - '
-                                  '${widget.substitutions[index].changedEnd}');
-                              widget.onSelected(index);
-                            },
+                            onPressed: (context, controller) =>
+                                widget.onSelected(index),
                             onApply: widget.onApply,
                             onChangeVisibility: widget.onChangeVisibility,
                           ),
