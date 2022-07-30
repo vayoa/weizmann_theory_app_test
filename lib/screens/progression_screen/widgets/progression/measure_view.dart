@@ -219,19 +219,22 @@ class MeasureView<T> extends StatelessWidget {
             ],
           ),
         ),
-        AnimatedOpacity(
-          opacity: editable ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 300),
-          child: Align(
-            alignment: Alignment.bottomRight,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 3, bottom: 3),
-              child: CustomButton(
-                label: 'Edit',
-                iconData: Icons.edit_rounded,
-                onPressed: editable ? onEdit : () {},
-                tight: true,
-                size: 12,
+        IgnorePointer(
+          ignoring: !editable,
+          child: AnimatedOpacity(
+            opacity: editable ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 300),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 3, bottom: 3),
+                child: CustomButton(
+                  label: 'Edit',
+                  iconData: Icons.edit_rounded,
+                  onPressed: editable ? onEdit : () {},
+                  tight: true,
+                  size: 12,
+                ),
               ),
             ),
           ),

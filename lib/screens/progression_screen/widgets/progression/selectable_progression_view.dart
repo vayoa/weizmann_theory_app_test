@@ -179,25 +179,29 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
           startRange: widget.startRange,
           endRange: widget.endRange,
           rangeDisabled: widget.rangeDisabled,
-          hoveredMeasure: hoveredMeasure,
-          hoveredPos: hoveredPos,
-          editedMeasure: editedMeasure,
+          hoveredMeasure: widget.interactable ? hoveredMeasure : null,
+          hoveredPos: widget.interactable ? hoveredPos : null,
+          editedMeasure: widget.interactable ? editedMeasure : null,
           highlightFrom: widget.highlightFrom,
           highlightTo: widget.highlightTo,
-          onEdit: (index) {
-            setState(() {
-              editedMeasure = index;
-            });
-          },
-          onDoneEdit: (bool rebuild, List<String> values, index) {
-            setState(() {
-              if (rebuild) {
-                BlocProvider.of<ProgressionHandlerBloc>(context)
-                    .add(MeasureEdited(inputs: values, measureIndex: index));
-              }
-              editedMeasure = -1;
-            });
-          },
+          onEdit: widget.interactable
+              ? (index) {
+                  setState(() {
+                    editedMeasure = index;
+                  });
+                }
+              : null,
+          onDoneEdit: widget.interactable
+              ? (bool rebuild, List<String> values, index) {
+                  setState(() {
+                    if (rebuild) {
+                      BlocProvider.of<ProgressionHandlerBloc>(context).add(
+                          MeasureEdited(inputs: values, measureIndex: index));
+                    }
+                    editedMeasure = -1;
+                  });
+                }
+              : null,
         ),
       ),
     );

@@ -99,6 +99,7 @@ class _Expanded extends StatelessWidget {
                         small: true,
                         size: 12.0,
                         iconSize: 16.0,
+                        color: Constants.substitutionColor,
                         iconData: Icons.check_rounded,
                         onPressed: onApply,
                       ),

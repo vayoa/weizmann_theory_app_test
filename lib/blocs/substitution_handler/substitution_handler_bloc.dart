@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:harmony_theory/modals/pitch_chord.dart';
 import 'package:harmony_theory/modals/progression/chord_progression.dart';
 import 'package:harmony_theory/modals/progression/degree_progression.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
@@ -248,6 +249,10 @@ class SubstitutionHandlerBloc
   Progression currentlyViewedSubstitution(
           PitchScale? scale, ProgressionType type) =>
       _getSubstitutedBase(scale, _currentIndex, type);
+
+  List<Progression<PitchChord>> currentlyViewedSubstitutionChordMeasures(
+          PitchScale scale) =>
+      getChordProgression(scale, _currentIndex).splitToMeasures();
 }
 
 class _SubstituteByComputeModal {

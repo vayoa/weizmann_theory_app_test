@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_drawer/navigation_buttons.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 
-class SubstitutionOverlay extends StatelessWidget {
+import '../../../../../constants.dart';
+
+class SubstitutionOverlay extends StatefulWidget {
   const SubstitutionOverlay({
     Key? key,
     required this.visible,
@@ -19,6 +21,13 @@ class SubstitutionOverlay extends StatelessWidget {
   final void Function() onChangeVisibility;
 
   @override
+  State<SubstitutionOverlay> createState() => _SubstitutionOverlayState();
+}
+
+class _SubstitutionOverlayState extends State<SubstitutionOverlay> {
+  bool _locked = false;
+
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 30,
@@ -31,8 +40,9 @@ class SubstitutionOverlay extends StatelessWidget {
             small: true,
             size: 12.0,
             iconSize: 14.0,
+            color: Constants.substitutionColor,
             iconData: Icons.check_rounded,
-            onPressed: onApply,
+            onPressed: widget.onApply,
           ),
           const SizedBox(width: 5.0),
           CustomButton(
@@ -40,14 +50,22 @@ class SubstitutionOverlay extends StatelessWidget {
             tight: true,
             small: true,
             iconSize: 14.0,
-            iconData: visible
+            iconData: widget.visible
                 ? Icons.visibility_rounded
                 : Icons.visibility_off_rounded,
-            onPressed: onChangeVisibility,
+            onPressed: _lock,
+            onHover: (entered) {
+              if (_locked && entered) {
+                _lock();
+              }
+              if (entered || !_locked) {
+                widget.onChangeVisibility();
+              }
+            },
           ),
           const SizedBox(width: 5.0),
           NavigationButtonsBar(
-            onNavigation: onNavigation,
+            onNavigation: widget.onNavigation,
           ),
           const SizedBox(width: 5.0),
           CustomButton(
@@ -56,10 +74,12 @@ class SubstitutionOverlay extends StatelessWidget {
             small: true,
             iconSize: 14.0,
             iconData: Icons.read_more_rounded,
-            onPressed: onOpenDrawer,
+            onPressed: widget.onOpenDrawer,
           ),
         ],
       ),
     );
   }
+
+  void _lock() => setState(() => _locked = !_locked);
 }

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:harmony_theory/modals/pitch_chord.dart';
 import 'package:harmony_theory/modals/progression/exceptions.dart';
-import 'package:harmony_theory/modals/progression/progression.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:harmony_theory/state/progression_bank_entry.dart';
 
@@ -24,7 +22,6 @@ import 'widgets/reharmonize_bar.dart';
 import 'widgets/scale_chooser.dart';
 import 'widgets/substitution_drawer/substitution_drawer.dart';
 import 'widgets/substitution_drawer/substitution_overlay/substitution_overlay.dart';
-import 'widgets/substitution_window.dart';
 import 'widgets/view_type_selector.dart';
 
 class ProgressionScreen extends StatelessWidget {
@@ -149,43 +146,70 @@ class ProgressionScreenUI extends StatelessWidget {
                                             null ||
                                         (state is Playing &&
                                             !state.baseControl),
-                                child: Row(
-                                  children: [
-                                    TIconButton(
-                                      iconData: (state is Playing &&
-                                              state.baseControl)
-                                          ? Icons.pause_rounded
-                                          : Icons.play_arrow_rounded,
-                                      size: 32,
-                                      crop: true,
-                                      onPressed: () {
-                                        AudioPlayerBloc bloc =
-                                            BlocProvider.of<AudioPlayerBloc>(
-                                                context);
-                                        if (state is Playing) {
-                                          bloc.add(const Pause());
-                                        } else {
-                                          List<Progression<PitchChord>> chords =
-                                              BlocProvider.of<
-                                                          ProgressionHandlerBloc>(
+                                child: BlocBuilder<SubstitutionHandlerBloc,
+                                    SubstitutionHandlerState>(
+                                  builder: (context, subState) {
+                                    SubstitutionHandlerBloc subBloc =
+                                        BlocProvider.of<
+                                            SubstitutionHandlerBloc>(context);
+                                    final bool showSubs =
+                                        (subBloc.substitutions?.isNotEmpty ??
+                                                false) &&
+                                            subBloc.visible;
+                                    final Color? color = showSubs
+                                        ? Constants.substitutionColor
+                                        : null;
+                                    return Row(
+                                      children: [
+                                        TIconButton(
+                                          iconData: (state is Playing &&
+                                                  state.baseControl)
+                                              ? Icons.pause_rounded
+                                              : Icons.play_arrow_rounded,
+                                          size: 32,
+                                          crop: true,
+                                          color: color,
+                                          onPressed: () {
+                                            AudioPlayerBloc bloc = BlocProvider
+                                                .of<AudioPlayerBloc>(context);
+                                            if (state is Playing) {
+                                              bloc.add(const Pause());
+                                            } else {
+                                              final bool showSubs = (subBloc
+                                                          .substitutions
+                                                          ?.isNotEmpty ??
+                                                      false) &&
+                                                  subBloc.visible;
+                                              final progBloc = BlocProvider.of<
+                                                      ProgressionHandlerBloc>(
+                                                  context);
+                                              final scale =
+                                                  progBloc.currentScale;
+                                              if (scale != null) {
+                                                bloc.add(Play(
+                                                  measures: showSubs
+                                                      ? subBloc
+                                                          .currentlyViewedSubstitutionChordMeasures(
+                                                              scale)
+                                                      : progBloc.chordMeasures,
+                                                  basePlaying: true,
+                                                ));
+                                              }
+                                            }
+                                          },
+                                        ),
+                                        TIconButton(
+                                          iconData: Icons.stop_rounded,
+                                          size: 32,
+                                          color: color,
+                                          onPressed: () =>
+                                              BlocProvider.of<AudioPlayerBloc>(
                                                       context)
-                                                  .chordMeasures;
-                                          bloc.add(Play(
-                                            measures: chords,
-                                            basePlaying: true,
-                                          ));
-                                        }
-                                      },
-                                    ),
-                                    TIconButton(
-                                      iconData: Icons.stop_rounded,
-                                      size: 32,
-                                      onPressed: () =>
-                                          BlocProvider.of<AudioPlayerBloc>(
-                                                  context)
-                                              .add(const Reset()),
-                                    ),
-                                  ],
+                                                  .add(const Reset()),
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 ),
                               );
                             },
@@ -343,9 +367,9 @@ class ProgressionScreenUI extends StatelessWidget {
                       builder: (context, state) {
                         SubstitutionHandlerBloc subBloc =
                             BlocProvider.of<SubstitutionHandlerBloc>(context);
-                        final bool showSubs =
-                            (subBloc.substitutions?.isNotEmpty ?? false) &&
-                                subBloc.visible;
+                        final bool hasSubs =
+                            (subBloc.substitutions?.isNotEmpty ?? false);
+                        final bool showSubs = hasSubs && subBloc.visible;
                         return SelectableProgressionView(
                           progression: showSubs
                               ? subBloc.currentlyViewedSubstitution(
@@ -356,7 +380,7 @@ class ProgressionScreenUI extends StatelessWidget {
                           startRange: bloc.fromDur,
                           endRange: bloc.toDur,
                           rangeDisabled: bloc.rangeDisabled,
-                          interactable: !showSubs,
+                          interactable: !hasSubs,
                           highlightFrom: showSubs
                               ? subBloc.currentSubstitution!.changedStart
                               : null,
@@ -382,7 +406,7 @@ class ProgressionScreenUI extends StatelessWidget {
             ),
           ),
         ),
-        const SubstitutionWindow(),
+        // const SubstitutionWindow(),
         Positioned(
           left: 76.0,
           top: 222.0,
