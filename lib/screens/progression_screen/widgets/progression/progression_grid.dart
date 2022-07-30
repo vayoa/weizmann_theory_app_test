@@ -27,6 +27,8 @@ class ProgressionGrid extends StatefulWidget {
     this.editedMeasure,
     this.onDoneEdit,
     this.onEdit,
+    this.highlightFrom,
+    this.highlightTo,
   })  : assert((editedMeasure == null) == (onDoneEdit == null) &&
             (editedMeasure == null) == (onEdit == null)),
         super(key: key);
@@ -37,6 +39,8 @@ class ProgressionGrid extends StatefulWidget {
   final int measuresInLine;
   final double? startRange;
   final double? endRange;
+  final double? highlightFrom;
+  final double? highlightTo;
   final int? startAt;
   final bool rangeDisabled;
   final EdgeInsets? padding;
@@ -77,12 +81,14 @@ class _ProgressionGridState extends State<ProgressionGrid> {
   void _updateMeasures() {
     _measures = widget.measures ?? widget.progression.splitToMeasures();
     final Progression prog = widget.progression;
-    if (widget.startRange != null && widget.endRange != null) {
+    final double halfStep = (prog.timeSignature.step / 2);
+    if (!widget.rangeDisabled &&
+        widget.startRange != null &&
+        widget.endRange != null) {
       /* TODO: Improve this to only get the startRange + endRange without
                calculating fromChord + toChord. */
       int fromChord = prog.getPlayingIndex(widget.startRange!);
-      int toChord = prog
-          .getPlayingIndex(widget.endRange! - (prog.timeSignature.step / 2));
+      int toChord = prog.getPlayingIndex(widget.endRange! - halfStep);
       double widgetStartDur = widget.startRange! -
           (prog.durations.real(fromChord) - prog.durations[fromChord]);
       double widgetEndDur = widget.endRange! -
@@ -114,9 +120,7 @@ class _ProgressionGridState extends State<ProgressionGrid> {
           startDur -= durBefore;
         }
         endDur = prog.isEmpty ? 0.0 : prog.durations.real(toChord);
-        // if (widget.endDur != null) {
         endDur += widgetEndDur - prog.durations[toChord];
-        // }
         double durBefore = _measures[0].timeSignature.decimal * endMeasure;
         durBefore += _measures[endMeasure].durations.real(endIndex) -
             _measures[endMeasure].durations[endIndex];
@@ -175,6 +179,24 @@ class _ProgressionGridState extends State<ProgressionGrid> {
           }
         }
         final bool editable = index == widget.hoveredMeasure;
+
+        // TODO: Optimize...
+        var measure = _measures[index];
+        var m = index * measure.timeSignature.decimal;
+        int? paintFrom, paintTo;
+        if (widget.highlightFrom != null &&
+            widget.highlightTo != null &&
+            m + measure.timeSignature.decimal >= widget.highlightFrom! &&
+            m <= widget.highlightTo!) {
+          paintFrom = measure.getPlayingIndex(widget.highlightFrom! - m);
+          var dur = widget.highlightTo! - m - (measure.timeSignature.step / 2);
+          if (dur > m) {
+            paintTo = measure.length - 1;
+          } else {
+            paintTo = measure.getPlayingIndex(dur);
+          }
+        }
+
         return MeasureView(
           measure: _measures[index],
           last: last,
@@ -186,8 +208,8 @@ class _ProgressionGridState extends State<ProgressionGrid> {
           selectorEnd: end,
           disabled: widget.rangeDisabled,
           editable: editable,
-          paintFrom: fromChord,
-          paintTo: toChord,
+          paintFrom: paintFrom,
+          paintTo: paintTo,
           cursorPos:
               editable && widget.hoveredPos != -1 ? widget.hoveredPos : null,
           onEdit: () => widget.onEdit?.call(index),

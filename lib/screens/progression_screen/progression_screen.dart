@@ -357,6 +357,12 @@ class ProgressionScreenUI extends StatelessWidget {
                           endRange: bloc.toDur,
                           rangeDisabled: bloc.rangeDisabled,
                           interactable: !showSubs,
+                          highlightFrom: showSubs
+                              ? subBloc.currentSubstitution!.changedStart
+                              : null,
+                          highlightTo: showSubs
+                              ? subBloc.currentSubstitution!.changedEnd
+                              : null,
                           onChangeRange: (start, end) {
                             if (start == null || end == null) {
                               BlocProvider.of<ProgressionHandlerBloc>(context)

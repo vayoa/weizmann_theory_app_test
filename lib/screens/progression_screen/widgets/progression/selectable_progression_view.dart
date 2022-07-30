@@ -20,6 +20,8 @@ class SelectableProgressionView<T> extends StatelessWidget {
     required this.endRange,
     required this.rangeDisabled,
     this.interactable = true,
+    this.highlightFrom,
+    this.highlightTo,
   }) : super(key: key);
 
   final Progression progression;
@@ -27,6 +29,8 @@ class SelectableProgressionView<T> extends StatelessWidget {
   final double rangeSelectPadding;
   final double startRange;
   final double endRange;
+  final double? highlightFrom;
+  final double? highlightTo;
   final void Function(double? start, double? end) onChangeRange;
   final bool rangeDisabled;
   final bool interactable;
@@ -59,6 +63,8 @@ class SelectableProgressionView<T> extends StatelessWidget {
                 onChangeRange: onChangeRange,
                 rangeDisabled: rangeDisabled,
                 interactable: interactable,
+                highlightFrom: highlightFrom,
+                highlightTo: highlightTo,
               ),
             ),
           );
@@ -79,6 +85,8 @@ class _SelectableProgression extends StatefulWidget {
     required this.onChangeRange,
     required this.rangeDisabled,
     this.interactable = true,
+    required this.highlightFrom,
+    required this.highlightTo,
   }) : super(key: key);
 
   final Progression progression;
@@ -86,6 +94,8 @@ class _SelectableProgression extends StatefulWidget {
   final int measuresInLine;
   final double startRange;
   final double endRange;
+  final double? highlightFrom;
+  final double? highlightTo;
   final bool rangeDisabled;
   final void Function(double? start, double? end) onChangeRange;
   final bool interactable;
@@ -172,6 +182,8 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
           hoveredMeasure: hoveredMeasure,
           hoveredPos: hoveredPos,
           editedMeasure: editedMeasure,
+          highlightFrom: widget.highlightFrom,
+          highlightTo: widget.highlightTo,
           onEdit: (index) {
             setState(() {
               editedMeasure = index;
