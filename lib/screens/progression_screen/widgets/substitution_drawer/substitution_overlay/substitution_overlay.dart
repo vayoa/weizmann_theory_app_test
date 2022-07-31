@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_drawer/navigation_buttons.dart';
 import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 
+import '../../../../../blocs/progression_handler_bloc.dart';
+import '../../../../../blocs/substitution_handler/substitution_handler_bloc.dart';
 import '../../../../../constants.dart';
 
 class SubstitutionOverlay extends StatefulWidget {
@@ -12,6 +15,7 @@ class SubstitutionOverlay extends StatefulWidget {
     required this.onApply,
     required this.onOpenDrawer,
     required this.onChangeVisibility,
+    required this.onQuit,
   }) : super(key: key);
 
   final bool visible;
@@ -19,6 +23,7 @@ class SubstitutionOverlay extends StatefulWidget {
   final void Function() onApply;
   final void Function() onOpenDrawer;
   final void Function() onChangeVisibility;
+  final void Function() onQuit;
 
   @override
   State<SubstitutionOverlay> createState() => _SubstitutionOverlayState();
@@ -27,13 +32,15 @@ class SubstitutionOverlay extends StatefulWidget {
 class _SubstitutionOverlayState extends State<SubstitutionOverlay> {
   bool _locked = false;
 
+  static const double horizontalPadding = 4.0;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 30,
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(width: 5.0),
           CustomButton(
             label: 'Apply',
             tight: true,
@@ -44,7 +51,7 @@ class _SubstitutionOverlayState extends State<SubstitutionOverlay> {
             iconData: Icons.check_rounded,
             onPressed: widget.onApply,
           ),
-          const SizedBox(width: 5.0),
+          const SizedBox(width: horizontalPadding),
           CustomButton(
             label: null,
             tight: true,
@@ -63,11 +70,11 @@ class _SubstitutionOverlayState extends State<SubstitutionOverlay> {
               }
             },
           ),
-          const SizedBox(width: 5.0),
+          const SizedBox(width: horizontalPadding),
           NavigationButtonsBar(
             onNavigation: widget.onNavigation,
           ),
-          const SizedBox(width: 5.0),
+          const SizedBox(width: horizontalPadding),
           CustomButton(
             label: null,
             tight: true,
@@ -76,10 +83,59 @@ class _SubstitutionOverlayState extends State<SubstitutionOverlay> {
             iconData: Icons.read_more_rounded,
             onPressed: widget.onOpenDrawer,
           ),
+          const SizedBox(width: horizontalPadding),
+          CustomButton(
+            label: null,
+            tight: true,
+            small: true,
+            iconSize: 16.0,
+            iconData: Icons.disabled_by_default_rounded,
+            onPressed: widget.onQuit,
+          ),
         ],
       ),
     );
   }
 
   void _lock() => setState(() => _locked = !_locked);
+}
+
+class SetSubstitutionOverlay extends StatelessWidget {
+  const SetSubstitutionOverlay({
+    Key? key,
+    this.bloc,
+    this.progBloc,
+  }) : super(key: key);
+
+  final SubstitutionHandlerBloc? bloc;
+  final ProgressionHandlerBloc? progBloc;
+
+  @override
+  Widget build(BuildContext context) {
+    final SubstitutionHandlerBloc _bloc =
+        bloc ?? BlocProvider.of<SubstitutionHandlerBloc>(context);
+    final ProgressionHandlerBloc _progBloc =
+        progBloc ?? BlocProvider.of<ProgressionHandlerBloc>(context);
+    return BlocBuilder<SubstitutionHandlerBloc, SubstitutionHandlerState>(
+      bloc: bloc,
+      buildWhen: (prev, state) => state is ChangedVisibility,
+      builder: (context, state) {
+        final bool visible = state is ChangedVisibility ? state.visible : true;
+        return SubstitutionOverlay(
+          visible: visible,
+          onApply: () {
+            final sub = _bloc.currentSubstitution;
+            if (sub != null) {
+              _progBloc.add(ApplySubstitution(sub));
+            }
+          },
+          onNavigation: (bool forward) =>
+              _bloc.add(ChangeSubstitutionIndexInOrder(forward)),
+          onChangeVisibility: () => _bloc.add(ChangeVisibility(!visible)),
+          onOpenDrawer: () => _bloc.add(const UpdateShowSubstitutions(true)),
+          onQuit: () => _bloc.add(const ClearSubstitutions()),
+        );
+      },
+    );
+  }
 }

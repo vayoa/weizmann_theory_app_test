@@ -65,7 +65,7 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
             BlocProvider.of<SubstitutionHandlerBloc>(context);
         // ProgressionHandlerBloc progressionBloc =
         //     BlocProvider.of<ProgressionHandlerBloc>(context);
-        if (!subBloc.showingWindow) {
+        if (!subBloc.currentlyHarmonizing) {
           return const SizedBox();
         } else {
           return _Wrapper(

@@ -96,349 +96,326 @@ class ProgressionScreenUI extends StatelessWidget {
   Widget build(BuildContext context) {
     final EntryLocation location =
         BlocProvider.of<ProgressionHandlerBloc>(context).location;
-    return Stack(
-      alignment: Alignment.bottomCenter,
-      children: [
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 20.0, right: 30.0, left: 30.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 700,
-                  height: 140,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 20.0, right: 30.0, left: 30.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 700,
+              height: 140,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ProgressionScreenTopBar(location: location),
+                  Row(
                     children: [
-                      ProgressionScreenTopBar(location: location),
-                      Row(
-                        children: [
-                          ProgressionTitle(title: location.title),
-                          BankProgressionButton(
-                            initiallyBanked: initiallyBanked,
-                            onToggle: (active) {
-                              BlocProvider.of<BankBloc>(context).add(
-                                  ChangeUseInSubstitutions(
-                                      location: BlocProvider.of<
-                                              ProgressionHandlerBloc>(context)
-                                          .location,
-                                      useInSubstitutions: active));
-                            },
-                          )
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          BlocBuilder<AudioPlayerBloc, AudioPlayerState>(
-                            builder: (context, state) {
-                              return IgnorePointer(
-                                ignoring:
-                                    BlocProvider.of<ProgressionHandlerBloc>(
-                                                context,
-                                                listen: true)
-                                            .progressionEmpty ||
-                                        BlocProvider.of<ProgressionHandlerBloc>(
-                                                    context,
-                                                    listen: true)
-                                                .currentScale ==
-                                            null ||
-                                        (state is Playing &&
-                                            !state.baseControl),
-                                child: BlocBuilder<SubstitutionHandlerBloc,
-                                    SubstitutionHandlerState>(
-                                  builder: (context, subState) {
-                                    SubstitutionHandlerBloc subBloc =
-                                        BlocProvider.of<
-                                            SubstitutionHandlerBloc>(context);
-                                    final bool showSubs =
-                                        (subBloc.substitutions?.isNotEmpty ??
-                                                false) &&
-                                            subBloc.visible;
-                                    final Color? color = showSubs
-                                        ? Constants.substitutionColor
-                                        : null;
-                                    return Row(
-                                      children: [
-                                        TIconButton(
-                                          iconData: (state is Playing &&
-                                                  state.baseControl)
-                                              ? Icons.pause_rounded
-                                              : Icons.play_arrow_rounded,
-                                          size: 32,
-                                          crop: true,
-                                          color: color,
-                                          onPressed: () {
-                                            AudioPlayerBloc bloc = BlocProvider
-                                                .of<AudioPlayerBloc>(context);
-                                            if (state is Playing) {
-                                              bloc.add(const Pause());
-                                            } else {
-                                              final bool showSubs = (subBloc
-                                                          .substitutions
-                                                          ?.isNotEmpty ??
-                                                      false) &&
-                                                  subBloc.visible;
-                                              final progBloc = BlocProvider.of<
-                                                      ProgressionHandlerBloc>(
-                                                  context);
-                                              final scale =
-                                                  progBloc.currentScale;
-                                              if (scale != null) {
-                                                bloc.add(Play(
-                                                  measures: showSubs
-                                                      ? subBloc
-                                                          .currentlyViewedSubstitutionChordMeasures(
-                                                              scale)
-                                                      : progBloc.chordMeasures,
-                                                  basePlaying: true,
-                                                ));
-                                              }
-                                            }
-                                          },
-                                        ),
-                                        TIconButton(
-                                          iconData: Icons.stop_rounded,
-                                          size: 32,
-                                          color: color,
-                                          onPressed: () =>
-                                              BlocProvider.of<AudioPlayerBloc>(
-                                                      context)
-                                                  .add(const Reset()),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 6),
-                          const Text(
-                            "BPM: ",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          const BPMInput(),
-                          const Text(
-                            ', ',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          BlocBuilder<ProgressionHandlerBloc,
-                              ProgressionHandlerState>(
-                            buildWhen: (_, state) =>
-                                state is ChangedTimeSignature,
-                            builder: (context, state) {
-                              return TextButton(
-                                style: TextButton.styleFrom(
-                                  minimumSize: const Size(40, 36),
-                                  primary: Colors.black,
-                                  padding: EdgeInsets.zero,
-                                  backgroundColor: Colors.transparent,
-                                ),
-                                onPressed:
-                                    BlocProvider.of<SubstitutionHandlerBloc>(
-                                                context,
-                                                listen: true)
-                                            .showingWindow
-                                        ? null
-                                        : () => BlocProvider.of<
-                                                ProgressionHandlerBloc>(context)
-                                            .add(const ChangeTimeSignature()),
-                                child: Text(
-                                  BlocProvider.of<ProgressionHandlerBloc>(
-                                          context)
-                                      .currentProgression
-                                      .timeSignature
-                                      .toString(),
-                                  style: const TextStyle(fontSize: 16.0),
-                                ),
-                              );
-                            },
-                          )
-                        ],
-                      ),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(
-                            minHeight: 24, maxHeight: 24, maxWidth: 600),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            BlocBuilder<ProgressionHandlerBloc,
-                                ProgressionHandlerState>(
-                              buildWhen: (previous, state) =>
-                                  state is TypeChanged,
-                              builder: (context, state) {
-                                return ViewTypeSelector(
-                                  tight: true,
-                                  startOnChords:
+                      ProgressionTitle(title: location.title),
+                      BankProgressionButton(
+                        initiallyBanked: initiallyBanked,
+                        onToggle: (active) {
+                          BlocProvider.of<BankBloc>(context).add(
+                              ChangeUseInSubstitutions(
+                                  location:
                                       BlocProvider.of<ProgressionHandlerBloc>(
+                                              context)
+                                          .location,
+                                  useInSubstitutions: active));
+                        },
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      BlocBuilder<AudioPlayerBloc, AudioPlayerState>(
+                        builder: (context, state) {
+                          return IgnorePointer(
+                            ignoring: BlocProvider.of<ProgressionHandlerBloc>(
+                                        context,
+                                        listen: true)
+                                    .progressionEmpty ||
+                                BlocProvider.of<ProgressionHandlerBloc>(context,
+                                            listen: true)
+                                        .currentScale ==
+                                    null ||
+                                (state is Playing && !state.baseControl),
+                            child: BlocBuilder<SubstitutionHandlerBloc,
+                                SubstitutionHandlerState>(
+                              builder: (context, subState) {
+                                SubstitutionHandlerBloc subBloc =
+                                    BlocProvider.of<SubstitutionHandlerBloc>(
+                                        context);
+                                final bool showSubs =
+                                    (subBloc.substitutions?.isNotEmpty ??
+                                            false) &&
+                                        subBloc.visible;
+                                final Color? color = showSubs
+                                    ? Constants.substitutionColor
+                                    : null;
+                                return Row(
+                                  children: [
+                                    TIconButton(
+                                      iconData: (state is Playing &&
+                                              state.baseControl)
+                                          ? Icons.pause_rounded
+                                          : Icons.play_arrow_rounded,
+                                      size: 32,
+                                      crop: true,
+                                      color: color,
+                                      onPressed: () {
+                                        AudioPlayerBloc bloc =
+                                            BlocProvider.of<AudioPlayerBloc>(
+                                                context);
+                                        if (state is Playing) {
+                                          bloc.add(const Pause());
+                                        } else {
+                                          final bool showSubs = (subBloc
+                                                      .substitutions
+                                                      ?.isNotEmpty ??
+                                                  false) &&
+                                              subBloc.visible;
+                                          final progBloc = BlocProvider.of<
+                                              ProgressionHandlerBloc>(context);
+                                          final scale = progBloc.currentScale;
+                                          if (scale != null) {
+                                            bloc.add(Play(
+                                              measures: showSubs
+                                                  ? subBloc
+                                                      .currentlyViewedSubstitutionChordMeasures(
+                                                          scale)
+                                                  : progBloc.chordMeasures,
+                                              basePlaying: true,
+                                            ));
+                                          }
+                                        }
+                                      },
+                                    ),
+                                    TIconButton(
+                                      iconData: Icons.stop_rounded,
+                                      size: 32,
+                                      color: color,
+                                      onPressed: () =>
+                                          BlocProvider.of<AudioPlayerBloc>(
                                                   context)
-                                              .type ==
-                                          ProgressionType.chords,
-                                  onPressed: (newType) {
-                                    ProgressionHandlerBloc bloc =
-                                        BlocProvider.of<ProgressionHandlerBloc>(
-                                            context);
-                                    if (newType ==
-                                            ProgressionType.romanNumerals ||
-                                        bloc.currentScale != null) {
-                                      bloc.add(SwitchType(newType));
-                                      return true;
-                                    }
-                                    return false;
-                                  },
+                                              .add(const Reset()),
+                                    ),
+                                  ],
                                 );
                               },
                             ),
-                            ScaleChooser(
-                                enabled:
-                                    !BlocProvider.of<SubstitutionHandlerBloc>(
-                                            context,
-                                            listen: true)
-                                        .showingWindow),
-                            ReharmonizeBar(
-                                enabled:
-                                    !BlocProvider.of<SubstitutionHandlerBloc>(
-                                            context,
-                                            listen: true)
-                                        .showingWindow),
-                            CustomButton(
-                              label: 'Surprise Me',
-                              iconData: Icons.lightbulb,
-                              onPressed:
-                                  BlocProvider.of<SubstitutionHandlerBloc>(
-                                              context,
-                                              listen: true)
-                                          .showingWindow
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        "BPM: ",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      const BPMInput(),
+                      const Text(
+                        ', ',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      BlocBuilder<ProgressionHandlerBloc,
+                          ProgressionHandlerState>(
+                        buildWhen: (_, state) => state is ChangedTimeSignature,
+                        builder: (context, state) {
+                          return TextButton(
+                            style: TextButton.styleFrom(
+                              minimumSize: const Size(40, 36),
+                              primary: Colors.black,
+                              padding: EdgeInsets.zero,
+                              backgroundColor: Colors.transparent,
+                            ),
+                            onPressed: BlocProvider.of<SubstitutionHandlerBloc>(
+                                        context,
+                                        listen: true)
+                                    .currentlyHarmonizing
+                                ? null
+                                : () => BlocProvider.of<ProgressionHandlerBloc>(
+                                        context)
+                                    .add(const ChangeTimeSignature()),
+                            child: Text(
+                              BlocProvider.of<ProgressionHandlerBloc>(context)
+                                  .currentProgression
+                                  .timeSignature
+                                  .toString(),
+                              style: const TextStyle(fontSize: 16.0),
+                            ),
+                          );
+                        },
+                      )
+                    ],
+                  ),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                        minHeight: 24, maxHeight: 24, maxWidth: 600),
+                    child: Row(
+                      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        BlocBuilder<ProgressionHandlerBloc,
+                            ProgressionHandlerState>(
+                          buildWhen: (previous, state) => state is TypeChanged,
+                          builder: (context, state) {
+                            return ViewTypeSelector(
+                              tight: true,
+                              startOnChords:
+                                  BlocProvider.of<ProgressionHandlerBloc>(
+                                              context)
+                                          .type ==
+                                      ProgressionType.chords,
+                              onPressed: (newType) {
+                                ProgressionHandlerBloc bloc =
+                                    BlocProvider.of<ProgressionHandlerBloc>(
+                                        context);
+                                if (newType == ProgressionType.romanNumerals ||
+                                    bloc.currentScale != null) {
+                                  bloc.add(SwitchType(newType));
+                                  return true;
+                                }
+                                return false;
+                              },
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 10.0),
+                        BlocBuilder<SubstitutionHandlerBloc,
+                            SubstitutionHandlerState>(
+                          builder: (context, state) {
+                            final bloc =
+                                BlocProvider.of<SubstitutionHandlerBloc>(
+                                    context);
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ScaleChooser(
+                                    enabled: !bloc.currentlyHarmonizing),
+                                const SizedBox(width: 10.0),
+                                SizedBox(
+                                  width: 200,
+                                  child: AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 300),
+                                    switchInCurve: Curves.easeInOut,
+                                    transitionBuilder: (child, animation) =>
+                                        FadeTransition(
+                                      opacity: animation,
+                                      child: SlideTransition(
+                                        position: Tween(
+                                                begin: const Offset(0, 0.2),
+                                                end: Offset.zero)
+                                            .animate(animation),
+                                        child: child,
+                                      ),
+                                    ),
+                                    child: bloc.currentlyHarmonizing &&
+                                            !bloc.showingDrawer
+                                        ? const SetSubstitutionOverlay()
+                                        : ReharmonizeBar(
+                                            enabled:
+                                                !bloc.currentlyHarmonizing),
+                                  ),
+                                ),
+                                const SizedBox(width: 10.0),
+                                CustomButton(
+                                  label: 'Surprise Me',
+                                  iconData: Icons.lightbulb,
+                                  onPressed: bloc.currentlyHarmonizing
                                       ? null
                                       : () => BlocProvider.of<
                                               ProgressionHandlerBloc>(context)
                                           .add(const SurpriseMe()),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                BlocConsumer<ProgressionHandlerBloc, ProgressionHandlerState>(
-                  listener: (context, state) {
-                    if (state is ProgressionChanged) {
-                      BlocProvider.of<BankBloc>(context).add(OverrideEntry(
-                        location:
-                            BlocProvider.of<ProgressionHandlerBloc>(context)
-                                .location,
-                        progression:
-                            BlocProvider.of<ProgressionHandlerBloc>(context)
-                                .currentProgression,
-                      ));
-                    } else if (state is InvalidInputReceived) {
-                      Duration duration = const Duration(seconds: 4);
-                      String message = 'An invalid value was inputted:'
-                          '\n${state.exception}';
-                      if (state.exception is NonValidDuration) {
-                        NonValidDuration e =
-                            state.exception as NonValidDuration;
-                        String value = e.value is String
-                            ? e.value
-                            : (e.value == null ? '//' : e.value.toString());
-                        message = 'An invalid duration was inputted:'
-                            '\nA value of $value in a duration of '
-                            '${(e.duration * e.timeSignature.denominator).toInt()}'
-                            '/${e.timeSignature.denominator} is not a valid '
-                            'duration in a ${e.timeSignature} time signature.';
-                        duration = const Duration(seconds: 12);
-                      }
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          behavior: SnackBarBehavior.floating,
-                          content: Text(message),
-                          duration: duration,
-                        ),
-                      );
-                    }
-                  },
-                  builder: (context, state) {
-                    ProgressionHandlerBloc bloc =
-                        BlocProvider.of<ProgressionHandlerBloc>(context);
-                    return BlocBuilder<SubstitutionHandlerBloc,
-                        SubstitutionHandlerState>(
-                      builder: (context, state) {
-                        SubstitutionHandlerBloc subBloc =
-                            BlocProvider.of<SubstitutionHandlerBloc>(context);
-                        final bool hasSubs =
-                            (subBloc.substitutions?.isNotEmpty ?? false);
-                        final bool showSubs = hasSubs && subBloc.visible;
-                        return SelectableProgressionView(
-                          progression: showSubs
-                              ? subBloc.currentlyViewedSubstitution(
-                                  bloc.currentScale, bloc.type)
-                              : bloc.currentlyViewedProgression,
-                          measures:
-                              showSubs ? null : bloc.currentlyViewedMeasures,
-                          startRange: bloc.fromDur,
-                          endRange: bloc.toDur,
-                          rangeDisabled: bloc.rangeDisabled,
-                          interactable: !hasSubs,
-                          highlightFrom: showSubs
-                              ? subBloc.currentSubstitution!.changedStart
-                              : null,
-                          highlightTo: showSubs
-                              ? subBloc.currentSubstitution!.changedEnd
-                              : null,
-                          onChangeRange: (start, end) {
-                            if (start == null || end == null) {
-                              BlocProvider.of<ProgressionHandlerBloc>(context)
-                                  .add(const DisableRange(disable: true));
-                            } else {
-                              BlocProvider.of<ProgressionHandlerBloc>(context)
-                                  .add(ChangeRangeDuration(
-                                      start: start, end: end));
-                            }
+                                ),
+                              ],
+                            );
                           },
-                        );
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            BlocConsumer<ProgressionHandlerBloc, ProgressionHandlerState>(
+              listener: (context, state) {
+                if (state is ProgressionChanged) {
+                  BlocProvider.of<BankBloc>(context).add(OverrideEntry(
+                    location: BlocProvider.of<ProgressionHandlerBloc>(context)
+                        .location,
+                    progression:
+                        BlocProvider.of<ProgressionHandlerBloc>(context)
+                            .currentProgression,
+                  ));
+                } else if (state is InvalidInputReceived) {
+                  Duration duration = const Duration(seconds: 4);
+                  String message = 'An invalid value was inputted:'
+                      '\n${state.exception}';
+                  if (state.exception is NonValidDuration) {
+                    NonValidDuration e = state.exception as NonValidDuration;
+                    String value = e.value is String
+                        ? e.value
+                        : (e.value == null ? '//' : e.value.toString());
+                    message = 'An invalid duration was inputted:'
+                        '\nA value of $value in a duration of '
+                        '${(e.duration * e.timeSignature.denominator).toInt()}'
+                        '/${e.timeSignature.denominator} is not a valid '
+                        'duration in a ${e.timeSignature} time signature.';
+                    duration = const Duration(seconds: 12);
+                  }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      content: Text(message),
+                      duration: duration,
+                    ),
+                  );
+                }
+              },
+              builder: (context, state) {
+                ProgressionHandlerBloc bloc =
+                    BlocProvider.of<ProgressionHandlerBloc>(context);
+                return BlocBuilder<SubstitutionHandlerBloc,
+                    SubstitutionHandlerState>(
+                  builder: (context, state) {
+                    SubstitutionHandlerBloc subBloc =
+                        BlocProvider.of<SubstitutionHandlerBloc>(context);
+                    final bool hasSubs =
+                        (subBloc.substitutions?.isNotEmpty ?? false);
+                    final bool showSubs = hasSubs && subBloc.visible;
+                    return SelectableProgressionView(
+                      progression: showSubs
+                          ? subBloc.currentlyViewedSubstitution(
+                              bloc.currentScale, bloc.type)
+                          : bloc.currentlyViewedProgression,
+                      measures: showSubs ? null : bloc.currentlyViewedMeasures,
+                      startRange: bloc.fromDur,
+                      endRange: bloc.toDur,
+                      rangeDisabled: bloc.rangeDisabled,
+                      interactable: !hasSubs,
+                      highlightFrom: showSubs
+                          ? subBloc.currentSubstitution!.changedStart
+                          : null,
+                      highlightTo: showSubs
+                          ? subBloc.currentSubstitution!.changedEnd
+                          : null,
+                      onChangeRange: (start, end) {
+                        if (start == null || end == null) {
+                          BlocProvider.of<ProgressionHandlerBloc>(context)
+                              .add(const DisableRange(disable: true));
+                        } else {
+                          BlocProvider.of<ProgressionHandlerBloc>(context)
+                              .add(ChangeRangeDuration(start: start, end: end));
+                        }
                       },
                     );
                   },
-                ),
-              ],
+                );
+              },
             ),
-          ),
+          ],
         ),
-        // const SubstitutionWindow(),
-        Positioned(
-          left: 76.0,
-          top: 222.0,
-          child: BlocBuilder<SubstitutionHandlerBloc, SubstitutionHandlerState>(
-            buildWhen: (prev, state) => state is ChangedVisibility,
-            builder: (context, state) {
-              final bool visible =
-                  state is ChangedVisibility ? state.visible : true;
-              return SubstitutionOverlay(
-                visible: visible,
-                onApply: () {
-                  final sub = BlocProvider.of<SubstitutionHandlerBloc>(context)
-                      .currentSubstitution;
-                  if (sub != null) {
-                    BlocProvider.of<ProgressionHandlerBloc>(context)
-                        .add(ApplySubstitution(sub));
-                  }
-                },
-                onNavigation: (bool forward) =>
-                    BlocProvider.of<SubstitutionHandlerBloc>(context)
-                        .add(ChangeSubstitutionIndexInOrder(forward)),
-                onChangeVisibility: () =>
-                    BlocProvider.of<SubstitutionHandlerBloc>(context)
-                        .add(ChangeVisibility(!visible)),
-                onOpenDrawer: () =>
-                    BlocProvider.of<SubstitutionHandlerBloc>(context)
-                        .add(const UpdateShowSubstitutions(true)),
-              );
-            },
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

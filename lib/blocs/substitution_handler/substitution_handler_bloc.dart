@@ -55,7 +55,9 @@ class SubstitutionHandlerBloc
 
   List<Substitution>? get substitutions => _substitutions;
 
-  bool get showingWindow => _substitutions != null || _inSetup;
+  /// Returns true if the user is currently in the process of choosing
+  /// a substitution.
+  bool get currentlyHarmonizing => _substitutions != null || _inSetup;
 
   bool _showingDrawer = false;
 
