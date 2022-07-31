@@ -196,7 +196,6 @@ class _ProgressionGridState extends State<ProgressionGrid> {
             paintTo = measure.getPlayingIndex(dur);
           }
         }
-
         return MeasureView(
           measure: _measures[index],
           last: last,

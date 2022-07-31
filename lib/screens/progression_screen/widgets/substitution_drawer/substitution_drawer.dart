@@ -75,10 +75,13 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
             showNav: !subBloc.inSetup &&
                 state is! CalculatingSubstitutions &&
                 subBloc.substitutions!.isNotEmpty,
-            goDisabled: subBloc.substitutions != null,
-            expandPreferences: subBloc.inSetup,
-            onUpdate: (shouldShow, fromHover) =>
-                handleShowing(shouldShow, fromHover, subBloc),
+            expandPreferences:
+                subBloc.inSetup && state is! CalculatingSubstitutions,
+            onUpdate: (shouldShow, fromHover) {
+              if (state is! CalculatingSubstitutions) {
+                handleShowing(shouldShow, fromHover, subBloc);
+              }
+            },
             onPin: () => setState(() => _pinned = !_pinned),
             onQuit: () => subBloc.add(const ClearSubstitutions()),
             onNavigation: (forward) =>

@@ -54,10 +54,11 @@ class _PreferencesBarState extends State<_PreferencesBar> {
   Widget build(BuildContext context) {
     SubstitutionHandlerBloc bloc =
         BlocProvider.of<SubstitutionHandlerBloc>(context);
-    bool goDisabled = bloc.substitutions != null &&
-        (bloc.inSetup ||
-            (_keepHarmonicFunction == bloc.keepHarmonicFunction &&
-                _sound == bloc.sound));
+    bool goDisabled = bloc.state is CalculatingSubstitutions ||
+        (bloc.substitutions != null &&
+            (bloc.inSetup ||
+                (_keepHarmonicFunction == bloc.keepHarmonicFunction &&
+                    _sound == bloc.sound)));
     return Material(
       color: Colors.transparent,
       child: ExpandablePanel(
@@ -79,16 +80,16 @@ class _PreferencesBarState extends State<_PreferencesBar> {
                   const Text(
                     'Preferences',
                     style:
-                    TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
+                        TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
                   ),
                   _MiddleBar(
                     showNav: widget.showNav,
                     onGo: goDisabled
                         ? null
                         : () => bloc.add(CalculateSubstitutions(
-                      sound: _sound,
-                      keepHarmonicFunction: _keepHarmonicFunction,
-                    )),
+                              sound: _sound,
+                              keepHarmonicFunction: _keepHarmonicFunction,
+                            )),
                     onNavigation: widget.onNavigation,
                   ),
                 ],
@@ -114,7 +115,7 @@ class _PreferencesBarState extends State<_PreferencesBar> {
                     value: _keepHarmonicFunction.name,
                     onPressed: (index) {
                       KeepHarmonicFunctionAmount amount =
-                      KeepHarmonicFunctionAmount.values[index];
+                          KeepHarmonicFunctionAmount.values[index];
                       if (_keepHarmonicFunction != amount) {
                         setState(() {
                           _keepHarmonicFunction = amount;

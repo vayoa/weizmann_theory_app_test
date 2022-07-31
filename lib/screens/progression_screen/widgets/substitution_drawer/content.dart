@@ -6,7 +6,6 @@ class _Content extends StatelessWidget {
     required this.popup,
     required this.pinned,
     required this.showNav,
-    required this.goDisabled,
     required this.expandPreferences,
     required this.onClose,
     required this.onPin,
@@ -18,7 +17,6 @@ class _Content extends StatelessWidget {
   final bool popup;
   final bool pinned;
   final bool showNav;
-  final bool goDisabled;
   final bool expandPreferences;
   final void Function() onClose;
   final void Function() onPin;

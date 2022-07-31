@@ -7,7 +7,6 @@ class _Wrapper extends StatelessWidget {
     required this.show,
     required this.pinned,
     required this.showNav,
-    required this.goDisabled,
     required this.expandPreferences,
     required this.onUpdate,
     required this.onPin,
@@ -24,7 +23,6 @@ class _Wrapper extends StatelessWidget {
   final bool pinned;
   final bool show;
   final bool showNav;
-  final bool goDisabled;
   final bool expandPreferences;
   final void Function(bool shouldShow, bool fromHover) onUpdate;
   final void Function() onPin;
@@ -89,7 +87,6 @@ class _Wrapper extends StatelessWidget {
                       popup: popup,
                       pinned: pinned,
                       showNav: showNav,
-                      goDisabled: goDisabled,
                       expandPreferences: expandPreferences,
                       onClose: () => onUpdate(false, false),
                       onPin: onPin,
