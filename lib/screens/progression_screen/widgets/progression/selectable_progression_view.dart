@@ -119,11 +119,14 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
   static const double max =
       Constants.measureWidth - 2 * Constants.measurePadding;
 
-  int _getIndexFromPosition(Offset localPosition) =>
-      (localPosition.dx ~/ Constants.measureWidth) +
-      (widget.measuresInLine *
-          (localPosition.dy ~/
-              (Constants.measureHeight + Constants.measureSpacing)));
+  int _getIndexFromPosition(Offset localPosition) {
+    const height = Constants.measureHeight + Constants.measureSpacing;
+    if (localPosition.dy % height > Constants.measureHeight) {
+      return -1;
+    }
+    return (localPosition.dx ~/ Constants.measureWidth) +
+        (widget.measuresInLine * (localPosition.dy ~/ height));
+  }
 
   int _getMeasureDur(Offset localPosition) {
     double x =
