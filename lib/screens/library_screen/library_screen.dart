@@ -145,7 +145,7 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                           tight: true,
                           options: const {
                             'Entry': Icons.add_rounded,
-                            'Package': Icons.all_inbox_rounded,
+                            'Package': Constants.packageIcon,
                             'Import': Icons.upload_file_rounded,
                           },
                           onChoice: (option) async {

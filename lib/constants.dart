@@ -11,17 +11,22 @@ abstract class Constants {
       Color.fromARGB(100, 206, 206, 206);
   static const Color selectedColor = Color.fromARGB(255, 187, 187, 187);
   static const Color measureColor = Color.fromARGB(255, 171, 171, 171);
+  static const Color libraryEntryColor = Color.fromARGB(255, 163, 163, 163);
+  static const Color substitutionColor = Colors.blueGrey;
+
   static const double measureWidth = 315;
-  static const double measureHeight = 66;
+  static const double measureHeight = 56;
   static const double measureSpacing = measureHeight / 2;
   static const double measurePadding = 10;
   static const double measureFontSize = 26;
   static const double measurePatternFontSize = measureFontSize * 0.74;
   static const double minButtonWidth = 54;
   static const double minButtonOnlyIconWidth = 35;
-  static const double minButtonHeight = 29;
+  static const double minButtonHeight = 29.0;
+  static const double minSmallButtonHeight = 18.0;
   static const double borderRadius = 10.0;
   static const double tightBorderRadius = 5.0;
+  static const double smallBorderRadius = 3.0;
   static const TextStyle valueTextStyle =
       TextStyle(fontSize: Constants.measureFontSize);
   static const TextStyle valuePatternTextStyle =
@@ -32,7 +37,6 @@ abstract class Constants {
       TextStyle(fontSize: 24, fontWeight: FontWeight.bold);
   static const double libraryEntryWidth = 340;
   static const double libraryEntryHeight = 34;
-  static const Color libraryEntryColor = Color.fromARGB(255, 163, 163, 163);
 
   static const int maxTitleCharacters = 35;
 
@@ -40,4 +44,5 @@ abstract class Constants {
   static const IconData builtInIcon = Icons.inventory_2_rounded;
   static const IconData saveIcon = Icons.upload_rounded;
   static const IconData moveEntryIcon = Icons.unarchive_rounded;
+  static const IconData packageIcon = Icons.all_inbox_rounded;
 }

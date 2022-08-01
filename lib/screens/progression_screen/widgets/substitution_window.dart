@@ -178,7 +178,7 @@ class _SubstitutionWindowState extends State<SubstitutionWindow> {
                           setState(() => _currentIndex = newIndex),
                       itemBuilder: (BuildContext context, int index) =>
                           SubstitutionView(
-                            index: index,
+                        index: index,
                         surpriseMe: surpriseMe,
                         substitution: subBloc.substitutions![index],
                       ),
@@ -396,7 +396,7 @@ class _CancelButton extends StatelessWidget {
       iconData: Icons.cancel_rounded,
       onPressed: () {
         BlocProvider.of<SubstitutionHandlerBloc>(context)
-            .add(ClearSubstitutions());
+            .add(const ClearSubstitutions());
       },
     );
   }
@@ -548,15 +548,17 @@ class WeightPreviewButton extends StatelessWidget {
   const WeightPreviewButton({
     Key? key,
     required this.substitution,
+    this.size = Constants.measurePatternFontSize * 0.8,
   }) : super(key: key);
 
   final Substitution substitution;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     return TIconButton(
       iconData: Icons.notes_rounded,
-      size: Constants.measurePatternFontSize * 0.8,
+      size: size,
       onPressed: () {
         showGeneralDialog(
           context: context,

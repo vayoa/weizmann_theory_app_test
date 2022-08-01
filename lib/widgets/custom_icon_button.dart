@@ -9,12 +9,14 @@ class TIconButton extends StatefulWidget {
     required this.iconData,
     required this.onPressed,
     this.disabled = false,
+    this.color,
     this.crop = false,
   }) : super(key: key);
 
   final double size;
   final IconData iconData;
   final void Function() onPressed;
+  final Color? color;
   final bool disabled;
   final bool crop;
 
@@ -52,8 +54,9 @@ class _TIconButtonState extends State<TIconButton> {
   }
 
   Icon getIcon() => Icon(
-        widget.iconData,
+    widget.iconData,
         size: widget.size,
-        color: _hovered ? Constants.selectedColor : Colors.black,
+        color:
+            _hovered ? Constants.selectedColor : (widget.color ?? Colors.black),
       );
 }

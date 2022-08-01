@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:harmony_theory/modals/pitch_chord.dart';
 import 'package:harmony_theory/modals/progression/chord_progression.dart';
 import 'package:harmony_theory/modals/progression/degree_progression.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
@@ -30,6 +31,10 @@ class SubstitutionHandlerBloc
 
   bool get surpriseMe => _surpriseMe;
 
+  bool _visible = true;
+
+  bool get visible => _visible;
+
   DegreeProgression? _currentProgression;
   int _fromChord = 0, _toChord = 0;
   double _startDur = 0.0;
@@ -50,7 +55,17 @@ class SubstitutionHandlerBloc
 
   List<Substitution>? get substitutions => _substitutions;
 
-  bool get showingWindow => _substitutions != null || _inSetup;
+  /// Returns true if the user is currently in the process of choosing
+  /// a substitution.
+  bool get currentlyHarmonizing => _substitutions != null || _inSetup;
+
+  bool _showingDrawer = false;
+
+  bool get showingDrawer => _showingDrawer;
+
+  int _currentIndex = 0;
+
+  int get currentIndex => _currentIndex;
 
   SubstitutionHandlerBloc() : super(SubstitutionHandlerInitial()) {
     on<OpenSetupPage>((event, emit) {
@@ -61,6 +76,10 @@ class SubstitutionHandlerBloc
       _endDur = event.endDur;
       _inSetup = true;
       _surpriseMe = event.surpriseMe;
+      _showingDrawer = true;
+      emit(const UpdatedShowSubstitutions(true));
+      _visible = true;
+      emit(ChangedVisibility(_visible));
       return emit(SetupPage(surpriseMe: event.surpriseMe));
     });
     on<SwitchSubType>((event, emit) {
@@ -73,6 +92,9 @@ class SubstitutionHandlerBloc
               event.sound != _sound;
       if ((_substitutions == null && _currentProgression != null) ||
           changedSettings) {
+        int from = _currentIndex;
+        _currentIndex = 0;
+        emit(ChangedSubstitutionIndex(from, _currentIndex));
         if (changedSettings) {
           _keepHarmonicFunction = event.keepHarmonicFunction;
           _sound = event.sound;
@@ -107,6 +129,11 @@ class SubstitutionHandlerBloc
       _endDur = null;
       _chordProgressions = null;
       _inSetup = false;
+      _currentIndex = 0;
+      _showingDrawer = false;
+      emit(const UpdatedShowSubstitutions(false));
+      _visible = true;
+      emit(ChangedVisibility(_visible));
       if (_substituteByIsolate != null) {
         _substituteByIsolate!.kill(priority: Isolate.immediate);
         _substituteByIsolate = null;
@@ -117,6 +144,36 @@ class SubstitutionHandlerBloc
       _keepHarmonicFunction = event.keepHarmonicFunction;
       return emit(ChangedSubstitutionSettings());
     });
+    on<UpdateShowSubstitutions>((event, emit) {
+      if (event.show != _showingDrawer) {
+        _showingDrawer = event.show;
+        return emit(UpdatedShowSubstitutions(event.show));
+      }
+    });
+    on<ChangeSubstitutionIndex>((event, emit) {
+      if (_substitutions != null && _substitutions!.isNotEmpty) {
+        return _handleChangeIndex(emit, event.changeTo);
+      }
+    });
+    on<ChangeSubstitutionIndexInOrder>((event, emit) {
+      if (_substitutions != null && _substitutions!.isNotEmpty) {
+        _handleChangeIndex(emit, _currentIndex + (event.forward ? 1 : -1));
+      }
+    });
+    on<ChangeVisibility>((event, emit) {
+      _visible = event.visible;
+      return emit(ChangedVisibility(_visible));
+    });
+  }
+
+  Substitution? get currentSubstitution => _substitutions?[_currentIndex];
+
+  void _handleChangeIndex(Emitter<SubstitutionHandlerState> emit, int to) {
+    int from = _currentIndex;
+    _currentIndex = to % _substitutions!.length;
+    _visible = true;
+    emit(ChangedVisibility(_visible));
+    return emit(ChangedSubstitutionIndex(from, _currentIndex));
   }
 
   void _handleCalculatedSubstitutions(Emitter<SubstitutionHandlerState> emit) {
@@ -128,7 +185,11 @@ class SubstitutionHandlerBloc
     ));
   }
 
-  Progression getSubstitutedBase(PitchScale? scale, int index) {
+  Progression getSubstitutedBase(PitchScale? scale, int index) =>
+      _getSubstitutedBase(scale, index, type);
+
+  Progression _getSubstitutedBase(
+      PitchScale? scale, int index, ProgressionType type) {
     if (scale == null || type == ProgressionType.romanNumerals) {
       return _substitutions![index].substitutedBase;
     } else {
@@ -186,6 +247,14 @@ class SubstitutionHandlerBloc
       keepHarmonicFunction: modal.keepAmount,
     ));
   }
+
+  Progression currentlyViewedSubstitution(
+          PitchScale? scale, ProgressionType type) =>
+      _getSubstitutedBase(scale, _currentIndex, type);
+
+  List<Progression<PitchChord>> currentlyViewedSubstitutionChordMeasures(
+          PitchScale scale) =>
+      getChordProgression(scale, _currentIndex).splitToMeasures();
 }
 
 class _SubstituteByComputeModal {

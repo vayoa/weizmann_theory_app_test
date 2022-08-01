@@ -59,3 +59,36 @@ class ChangedSubstitutionSettings extends SubstitutionHandlerState {
   @override
   List<Object?> get props => [];
 }
+
+/* TODO: Emitting this mid loading will override the state...
+         perhaps it's a better idea to have these ui-only
+         states somewhere else (not the loading, the
+         show/hide...)
+ */
+class UpdatedShowSubstitutions extends SubstitutionHandlerState {
+  final bool showing;
+
+  @override
+  List<Object> get props => [showing];
+
+  const UpdatedShowSubstitutions(this.showing);
+}
+
+class ChangedSubstitutionIndex extends SubstitutionHandlerState {
+  final int fromIndex;
+  final int newIndex;
+
+  @override
+  List<Object?> get props => [fromIndex, newIndex];
+
+  const ChangedSubstitutionIndex(this.fromIndex, this.newIndex);
+}
+
+class ChangedVisibility extends SubstitutionHandlerState {
+  final bool visible;
+
+  @override
+  List<Object> get props => [visible];
+
+  const ChangedVisibility(this.visible);
+}

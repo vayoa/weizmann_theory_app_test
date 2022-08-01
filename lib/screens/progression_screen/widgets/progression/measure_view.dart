@@ -38,7 +38,8 @@ class Measure extends StatelessWidget {
       child: FittedBox(
         child: Container(
           width: Constants.measureWidth,
-          padding: const EdgeInsets.all(Constants.measurePadding),
+          padding:
+              const EdgeInsets.symmetric(horizontal: Constants.measurePadding),
           child: child,
         ),
       ),
@@ -95,6 +96,8 @@ class Selector extends StatelessWidget {
     this.endDur,
     this.selectorStart = false,
     this.selectorEnd = false,
+    this.startSelect = 0,
+    this.endSelect = 1.0,
   }) : super(key: key);
 
   final Progression measure;
@@ -104,6 +107,8 @@ class Selector extends StatelessWidget {
   final double? endDur;
   final bool selectorStart;
   final bool selectorEnd;
+  final double startSelect;
+  final double endSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +169,10 @@ class MeasureView<T> extends StatelessWidget {
     this.selectorStart = false,
     this.selectorEnd = false,
     this.disabled = false,
-  }) : super(key: key);
+    this.paintFrom,
+    this.paintTo,
+  })  : assert((paintFrom == null) == (paintTo == null)),
+        super(key: key);
 
   final Progression<T> measure;
   final void Function() onEdit;
@@ -178,6 +186,8 @@ class MeasureView<T> extends StatelessWidget {
   final bool selectorStart;
   final bool selectorEnd;
   final bool disabled;
+  final int? paintFrom;
+  final int? paintTo;
 
   @override
   Widget build(BuildContext context) {
@@ -209,19 +219,22 @@ class MeasureView<T> extends StatelessWidget {
             ],
           ),
         ),
-        AnimatedOpacity(
-          opacity: editable ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 300),
-          child: Align(
-            alignment: Alignment.bottomRight,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 3, bottom: 3),
-              child: CustomButton(
-                label: 'Edit',
-                iconData: Icons.edit_rounded,
-                onPressed: editable ? onEdit : () {},
-                tight: true,
-                size: 12,
+        IgnorePointer(
+          ignoring: !editable,
+          child: AnimatedOpacity(
+            opacity: editable ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 300),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 3, bottom: 3),
+                child: CustomButton(
+                  label: 'Edit',
+                  iconData: Icons.edit_rounded,
+                  onPressed: editable ? onEdit : () {},
+                  tight: true,
+                  size: 12,
+                ),
               ),
             ),
           ),
@@ -233,13 +246,18 @@ class MeasureView<T> extends StatelessWidget {
   List<Widget> buildList() {
     List<Widget> widgets = [];
     final double step = measure.timeSignature.step;
+    final bool shouldPaint = paintFrom != null && paintTo != null;
     for (int i = 0; i < measure.length; i++) {
+      final bool highlight = shouldPaint && i >= paintFrom! && i <= paintTo!;
       widgets.add(
         Flexible(
           flex: measure.durations[i] ~/ step,
           child: SizedBox(
             width: double.infinity,
-            child: ProgressionValueView(value: measure[i]),
+            child: ProgressionValueView(
+              value: measure[i],
+              highlight: highlight,
+            ),
           ),
         ),
       );

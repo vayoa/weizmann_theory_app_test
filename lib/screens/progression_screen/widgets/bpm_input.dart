@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../Constants.dart';
 import '../../../blocs/audio_player/audio_player_bloc.dart';
+import '../../../constants.dart';
 
 class BPMInput extends StatefulWidget {
   const BPMInput({Key? key}) : super(key: key);

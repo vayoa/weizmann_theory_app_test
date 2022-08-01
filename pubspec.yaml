@@ -34,7 +34,7 @@ dependencies:
   harmony_theory:
     git:
       url: https://github.com/vayoa/theory_test.git
-      ref: feat/inversions
+      ref: feat/variations
   equatable: ^2.0.3
   window_manager: ^0.2.2
   dart_vlc: ^0.3.0
@@ -57,6 +57,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.1
+  english_words: ^4.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

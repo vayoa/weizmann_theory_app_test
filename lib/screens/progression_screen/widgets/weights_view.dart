@@ -3,7 +3,7 @@ import 'package:harmony_theory/modals/substitution.dart';
 import 'package:harmony_theory/modals/weights/weight.dart';
 import 'package:harmony_theory/state/substitution_handler.dart';
 
-import '../../../Constants.dart';
+import '../../../constants.dart';
 
 class WeightsPreview extends StatelessWidget {
   const WeightsPreview({Key? key, required this.score}) : super(key: key);
