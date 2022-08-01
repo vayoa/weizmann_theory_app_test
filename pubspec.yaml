@@ -34,7 +34,7 @@ dependencies:
   harmony_theory:
     git:
       url: https://github.com/vayoa/theory_test.git
-      ref: feat/inversions
+      ref: feat/variations
   equatable: ^2.0.3
   window_manager: ^0.2.2
   dart_vlc: ^0.3.0
