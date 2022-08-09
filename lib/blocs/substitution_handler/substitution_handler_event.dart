@@ -91,6 +91,15 @@ class ChangeSubstitutionIndexInOrder extends SubstitutionHandlerEvent {
   const ChangeSubstitutionIndexInOrder(this.forward);
 }
 
+class ChangeGroupIndexInOrder extends SubstitutionHandlerEvent {
+  final bool forward;
+
+  @override
+  List<Object?> get props => [forward];
+
+  const ChangeGroupIndexInOrder(this.forward);
+}
+
 class ChangeVisibility extends SubstitutionHandlerEvent {
   final bool visible;
 

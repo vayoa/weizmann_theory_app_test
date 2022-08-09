@@ -10,7 +10,7 @@ class _PreferencesBar extends StatefulWidget {
 
   final bool showNav;
   final bool expanded;
-  final void Function(bool forward) onNavigation;
+  final void Function(bool forward, bool longPress) onNavigation;
 
   @override
   State<_PreferencesBar> createState() => _PreferencesBarState();

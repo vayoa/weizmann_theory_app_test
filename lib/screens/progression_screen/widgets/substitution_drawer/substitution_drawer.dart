@@ -21,23 +21,14 @@ import '../../../../widgets/text_and_icon.dart';
 import '../progression/progression_grid.dart';
 
 part 'content.dart';
-
 part 'harmonization_setting.dart';
-
 part 'heading.dart';
-
 part 'list.dart';
-
 part 'middle_bar.dart';
-
 part 'preferences_bar.dart';
-
 part 'substitution.dart';
-
 part 'top_bar.dart';
-
 part 'variation_group.dart';
-
 part 'wrapper.dart';
 
 class SubstitutionDrawer extends StatefulWidget {
@@ -95,8 +86,11 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
             },
             onPin: () => setState(() => _pinned = !_pinned),
             onQuit: () => subBloc.add(const ClearSubstitutions()),
-            onNavigation: (forward) =>
-                subBloc.add(ChangeSubstitutionIndexInOrder(forward)),
+            onNavigation: (forward, long) => subBloc.add(
+              long
+                  ? ChangeGroupIndexInOrder(forward)
+                  : ChangeSubstitutionIndexInOrder(forward),
+            ),
             child: state is CalculatingSubstitutions
                 ? const _LoadingSubs()
                 : (subBloc.inSetup

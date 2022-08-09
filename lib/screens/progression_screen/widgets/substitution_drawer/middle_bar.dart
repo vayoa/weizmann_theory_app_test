@@ -10,7 +10,7 @@ class _MiddleBar extends StatelessWidget {
 
   final bool showNav;
   final void Function()? onGo;
-  final void Function(bool forward) onNavigation;
+  final void Function(bool forward, bool longPress) onNavigation;
 
   @override
   Widget build(BuildContext context) {

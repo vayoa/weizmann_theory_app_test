@@ -185,6 +185,12 @@ class SubstitutionHandlerBloc
         _handleChangeIndex(emit, group, index);
       }
     });
+    on<ChangeGroupIndexInOrder>((event, emit) {
+      if (_variationGroups != null && _variationGroups!.isNotEmpty) {
+        return _handleChangeIndex(
+            emit, _currentGroupIndex + (event.forward ? 1 : -1), 0);
+      }
+    });
     on<ChangeVisibility>((event, emit) {
       _visible = event.visible;
       return emit(ChangedVisibility(_visible));

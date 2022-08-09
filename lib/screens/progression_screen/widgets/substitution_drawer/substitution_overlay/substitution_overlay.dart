@@ -19,7 +19,7 @@ class SubstitutionOverlay extends StatefulWidget {
   }) : super(key: key);
 
   final bool visible;
-  final void Function(bool forward) onNavigation;
+  final void Function(bool forward, bool long) onNavigation;
   final void Function() onApply;
   final void Function() onOpenDrawer;
   final void Function() onChangeVisibility;
@@ -129,8 +129,11 @@ class SetSubstitutionOverlay extends StatelessWidget {
               _progBloc.add(ApplySubstitution(sub));
             }
           },
-          onNavigation: (bool forward) =>
-              _bloc.add(ChangeSubstitutionIndexInOrder(forward)),
+          onNavigation: (bool forward, bool long) => _bloc.add(
+            long
+                ? ChangeGroupIndexInOrder(forward)
+                : ChangeSubstitutionIndexInOrder(forward),
+          ),
           onChangeVisibility: () => _bloc.add(ChangeVisibility(!visible)),
           onOpenDrawer: () => _bloc.add(const UpdateShowSubstitutions(true)),
           onQuit: () => _bloc.add(const ClearSubstitutions()),
