@@ -148,7 +148,7 @@ class ProgressionScreenUI extends StatelessWidget {
                                     BlocProvider.of<SubstitutionHandlerBloc>(
                                         context);
                                 final bool showSubs =
-                                    (subBloc.substitutions?.isNotEmpty ??
+                                    (subBloc.variationGroups?.isNotEmpty ??
                                             false) &&
                                         subBloc.visible;
                                 final Color? color = showSubs
@@ -172,7 +172,7 @@ class ProgressionScreenUI extends StatelessWidget {
                                           bloc.add(const Pause());
                                         } else {
                                           final bool showSubs = (subBloc
-                                                      .substitutions
+                                                      .variationGroups
                                                       ?.isNotEmpty ??
                                                   false) &&
                                               subBloc.visible;
@@ -381,7 +381,7 @@ class ProgressionScreenUI extends StatelessWidget {
                     SubstitutionHandlerBloc subBloc =
                         BlocProvider.of<SubstitutionHandlerBloc>(context);
                     final bool hasSubs =
-                        (subBloc.substitutions?.isNotEmpty ?? false);
+                        (subBloc.variationGroups?.isNotEmpty ?? false);
                     final bool showSubs = hasSubs && subBloc.visible;
                     return SelectableProgressionView(
                       progression: showSubs

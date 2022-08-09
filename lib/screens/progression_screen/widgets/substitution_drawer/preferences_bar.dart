@@ -55,7 +55,7 @@ class _PreferencesBarState extends State<_PreferencesBar> {
     SubstitutionHandlerBloc bloc =
         BlocProvider.of<SubstitutionHandlerBloc>(context);
     bool goDisabled = bloc.state is CalculatingSubstitutions ||
-        (bloc.substitutions != null &&
+        (bloc.variationGroups != null &&
             (bloc.inSetup ||
                 (_keepHarmonicFunction == bloc.keepHarmonicFunction &&
                     _sound == bloc.sound)));

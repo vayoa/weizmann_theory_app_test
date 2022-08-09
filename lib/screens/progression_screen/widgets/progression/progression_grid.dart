@@ -188,8 +188,9 @@ class _ProgressionGridState extends State<ProgressionGrid> {
             widget.highlightTo != null &&
             m + measure.timeSignature.decimal >= widget.highlightFrom! &&
             m <= widget.highlightTo!) {
+          final halfStep = (measure.timeSignature.step / 2);
           paintFrom = measure.getPlayingIndex(widget.highlightFrom! - m);
-          var dur = widget.highlightTo! - m - (measure.timeSignature.step / 2);
+          var dur = widget.highlightTo! - m - halfStep;
           if (dur > m) {
             paintTo = measure.length - 1;
           } else {

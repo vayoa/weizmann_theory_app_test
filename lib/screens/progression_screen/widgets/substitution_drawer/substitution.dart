@@ -38,7 +38,8 @@ class _SubstitutionState extends State<_Substitution> {
         onChangeVisibility: widget.onChangeVisibility,
       ),
       collapsed: Material(
-        color: Colors.transparent,
+        color: Constants.libraryEntryColor,
+        borderRadius: BorderRadius.circular(4.0),
         child: InkWell(
           onTap: () => widget.onPressed(
             context,

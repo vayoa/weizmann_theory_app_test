@@ -74,11 +74,12 @@ class UpdateShowSubstitutions extends SubstitutionHandlerEvent {
 
 class ChangeSubstitutionIndex extends SubstitutionHandlerEvent {
   final int changeTo;
+  final int changeToGroup;
 
   @override
-  List<Object?> get props => [changeTo];
+  List<Object?> get props => [changeToGroup, changeTo];
 
-  const ChangeSubstitutionIndex(this.changeTo);
+  const ChangeSubstitutionIndex(this.changeToGroup, this.changeTo);
 }
 
 class ChangeSubstitutionIndexInOrder extends SubstitutionHandlerEvent {

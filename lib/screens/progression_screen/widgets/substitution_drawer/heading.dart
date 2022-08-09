@@ -47,7 +47,6 @@ class _Heading extends StatelessWidget {
                         substitution: substitution,
                         size: 13.0,
                       ),
-                      // WeightPreviewButton(substitution: substitution),
                     ),
                   ),
                 ],

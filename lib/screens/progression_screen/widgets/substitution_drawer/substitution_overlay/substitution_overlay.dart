@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_drawer/navigation_buttons.dart';
-import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
 
 import '../../../../../blocs/progression_handler_bloc.dart';
 import '../../../../../blocs/substitution_handler/substitution_handler_bloc.dart';
 import '../../../../../constants.dart';
+import '../../../../../screens/progression_screen/widgets/substitution_drawer/navigation_buttons.dart';
+import '../../../../../widgets/custom_button.dart';
 
 class SubstitutionOverlay extends StatefulWidget {
   const SubstitutionOverlay({
