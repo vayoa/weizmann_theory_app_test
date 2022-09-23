@@ -203,7 +203,8 @@ class _DynamicEntry extends StatelessWidget {
       key: keys.groupKey,
       iconColor: Colors.black,
       showTrailing: false,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 6.0),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: _Wrapper.horizontalPadding),
       color: Colors.black.withAlpha(18),
       length: substitutions.length,
       titleVariation: firstVariation,

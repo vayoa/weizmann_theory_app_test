@@ -143,14 +143,17 @@ class _VariationGroupState extends State<_VariationGroup>
                   ),
                 ),
               ),
-              SizedBox(height: _isExpanded ? 12.0 : 2.0),
-              if (!_isExpanded) ...[
-                const Align(
-                  alignment: Alignment.center,
-                  child: Icon(Icons.more_horiz_rounded, size: 16.0),
+              const SizedBox(height: 2.0),
+              Align(
+                alignment: Alignment.center,
+                child: Icon(
+                  _isExpanded
+                      ? Icons.horizontal_rule_rounded
+                      : Icons.more_horiz_rounded,
+                  size: 16.0,
                 ),
-                const SizedBox(height: 2.0),
-              ],
+              ),
+              const SizedBox(height: 2.0),
               const Divider(height: 2.0),
             ],
           ),
@@ -198,16 +201,14 @@ class _Title extends StatelessWidget {
       children: [
         const SizedBox(height: 4.0),
         Padding(
-          padding: const EdgeInsets.only(
-            left: _Wrapper.horizontalPadding,
-            right: 4.0,
-          ),
+          padding: const EdgeInsets.symmetric(
+              horizontal: _Wrapper.horizontalPadding),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextAndIcon(
                 icon: Icons.filter_list_rounded,
-                text: 'Variation +${length - 1}',
+                text: 'Variation${expanded ? '' : ' + ${length - 1}'}',
                 style: const TextStyle(fontSize: 12.0),
                 iconSize: 12.0,
               ),

@@ -134,6 +134,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
 
   List<Pitch> _playChord(PitchChord chord, [List<Pitch>? prev]) {
     List<Pitch> pitches = _walk(chord, prev);
+    print(pitches);
     for (int i = 0; i < maxPlayers; i++) {
       try {
         _players[i].open(Media.asset(pitchFileName(pitches[i])));
@@ -144,7 +145,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     return pitches;
   }
 
-  Pitch getBase(Pitch pitch) {
+  Pitch getBass(Pitch pitch) {
     int note = pitch.midiNumber % 12;
     int minBassNote = minBass % 12;
     if (note < minBassNote) {
@@ -153,12 +154,26 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     return Pitch.fromMidiNumber(minBass + note - minBassNote);
   }
 
+  List<List<Pitch>> _getBassAndPitches(PitchChord chord) {
+    final pitches = chord.pitches;
+    Pitch bass = getBass(chord.bass);
+    if (chord.isInversion && chord.bassToRoot.number == 3) {
+      // Where the 3rd is
+      pitches[1] = pitches[0];
+    }
+    return [
+      [bass],
+      pitches
+    ];
+  }
+
   // TODO: Actually implement this...
   List<Pitch> _walk(PitchChord chord, [List<Pitch>? previous]) {
-    List<Pitch> cPitches = chord.pitches;
+    final r = _getBassAndPitches(chord);
+    List<Pitch> cPitches = r[1];
     /* TODO: Since the chord could be in any pitch find a consistent way of
              calculating it's pitch. */
-    List<Pitch> pitches = [getBase(cPitches[0])];
+    List<Pitch> pitches = r[0];
     previous?.removeAt(0);
     int found = -1;
     // First search for equal pitch classes...
