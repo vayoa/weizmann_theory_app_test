@@ -9,6 +9,8 @@ import 'custom_button.dart';
 class GeneralDialog extends StatelessWidget {
   static const double defaultWidthFactor = 0.4;
   static const double defaultHeightFactor = 0.2;
+  static const double defaultWidthMult = 1100;
+  static const double defaultHeightMult = 750;
 
   const GeneralDialog({
     Key? key,
@@ -25,8 +27,8 @@ class GeneralDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: SizedBox(
-        width: widthFactor * 1100,
-        height: heightFactor * 750,
+        width: widthFactor * defaultWidthMult,
+        height: heightFactor * defaultHeightMult,
         child: Material(
           borderRadius: BorderRadius.circular(Constants.borderRadius),
           child: Padding(

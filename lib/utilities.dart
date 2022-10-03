@@ -211,3 +211,13 @@ extension StringExtension on String {
   String capitalize() =>
       '${this[0].toUpperCase()}${substring(1).toLowerCase()}';
 }
+
+mixin Compared<T> on Comparable<T> {
+  bool operator <=(T other) => compareTo(other) <= 0;
+
+  bool operator >=(T other) => compareTo(other) >= 0;
+
+  bool operator <(T other) => compareTo(other) < 0;
+
+  bool operator >(T other) => compareTo(other) > 0;
+}

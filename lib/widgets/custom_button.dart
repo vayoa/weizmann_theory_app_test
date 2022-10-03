@@ -71,7 +71,7 @@ class CustomButton extends StatelessWidget {
                 color: color,
               ),
             )
-          : Icon(iconData, size: iconSize ?? size),
+          : Icon(iconData, size: iconSize ?? size, color: color),
       onPressed: onPressed,
       onLongPress: onLongPressed,
       onHover: onHover,
