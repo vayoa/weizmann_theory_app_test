@@ -44,7 +44,7 @@ class UpdateButton extends StatelessWidget {
             builder: (context, state) {
               final hasUpdate = state is UpdateAvailable;
               var inBeta;
-              var color;
+              var color = Colors.black;
               if (hasUpdate) {
                 inBeta = state.update.beta;
                 color = state.update.beta ? Colors.orange : Colors.lightBlue;
