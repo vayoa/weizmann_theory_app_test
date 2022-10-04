@@ -28,7 +28,7 @@ class Version extends Comparable<Version> with Compared<Version> {
 
   Version.parse(String v) {
     final parts = v.split('-');
-    number = _parseNumber(v);
+    number = _parseNumber(parts[0]);
     beta = parts.length > 1 && parts[1].startsWith('b');
   }
 
