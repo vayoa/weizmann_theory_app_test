@@ -10,16 +10,30 @@ class Version extends Comparable<Version> with Compared<Version> {
 
   Version(this.number, this.beta, {this.releaseNotes, this.downloadUrl});
 
+  // TODO: Optimize...
+  String _parseNumber(String v) {
+    if (v.startsWith('v')) v = v.substring(1);
+    final list = _list(v);
+    for (int i = list.length; i < 3; i++) {
+      list.add(0);
+    }
+    var s = '${list.first}';
+    for (int i = 1; i < 3; i++) {
+      s += '.${list[i]}';
+    }
+    return s;
+  }
+
   Version.parse(String v) {
     final parts = v.split('-');
-    number = parts[0].startsWith('v') ? parts[0].substring(1) : parts[0];
-    beta = parts[1].startsWith('b');
+    number = _parseNumber(v);
+    beta = parts.length > 1 && parts[1].startsWith('b');
   }
 
   /// Parses a [Version] from the github releases api.
   Version.fromJson(Map<String, dynamic> json) {
     final temp = Version.parse(json["tag_name"]);
-    number = temp.number;
+    number = _parseNumber(temp.number);
     beta = json["prerelease"];
     releaseNotes = json["body"];
     downloadUrl = json["assets"][0]["browser_download_url"];
@@ -27,7 +41,7 @@ class Version extends Comparable<Version> with Compared<Version> {
 
   @override
   int compareTo(Version other) {
-    final c = _list, o = other._list;
+    final c = _list(number), o = _list(other.number);
     final maxL = min(c.length, o.length);
     for (int i = 0; i < maxL; i++) {
       final r = c[i].compareTo(o[i]);
@@ -36,8 +50,15 @@ class Version extends Comparable<Version> with Compared<Version> {
     return c.length.compareTo(o.length);
   }
 
-  List<int> get _list =>
-      number.split('.').map((e) => int.parse(e)).toList(growable: false);
+  List<int> _list(String number) =>
+      number.split('.').map((e) => int.parse(e)).toList();
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is Version && compareTo(other) == 0;
+
+  @override
+  int get hashCode => number.hashCode ^ beta.hashCode;
 
   @override
   String toString() => 'v$number${beta ? '-b' : ''}';
