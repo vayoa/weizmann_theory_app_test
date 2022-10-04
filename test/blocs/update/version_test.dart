@@ -5,6 +5,8 @@ main() {
   test('.compareTo()', () {
     // Less Than
     expect(_parse("0.8.0"), lessThan(_parse("0.8.1")));
+    expect(_parse("0.8.0.1"), lessThan(_parse("0.8.1")));
+    expect(_parse("0.8.0.1"), lessThan(_parse("0.8.0.2")));
     expect(_parse("0.6"), lessThan(_parse("0.7.0")));
     expect(_parse("1.6.1"), lessThan(_parse("2.6.1")));
     // Equals

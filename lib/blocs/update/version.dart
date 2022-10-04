@@ -8,17 +8,19 @@ class Version extends Comparable<Version> with Compared<Version> {
   late final String? releaseNotes;
   late final String? downloadUrl;
 
+  static const int maxNumbers = 4;
+
   Version(this.number, this.beta, {this.releaseNotes, this.downloadUrl});
 
   // TODO: Optimize...
   String _parseNumber(String v) {
     if (v.startsWith('v')) v = v.substring(1);
     final list = _list(v);
-    for (int i = list.length; i < 3; i++) {
+    for (int i = list.length; i < maxNumbers; i++) {
       list.add(0);
     }
     var s = '${list.first}';
-    for (int i = 1; i < 3; i++) {
+    for (int i = 1; i < maxNumbers; i++) {
       s += '.${list[i]}';
     }
     return s;
@@ -47,7 +49,15 @@ class Version extends Comparable<Version> with Compared<Version> {
       final r = c[i].compareTo(o[i]);
       if (r != 0) return r;
     }
-    return c.length.compareTo(o.length);
+    final compareTo = c.length.compareTo(o.length);
+    if (compareTo == 0) {
+      if (beta && !other.beta) {
+        return -1;
+      } else if (!beta && other.beta) {
+        return 1;
+      }
+    }
+    return compareTo;
   }
 
   List<int> _list(String number) =>
