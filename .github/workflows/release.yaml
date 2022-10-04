@@ -29,3 +29,5 @@ jobs:
           artifacts: build/windows/runner/Release/WeizmannTheory.zip
           tag: ${{ github.ref_name }}
           token: ${{ secrets.G_TOKEN }}
+          generateReleaseNotes: true
+          prerelease: ${{ contains(github.ref_name, '-b') }}
