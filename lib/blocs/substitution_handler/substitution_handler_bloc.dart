@@ -243,7 +243,7 @@ class SubstitutionHandlerBloc
 
   Progression getOriginalSubstitution(
           PitchScale? scale, int group, int index) =>
-      _variationGroups![group].members[index].originalSubstitution;
+      _variationGroups![group].members[index].subContext.originalSubstitution;
 
   ChordProgression getChordProgression(PitchScale scale, int group, int index) {
     assert(index >= 0 && index < _chordProgressions!.length);

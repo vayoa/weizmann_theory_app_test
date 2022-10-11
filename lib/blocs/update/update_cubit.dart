@@ -14,7 +14,7 @@ part 'update_state.dart';
 class UpdateCubit extends Cubit<UpdateState> {
   UpdateCubit() : super(UpdateInitial(currentVersion));
 
-  static final Version currentVersion = Version("0.8.0.7", true);
+  static final Version currentVersion = Version("0.8.0.8", true);
 
   static final String appPath = Directory.current.path;
 
