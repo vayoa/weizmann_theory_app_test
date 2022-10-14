@@ -54,15 +54,6 @@ class ClearSubstitutions extends SubstitutionHandlerEvent {
   const ClearSubstitutions();
 }
 
-class SetKeepHarmonicFunction extends SubstitutionHandlerEvent {
-  final KeepHarmonicFunctionAmount keepHarmonicFunction;
-
-  @override
-  List<Object?> get props => [keepHarmonicFunction];
-
-  const SetKeepHarmonicFunction(this.keepHarmonicFunction);
-}
-
 class UpdateShowSubstitutions extends SubstitutionHandlerEvent {
   final bool show;
 

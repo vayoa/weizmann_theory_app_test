@@ -81,34 +81,28 @@ class _VariationGroupState extends State<_VariationGroup>
     super.dispose();
   }
 
-  void expand() {
-    _setExpanded(true);
-  }
+  Future<void> expand() async => _setExpanded(true);
 
-  void collapse() {
-    _setExpanded(false);
-  }
+  Future<void> collapse() async => _setExpanded(false);
 
-  void toggle() {
-    _setExpanded(!_isExpanded);
-  }
+  Future<void> toggle() async => _setExpanded(!_isExpanded);
 
-  void _setExpanded(bool isExpanded) {
+  Future<void> _setExpanded(bool isExpanded) async {
     if (_isExpanded != isExpanded) {
       setState(() {
         _isExpanded = isExpanded;
-        if (_isExpanded) {
-          _controller.forward();
-        } else {
-          _controller.reverse().then((_) {
-            setState(() {
-              // Rebuild without widget.children.
-            });
-          });
-        }
         PageStorage.of(context)?.writeState(context, _isExpanded);
       });
-
+      if (_isExpanded) {
+        await _controller.forward();
+      } else {
+        await _controller.reverse();
+        //     .then((_) {
+        //   setState(() {
+        //     // Rebuild without widget.children.
+        //   });
+        // });
+      }
       widget.onExpansionChanged?.call(_isExpanded);
     }
   }

@@ -48,25 +48,10 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<SubstitutionHandlerBloc, SubstitutionHandlerState>(
-      listener: (_, state) {
-        // if (state is CalculatedSubstitutions) {
-        //   setState(() {
-        //     // TODO: This throws an error but still works...
-        //     WidgetsBinding.instance.addPostFrameCallback((_) {
-        //       if (_controller.hasClients) {
-        //         _controller.jumpToPage(0);
-        //       }
-        //     });
-        //     _currentIndex = 0;
-        //   });
-        // }
-      },
+    return BlocBuilder<SubstitutionHandlerBloc, SubstitutionHandlerState>(
       builder: (context, state) {
         SubstitutionHandlerBloc subBloc =
             BlocProvider.of<SubstitutionHandlerBloc>(context);
-        // ProgressionHandlerBloc progressionBloc =
-        //     BlocProvider.of<ProgressionHandlerBloc>(context);
         if (!subBloc.currentlyHarmonizing) {
           return const SizedBox();
         } else {
@@ -98,9 +83,10 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
                     : (subBloc.variationGroups!.isEmpty
                         ? const _NoSubsFound()
                         : _List(
-                            variationGroups: subBloc.variationGroups!,
+              variationGroups: subBloc.variationGroups!,
                             selectedGroup: subBloc.currentGroupIndex,
                             selected: subBloc.currentSubIndex,
+                            preferences: subBloc.preferences,
                             visible: subBloc.visible,
                             onSelected: (group, index) => subBloc
                                 .add(ChangeSubstitutionIndex(group, index)),

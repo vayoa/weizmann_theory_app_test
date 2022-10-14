@@ -50,6 +50,11 @@ class SubstitutionHandlerBloc
 
   Sound get sound => _sound;
 
+  Preferences get preferences => Preferences(
+      keepAmount: _keepHarmonicFunction,
+      sound: _sound,
+      surpriseMe: _surpriseMe);
+
   Isolate? _substituteByIsolate;
 
   // If we calculate a ChordProgression for a substitution we save it here.
@@ -157,10 +162,6 @@ class SubstitutionHandlerBloc
         _substituteByIsolate = null;
       }
       return emit(const ClearedSubstitutions());
-    });
-    on<SetKeepHarmonicFunction>((event, emit) {
-      _keepHarmonicFunction = event.keepHarmonicFunction;
-      return emit(ChangedSubstitutionSettings());
     });
     on<UpdateShowSubstitutions>((event, emit) {
       if (event.show != _showingDrawer) {
@@ -319,4 +320,36 @@ class _SubstituteByComputeModal {
     required this.keepAmount,
     required this.computePass,
   });
+}
+
+class Preferences {
+  final KeepHarmonicFunctionAmount keepAmount;
+  final Sound sound;
+  final bool surpriseMe;
+
+  const Preferences({
+    required this.keepAmount,
+    required this.sound,
+    required this.surpriseMe,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Preferences &&
+          keepAmount == other.keepAmount &&
+          sound == other.sound &&
+          surpriseMe == other.surpriseMe);
+
+  @override
+  int get hashCode => Object.hash(
+        keepAmount.hashCode,
+        sound.hashCode,
+        surpriseMe.hashCode,
+      );
+
+  @override
+  String toString() {
+    return 'Preferences{keepAmount: $keepAmount, sound: $sound, surpriseMe: $surpriseMe}';
+  }
 }

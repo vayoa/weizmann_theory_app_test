@@ -10,6 +10,7 @@ class _List extends StatefulWidget {
     required this.onSelected,
     required this.onApply,
     required this.onChangeVisibility,
+    required this.preferences,
   }) : super(key: key);
 
   final List<VariationGroup> variationGroups;
@@ -20,6 +21,9 @@ class _List extends StatefulWidget {
   final void Function() onApply;
   final void Function() onChangeVisibility;
 
+  /// Used to quickly determine whether [variationGroups] was changed.
+  final Preferences preferences;
+
   @override
   State<_List> createState() => _ListState();
 }
@@ -27,6 +31,7 @@ class _List extends StatefulWidget {
 class _ListState extends State<_List> {
   final ScrollController _controller = ScrollController();
   ExpandableController? _lastExpanded;
+  late int _lastSelected;
 
   /* TODO: Find a better way than saving a list of global keys...
           using a list of ExpandableControllers isn't possible since
@@ -37,24 +42,44 @@ class _ListState extends State<_List> {
 
   @override
   void initState() {
+    _lastExpanded = null;
+    _lastSelected = widget.selected;
+    _generateKeys();
+    super.initState();
+  }
+
+  void _generateKeys() {
     _keys = [
       for (final group in widget.variationGroups)
         _ExpansionKeys(group.members.length),
     ];
-    super.initState();
   }
 
   @override
   void didUpdateWidget(_List oldWidget) {
+    if (oldWidget.preferences != widget.preferences) {
+      _generateKeys();
+      _lastExpanded = null;
+      _controller
+          .animateTo(0,
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeInOut)
+          .then((value) => _handleSelectedWidget(oldWidget));
+    } else {
+      _handleSelectedWidget(oldWidget);
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  void _handleSelectedWidget(_List oldWidget) {
     if (oldWidget.selectedGroup != widget.selectedGroup ||
         oldWidget.selected != widget.selected) {
       _handleSelected(widget.selectedGroup, widget.selected,
           oldWidget.selectedGroup, oldWidget.selected);
     }
-    super.didUpdateWidget(oldWidget);
   }
 
-  _handleSelected(int group, int index, [int? fromGroup, int? from]) {
+  _handleSelected(int group, int index, [int? fromGroup, int? from]) async {
     final cvgs = _keys[group].groupKey?.currentState;
     fromGroup ??= 0;
     if (_keys[group].groupKey == null || (cvgs != null && cvgs.mounted)) {
@@ -62,7 +87,7 @@ class _ListState extends State<_List> {
         _keys[fromGroup].groupKey?.currentState?.collapse();
       }
       if (cvgs != null && !cvgs.isExpanded) {
-        cvgs.expand();
+        await cvgs.expand();
       }
       if (_keys[group].members[index].currentState?.mounted ?? false) {
         final context = _keys[group].members[index].currentContext!;
@@ -73,16 +98,17 @@ class _ListState extends State<_List> {
           from ??= 0;
           final key = _keys[fromGroup].members[from];
           if (key.currentContext != null) {
-            ExpandableController.of(key.currentContext!)?.toggle();
+            ExpandableController.of(key.currentContext!)?.value = false;
           }
         } else if (!identical(controller, _lastExpanded)) {
           _lastExpanded?.expanded = false;
         }
-        controller?.toggle();
+        controller?.value = true;
         context
             .findRenderObject()
             ?.showOnScreen(duration: const Duration(milliseconds: 500));
         _lastExpanded = controller;
+        _lastSelected = index;
       }
     }
   }
@@ -120,7 +146,8 @@ class _ListState extends State<_List> {
                       return _DynamicEntry(
                         keys: _keys[index],
                         substitutions: widget.variationGroups[index].members,
-                        initiallyExpanded: index == widget.selected,
+                        initiallyExpanded:
+                            index == _lastSelected ? _lastSelected : null,
                         visible: widget.visible,
                         onSelected: (subIndex) =>
                             widget.onSelected(index, subIndex),
@@ -181,7 +208,7 @@ class _DynamicEntry extends StatelessWidget {
 
   final _ExpansionKeys keys;
   final List<Substitution> substitutions;
-  final bool initiallyExpanded;
+  final int? initiallyExpanded;
   final bool visible;
   final void Function(int index) onSelected;
   final void Function() onApply;
@@ -190,7 +217,7 @@ class _DynamicEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final firstVariation = _Variation(
-      initiallyExpanded: initiallyExpanded,
+      initiallyExpanded: initiallyExpanded == 0,
       stateKey: keys.members.first,
       substitution: substitutions.first,
       visible: visible,
@@ -216,7 +243,7 @@ class _DynamicEntry extends StatelessWidget {
           itemBuilder: (context, subIndex) {
             subIndex++;
             return _Variation(
-              initiallyExpanded: initiallyExpanded,
+              initiallyExpanded: initiallyExpanded == subIndex,
               stateKey: keys.members[subIndex],
               substitution: substitutions[subIndex],
               visible: visible,
