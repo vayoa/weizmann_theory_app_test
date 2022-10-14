@@ -177,6 +177,10 @@ class _ListState extends State<_List> {
                   const Divider(height: 2.0, thickness: 1.5),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    /* TODO: Reformat how the position is displayed in a way that's
+                             consistent with the navigation buttons display when the
+                             drawer is closed.
+                     */
                     child: Text(
                       ' ${widget.selectedGroup + 1} (${widget.selected + 1}) / '
                       '${widget.variationGroups.length} '

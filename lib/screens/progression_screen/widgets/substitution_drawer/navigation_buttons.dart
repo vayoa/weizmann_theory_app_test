@@ -7,10 +7,14 @@ class NavigationButtonsBar extends StatelessWidget {
   const NavigationButtonsBar({
     Key? key,
     this.vertical = false,
+    this.small = true,
+    this.disable = false,
     required this.onNavigation,
   }) : super(key: key);
 
   final bool vertical;
+  final bool small;
+  final bool disable;
   final void Function(bool forward, bool longPress) onNavigation;
 
   @override
@@ -20,33 +24,33 @@ class NavigationButtonsBar extends StatelessWidget {
         CustomButton(
           label: null,
           tight: true,
-          small: true,
+          small: small,
           iconSize: vertical ? 16.0 : 12.0,
           borderRadius: const BorderRadius.horizontal(
               left: Radius.circular(Constants.smallBorderRadius)),
           iconData: vertical
               ? Icons.expand_less_rounded
               : Icons.arrow_back_ios_rounded,
-          onPressed: () => onNavigation(false, false),
-          onLongPressed: () => onNavigation(false, true),
+          onPressed: disable ? null : () => onNavigation(false, false),
+          onLongPressed: disable ? null : () => onNavigation(false, true),
         ),
-        const SizedBox(
-          height: 15.0,
+        SizedBox(
+          height: small ? 15.0 : 20.0,
           width: 1.0,
-          child: ColoredBox(color: Colors.grey),
+          child: const ColoredBox(color: Colors.grey),
         ),
         CustomButton(
           label: null,
           tight: true,
-          small: true,
+          small: small,
           iconSize: vertical ? 16.0 : 12.0,
           borderRadius: const BorderRadius.horizontal(
               right: Radius.circular(Constants.smallBorderRadius)),
           iconData: vertical
               ? Icons.expand_more_rounded
               : Icons.arrow_forward_ios_rounded,
-          onPressed: () => onNavigation(true, false),
-          onLongPressed: () => onNavigation(true, true),
+          onPressed: disable ? null : () => onNavigation(true, false),
+          onLongPressed: disable ? null : () => onNavigation(true, true),
         ),
       ],
     );
