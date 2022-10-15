@@ -16,6 +16,12 @@ abstract class Utilities {
       ? '//'
       : (value is DegreeChord ? value.inputString : value.toString());
 
+  static List<String> progressionEdit<T>(Progression<T> prog) => [
+        for (int i = 0; i < prog.length; i++)
+          "${progressionValueToEditString(prog[i])} "
+              "${(prog.durations[i] ~/ prog.timeSignature.step)}"
+      ];
+
   static String abbr(ChordPattern pattern) {
     switch (pattern.abbr) {
       case 'min7':

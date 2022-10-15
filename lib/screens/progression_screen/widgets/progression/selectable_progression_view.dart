@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
+import 'package:weizmann_theory_app_test/utilities.dart' as ut;
 
 import '../../../../blocs/progression_handler_bloc.dart';
 import '../../../../constants.dart';
@@ -212,13 +213,28 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
                               widget.progression.timeSignature.numerator - 1 ||
                           editedPos < 0) {
                         editedMeasure += add;
-                        if (editedMeasure > _measures.length) {
-                          // TODO: Add new Measure...
+                        if (editedMeasure == _measures.length) {
+                          // TODO: Decide what to add on empty
+                          BlocProvider.of<ProgressionHandlerBloc>(context)
+                              .add(MeasureEdited(
+                            inputs: const ['// 1'],
+                            measureIndex: editedMeasure,
+                          ));
                         } else if (editedMeasure < 0) {
                           editedMeasure = 0;
                         }
                         editedPos =
                             next ? 0 : _measures[editedMeasure].length - 1;
+                      } else if (editedPos >= _measures[editedMeasure].length) {
+                        // TODO: Decide what to add on empty
+                        var inputs2 = ut.Utilities.progressionEdit(
+                            _measures[editedMeasure])
+                          ..add('// ,');
+                        BlocProvider.of<ProgressionHandlerBloc>(context)
+                            .add(MeasureEdited(
+                          inputs: inputs2,
+                          measureIndex: editedMeasure,
+                        ));
                       }
                     }
                   });

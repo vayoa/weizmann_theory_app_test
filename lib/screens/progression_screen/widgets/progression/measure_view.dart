@@ -234,7 +234,7 @@ class MeasureView<T> extends StatelessWidget {
       final pos = measure.durations.position(i) ~/ step;
       final absolute = (measure.durations.real(i) ~/ step) - 1;
       final edited = pos == editedPos;
-      final numerator = measure.timeSignature.numerator;
+      final stepDuration = measure.duration ~/ step;
       int flex = measure.durations[i] ~/ step;
 
       bool addTextBetween = false;
@@ -243,9 +243,9 @@ class MeasureView<T> extends StatelessWidget {
       if (!edited && pos < editedPos && absolute >= editedPos) {
         flex -= 1;
         addTextBetween = true;
-        // If the measure has only 1 value we won't have a spacer at the end...
-        if (editedPos != numerator - 1 && measure.length == 1) {
-          flex = numerator - (numerator - editedPos);
+        // If the measure has a duration of more than 1 we need to space it...
+        if (editedPos != stepDuration - 1 && absolute >= 2) {
+          flex = editedPos - pos;
           addSpacer = true;
         }
       }
@@ -256,8 +256,9 @@ class MeasureView<T> extends StatelessWidget {
             width: double.infinity,
             child: edited
                 ? EditedValueView(
-                    initial: measure[i].toString(),
+              value: measure[i],
                     onSubmitChange: _submittedChange,
+                    position: editedPos,
                   )
                 : ProgressionValueView(
                     value: measure[i],
@@ -269,12 +270,12 @@ class MeasureView<T> extends StatelessWidget {
       if (addTextBetween) {
         widgets.add(
           Flexible(
-            flex: addSpacer ? numerator - editedPos : 1,
+            flex: addSpacer ? stepDuration - editedPos : 1,
             child: SizedBox(
               width: double.infinity,
-              height: Constants.measureFontSize * 1.6,
               child: EditedValueView(
-                initial: '1',
+                value: 1,
+                position: editedPos,
                 onSubmitChange: _submittedChange,
               ),
             ),
@@ -328,12 +329,17 @@ class MeasureView<T> extends StatelessWidget {
     for (int p = 0; p < measure.timeSignature.numerator; p++) {
       bool useIndex = index < measure.length &&
           p == measure.durations.position(index) ~/ step;
-      last = p == editedPos
-          ? (num == null ? input : '$last $input')
-          : useIndex
-              ? measure[index].toString()
-              : last;
-      values.add(last);
+      if (p == editedPos) {
+        if (num == null) {
+          values.add(input);
+          last = input;
+        } else {
+          values.add('$last $input');
+        }
+      } else {
+        last = useIndex ? measure[index].toString() : last;
+        values.add(last);
+      }
       if (useIndex) {
         index++;
       }

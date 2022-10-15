@@ -148,14 +148,6 @@ class _ProgressionGridState extends State<ProgressionGrid> {
       itemBuilder: (context, index) {
         final bool last = (index == _measures.length - 1) ||
             (index + 1) % widget.measuresInLine == 0;
-        // if (index == widget.editedMeasure) {
-        //   return EditedMeasure(
-        //     measure: _measures[index],
-        //     last: last,
-        //     onDone: (rebuild, values) =>
-        //         widget.onDoneEdit?.call(rebuild, values, index),
-        //   );
-        // }
         bool shouldPaint = !widget.rangeDisabled &&
             _canPaint &&
             index >= startMeasure &&

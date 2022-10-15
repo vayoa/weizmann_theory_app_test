@@ -54,14 +54,18 @@ class ProgressionValueView<T> extends StatelessWidget {
       : style;
 }
 
-class EditedValueView extends StatefulWidget {
+class EditedValueView<T> extends StatefulWidget {
   const EditedValueView({
     Key? key,
-    required this.initial,
+    required this.value,
+    required this.position,
     required this.onSubmitChange,
   }) : super(key: key);
 
-  final String initial;
+  final T value;
+
+  // Used for equality purposes
+  final int position;
   final void Function(String? input, bool? next) onSubmitChange;
 
   @override
@@ -70,18 +74,21 @@ class EditedValueView extends StatefulWidget {
 
 class _EditedValueViewState extends State<EditedValueView> {
   late final TextEditingController _controller;
+  late String _initial;
 
   @override
   void initState() {
+    _initial = Utilities.progressionValueToEditString(widget.value);
     _controller = TextEditingController();
-    _setController(widget.initial);
+    _setController(_initial);
     super.initState();
   }
 
   @override
   void didUpdateWidget(EditedValueView oldWidget) {
-    if (oldWidget.initial != widget.initial) {
-      _setController(widget.initial);
+    if (oldWidget.value != widget.value ||
+        oldWidget.position != widget.position) {
+      _setController(_initial);
     }
     super.didUpdateWidget(oldWidget);
   }
@@ -107,7 +114,7 @@ class _EditedValueViewState extends State<EditedValueView> {
         FilteringTextInputFormatter.allow(RegExp(r"[\w\d, /^/+°øØ#b♯♭𝄪𝄫]"))
       ],
       decoration: InputDecoration(
-        hintText: widget.initial,
+        hintText: _initial,
         contentPadding: EdgeInsets.zero,
         border: InputBorder.none,
       ),
@@ -115,7 +122,7 @@ class _EditedValueViewState extends State<EditedValueView> {
       onSubmitted: (input) {
         input = input.trim();
         widget.onSubmitChange(
-          input != widget.initial ? input : null,
+          input != _initial ? input : null,
           null,
         );
       },
@@ -123,7 +130,7 @@ class _EditedValueViewState extends State<EditedValueView> {
         if (input.isNotEmpty && input[input.length - 1] == ' ') {
           input = input.trim();
           widget.onSubmitChange(
-            input != widget.initial ? input : null,
+            input != _initial ? input : null,
             true,
           );
         }
