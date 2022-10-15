@@ -254,7 +254,7 @@ class MeasureView<T> extends StatelessWidget {
             width: double.infinity,
             child: edited
                 ? EditedValueView(
-              value: measure[i],
+                    value: measure[i],
                     onSubmitChange: _submittedChange,
                     position: editedPos,
                   )

@@ -291,6 +291,7 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
     }
     if (event.buttons == kPrimaryButton) {
       if (holdMeasure != -1 && holdPos != -1) {
+        _focusNode.requestFocus();
         int measureDur = _getMeasureDur(event.localPosition);
         int measure = _getIndexFromPosition(event.localPosition);
         if (measure != -1 && measureDur != -1) {

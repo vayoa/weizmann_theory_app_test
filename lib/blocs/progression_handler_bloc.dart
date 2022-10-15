@@ -61,11 +61,13 @@ class ProgressionHandlerBloc
   })  : _substitutionHandlerBloc = substitutionHandlerBloc,
         location = initialLocation,
         super(ProgressionHandlerInitial()) {
-    if (!currentProgression.isEmpty) {
+    if (currentProgression.length > 1 ||
+        (!currentProgression.isEmpty && currentProgression[0] != null)) {
       _currentScale = defaultScale;
       currentChords = currentProgression.inScale(_currentScale!);
     }
     on<OverrideProgression>((event, emit) {
+      // TODO: Fix the fact that one chord insert will guess the scale on new songs...
       _chordMeasures = null;
       _progressionMeasures = null;
       if (!event.newProgression.isEmpty) {

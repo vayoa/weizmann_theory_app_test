@@ -62,7 +62,7 @@ class BankBloc extends Bloc<BankEvent, BankState> {
         package: event.location.package,
         title: event.location.title,
         entry: ProgressionBankEntry(
-          progression: DegreeProgression.empty(),
+          progression: DegreeProgression.empty()..add(null, 1.0),
         ),
       );
       _addTitle(event.location);

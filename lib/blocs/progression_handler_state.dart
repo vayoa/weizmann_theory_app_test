@@ -10,7 +10,7 @@ abstract class ProgressionHandlerState extends Equatable {
 }
 
 class ProgressionHandlerInitial extends ProgressionHandlerState {
-  ProgressionHandlerInitial() : super(Progression.empty());
+  ProgressionHandlerInitial() : super(Progression.empty()..add(null, 0.25));
 }
 
 class ProgressionChanged extends ProgressionHandlerState {
