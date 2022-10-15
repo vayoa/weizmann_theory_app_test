@@ -63,7 +63,6 @@ class EditedValueView<T> extends StatefulWidget {
   }) : super(key: key);
 
   final T value;
-
   // Used for equality purposes
   final int position;
   final void Function(String? input, bool? next) onSubmitChange;

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
 import 'package:weizmann_theory_app_test/utilities.dart' as ut;
@@ -107,6 +108,7 @@ class _SelectableProgression extends StatefulWidget {
 
 class _SelectableProgressionState extends State<_SelectableProgression> {
   late List<Progression> _measures;
+  final FocusNode _focusNode = FocusNode();
   late double stepW;
   late double minSelectDur;
   int editedMeasure = -1;
@@ -164,6 +166,12 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
   }
 
   @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: widget.measuresInLine * Constants.measureWidth,
@@ -188,68 +196,87 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
               widget.onChangeRange.call(null, null);
               editedMeasure = endMeasure;
               editedPos = endPos;
+              _focusNode.unfocus();
             });
           }
         },
-        child: ProgressionGrid(
-          progression: widget.progression,
-          measures: widget.measures,
-          measuresInLine: widget.measuresInLine,
-          startRange: widget.startRange,
-          endRange: widget.endRange,
-          rangeDisabled: widget.rangeDisabled,
-          hoveredMeasure: widget.interactable ? hoveredMeasure : null,
-          hoveredPos: widget.interactable ? hoveredPos : null,
-          editedMeasure: widget.interactable ? editedMeasure : null,
-          editedPos: editedPos,
-          highlightFrom: widget.highlightFrom,
-          highlightTo: widget.highlightTo,
-          onDoneEdit: widget.interactable
-              ? (List<String>? values, int index, bool? next) {
-                  setState(() {
-                    if (values != null) {
-                      BlocProvider.of<ProgressionHandlerBloc>(context).add(
-                          MeasureEdited(inputs: values, measureIndex: index));
-                    }
-                    final double step = widget.progression.timeSignature.step;
-                    if (next == null) {
-                      editedMeasure = -1;
-                    } else {
-                      int add = next ? 1 : -1;
-                      editedPos += add;
-                      if (editedPos >
-                              widget.progression.timeSignature.numerator - 1 ||
-                          editedPos < 0) {
-                        editedMeasure += add;
-                        if (editedMeasure == _measures.length) {
+        child: KeyboardListener(
+          autofocus: true,
+          focusNode: _focusNode,
+          onKeyEvent: (event) {
+            if (event is KeyDownEvent) {
+              final key = event.logicalKey;
+              if (key == LogicalKeyboardKey.backspace) {
+                if (!widget.rangeDisabled) {
+                  BlocProvider.of<ProgressionHandlerBloc>(context)
+                      .add(const DeleteRange());
+                }
+              }
+            }
+          },
+          child: ProgressionGrid(
+            progression: widget.progression,
+            measures: widget.measures,
+            measuresInLine: widget.measuresInLine,
+            startRange: widget.startRange,
+            endRange: widget.endRange,
+            rangeDisabled: widget.rangeDisabled,
+            hoveredMeasure: widget.interactable ? hoveredMeasure : null,
+            hoveredPos: widget.interactable ? hoveredPos : null,
+            editedMeasure: widget.interactable ? editedMeasure : null,
+            editedPos: editedPos,
+            highlightFrom: widget.highlightFrom,
+            highlightTo: widget.highlightTo,
+            onDoneEdit: widget.interactable
+                ? (List<String>? values, int index, bool? next) {
+                    setState(() {
+                      if (values != null) {
+                        BlocProvider.of<ProgressionHandlerBloc>(context).add(
+                            MeasureEdited(inputs: values, measureIndex: index));
+                      }
+                      final double step = widget.progression.timeSignature.step;
+                      if (next == null) {
+                        editedMeasure = -1;
+                      } else {
+                        int add = next ? 1 : -1;
+                        editedPos += add;
+                        if (editedPos >
+                                widget.progression.timeSignature.numerator -
+                                    1 ||
+                            editedPos < 0) {
+                          editedMeasure += add;
+                          if (editedMeasure == _measures.length) {
+                            // TODO: Decide what to add on empty
+                            BlocProvider.of<ProgressionHandlerBloc>(context)
+                                .add(MeasureEdited(
+                              inputs: const ['// 1'],
+                              measureIndex: editedMeasure,
+                            ));
+                          } else if (editedMeasure < 0) {
+                            editedMeasure = 0;
+                          }
+                          editedPos =
+                              next ? 0 : _measures[editedMeasure].length - 1;
+                        } else if (editedMeasure == _measures.length - 1 &&
+                            editedPos >=
+                                _measures[editedMeasure].duration ~/ step) {
                           // TODO: Decide what to add on empty
+                          var inputs2 = ut.Utilities.progressionEdit(
+                              _measures[editedMeasure])
+                            ..add('// ,');
                           BlocProvider.of<ProgressionHandlerBloc>(context)
                               .add(MeasureEdited(
-                            inputs: const ['// 1'],
+                            inputs: inputs2,
                             measureIndex: editedMeasure,
                           ));
-                        } else if (editedMeasure < 0) {
-                          editedMeasure = 0;
                         }
-                        editedPos =
-                            next ? 0 : _measures[editedMeasure].length - 1;
-                      } else if (editedMeasure == _measures.length - 1 &&
-                          editedPos >=
-                              _measures[editedMeasure].duration ~/ step) {
-                        // TODO: Decide what to add on empty
-                        var inputs2 = ut.Utilities.progressionEdit(
-                            _measures[editedMeasure])
-                          ..add('// ,');
-                        BlocProvider.of<ProgressionHandlerBloc>(context)
-                            .add(MeasureEdited(
-                          inputs: inputs2,
-                          measureIndex: editedMeasure,
-                        ));
                       }
-                    }
-                  });
-                }
-              : null,
+                    });
+
+                    _focusNode.requestFocus();
+                  }
+                : null,
+          ),
         ),
       ),
     );

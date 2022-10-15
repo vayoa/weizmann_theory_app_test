@@ -188,6 +188,7 @@ class _ProgressionGridState extends State<ProgressionGrid> {
             paintTo = measure.getPlayingIndex(dur);
           }
         }
+        final edited = index == widget.editedMeasure;
         return MeasureView(
           measure: _measures[index],
           last: last,
@@ -203,7 +204,7 @@ class _ProgressionGridState extends State<ProgressionGrid> {
           paintTo: paintTo,
           cursorPos:
               editable && widget.hoveredPos != -1 ? widget.hoveredPos : null,
-          editedPos: index == widget.editedMeasure ? widget.editedPos : null,
+          editedPos: edited ? widget.editedPos : null,
           onSubmitChange: (input, next) =>
               widget.onDoneEdit?.call(input, index, next),
         );

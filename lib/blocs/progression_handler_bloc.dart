@@ -236,6 +236,23 @@ class ProgressionHandlerBloc
         );
       }
     });
+    on<DeleteRange>((event, emit) {
+      Progression progression;
+      try {
+        progression = currentlyViewedProgression.deleteRange(fromDur, toDur);
+      } on NonValidDuration catch (e) {
+        return emit(InvalidInputReceived(
+            progression: currentlyViewedProgression, exception: e));
+      }
+      add(const DisableRange(disable: true));
+      if (type == ProgressionType.romanNumerals) {
+        return add(OverrideProgression(DegreeProgression.fromProgression(
+            progression as Progression<DegreeChord>)));
+      } else {
+        return add(OverrideProgression(ChordProgression.fromProgression(
+            progression as Progression<PitchChord>)));
+      }
+    });
     on<Reharmonize>((event, emit) {
       if (!rangeDisabled) {
         _substitutionHandlerBloc.add(OpenSetupPage(

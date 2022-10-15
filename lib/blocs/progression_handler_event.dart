@@ -71,6 +71,10 @@ class MeasureEdited extends ProgressionHandlerEvent {
   const MeasureEdited({required this.inputs, required this.measureIndex});
 }
 
+class DeleteRange extends ProgressionHandlerEvent {
+  const DeleteRange();
+}
+
 class ApplySubstitution extends ProgressionHandlerEvent {
   final Substitution substitution;
 
