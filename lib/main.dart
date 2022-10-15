@@ -1,6 +1,7 @@
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:weizmann_theory_app_test/blocs/update/update_cubit.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../blocs/bank/bank_bloc.dart';
@@ -105,9 +106,12 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
+    return MultiBlocProvider(
       // Instantiate the bloc and call the initial event.
-      create: (_) => BankBloc()..add(LoadInitialBank()),
+      providers: [
+        BlocProvider(create: (_) => BankBloc()..add(LoadInitialBank())),
+        BlocProvider(create: (_) => UpdateCubit()..checkForUpdates()),
+      ],
       child: const LibraryScreen(),
     );
   }

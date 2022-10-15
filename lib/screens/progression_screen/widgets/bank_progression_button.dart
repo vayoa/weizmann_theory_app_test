@@ -40,14 +40,14 @@ class BankProgressionButtonState extends State<BankProgressionButton> {
     ProgressionHandlerBloc bloc =
         BlocProvider.of<ProgressionHandlerBloc>(context);
     int id = bloc.currentProgression.id;
-    if (ProgressionBank.idFreeInSubs(
-        location: bloc.location.toString(), id: id)) {
+    if (ProgressionBank.idFreeInSubs(location: bloc.location, id: id)) {
       if (!ProgressionBank.canBeSubstitution(bloc.currentProgression)) {
         error = 'Progression does not consist of 2 - 8 chords';
       }
     } else {
-      String title =
-          ProgressionBank.substitutionsIDBank[bloc.currentProgression.id]!;
+      String title = ProgressionBank
+          .substitutionsIDBank[bloc.currentProgression.id]!
+          .toString();
       error = 'Progression already exists as "$title".';
     }
     return error;

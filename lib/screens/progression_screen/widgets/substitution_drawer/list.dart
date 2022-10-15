@@ -3,20 +3,26 @@ part of 'substitution_drawer.dart';
 class _List extends StatefulWidget {
   const _List({
     Key? key,
-    required this.substitutions,
+    required this.variationGroups,
+    required this.selectedGroup,
     required this.selected,
     required this.visible,
     required this.onSelected,
     required this.onApply,
     required this.onChangeVisibility,
+    required this.preferences,
   }) : super(key: key);
 
-  final List<Substitution> substitutions;
+  final List<VariationGroup> variationGroups;
+  final int selectedGroup;
   final int selected;
   final bool visible;
-  final void Function(int index) onSelected;
+  final void Function(int group, int index) onSelected;
   final void Function() onApply;
   final void Function() onChangeVisibility;
+
+  /// Used to quickly determine whether [variationGroups] was changed.
+  final Preferences preferences;
 
   @override
   State<_List> createState() => _ListState();
@@ -25,48 +31,85 @@ class _List extends StatefulWidget {
 class _ListState extends State<_List> {
   final ScrollController _controller = ScrollController();
   ExpandableController? _lastExpanded;
+  late int _lastSelected;
 
   /* TODO: Find a better way than saving a list of global keys...
           using a list of ExpandableControllers isn't possible since
           we need the substitution widget context to make sure it's
           visible...
    */
-  late List<GlobalKey<_SubstitutionState>> _keys;
-  static const double entryHeight = 57.0;
+  late List<_ExpansionKeys> _keys;
 
   @override
   void initState() {
-    _keys = [for (var i = 0; i < widget.substitutions.length; i++) GlobalKey()];
+    _lastExpanded = null;
+    _lastSelected = widget.selected;
+    _generateKeys();
     super.initState();
+  }
+
+  void _generateKeys() {
+    _keys = [
+      for (final group in widget.variationGroups)
+        _ExpansionKeys(group.members.length),
+    ];
   }
 
   @override
   void didUpdateWidget(_List oldWidget) {
-    if (oldWidget.selected != widget.selected) {
-      _handleSelected(widget.selected, oldWidget.selected);
+    if (oldWidget.preferences != widget.preferences) {
+      _generateKeys();
+      _lastExpanded = null;
+      _controller
+          .animateTo(0,
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeInOut)
+          .then((value) => _handleSelectedWidget(oldWidget));
+    } else {
+      _handleSelectedWidget(oldWidget);
     }
     super.didUpdateWidget(oldWidget);
   }
 
-  _handleSelected(int index, [int? from]) {
-    if (_keys[index].currentState?.mounted ?? false) {
-      var context = _keys[index].currentContext!;
-      var controller = ExpandableController.of(context);
-      if (_lastExpanded == null) {
-        // if it's null then we just initialized and the selected
-        // index is (if we didn't get it in "from") 0...
-        int index = from ?? 0;
-        if (_keys[index].currentContext != null) {
-          ExpandableController.of(_keys[index].currentContext!)?.toggle();
-        }
-      } else if (!identical(controller, _lastExpanded)) {
-        _lastExpanded?.expanded = false;
+  void _handleSelectedWidget(_List oldWidget) {
+    if (oldWidget.selectedGroup != widget.selectedGroup ||
+        oldWidget.selected != widget.selected) {
+      _handleSelected(widget.selectedGroup, widget.selected,
+          oldWidget.selectedGroup, oldWidget.selected);
+    }
+  }
+
+  _handleSelected(int group, int index, [int? fromGroup, int? from]) async {
+    final cvgs = _keys[group].groupKey?.currentState;
+    fromGroup ??= 0;
+    if (_keys[group].groupKey == null || (cvgs != null && cvgs.mounted)) {
+      if (group != fromGroup) {
+        _keys[fromGroup].groupKey?.currentState?.collapse();
       }
-      controller?.toggle();
-      context
-          .findRenderObject()
-          ?.showOnScreen(duration: const Duration(milliseconds: 500));
-      _lastExpanded = controller;
+      if (cvgs != null && !cvgs.isExpanded) {
+        await cvgs.expand();
+      }
+      if (_keys[group].members[index].currentState?.mounted ?? false) {
+        final context = _keys[group].members[index].currentContext!;
+        final controller = ExpandableController.of(context);
+        if (_lastExpanded == null) {
+          // if it's null then we just initialized and the selected
+          // index is (if we didn't get it in "from") 0...
+          from ??= 0;
+          final key = _keys[fromGroup].members[from];
+          if (key.currentContext != null) {
+            ExpandableController.of(key.currentContext!)?.value = false;
+          }
+        } else if (!identical(controller, _lastExpanded)) {
+          _lastExpanded?.expanded = false;
+        }
+        controller?.value = true;
+        context
+            .findRenderObject()
+            ?.showOnScreen(duration: const Duration(milliseconds: 500));
+        _lastExpanded = controller;
+        _lastSelected = index;
+      }
     }
   }
 
@@ -96,23 +139,23 @@ class _ListState extends State<_List> {
                 child: Scrollbar(
                   controller: _controller,
                   child: ListView.builder(
-                      controller: _controller,
-                      shrinkWrap: true,
-                      itemCount: widget.substitutions.length,
-                      itemBuilder: (context, index) {
-                        return ExpandableNotifier(
-                          initialExpanded: index == widget.selected,
-                          child: _Substitution(
-                            key: _keys[index],
-                            substitution: widget.substitutions[index],
-                            visible: widget.visible,
-                            onPressed: (context, controller) =>
-                                widget.onSelected(index),
-                            onApply: widget.onApply,
-                            onChangeVisibility: widget.onChangeVisibility,
-                          ),
-                        );
-                      }),
+                    controller: _controller,
+                    shrinkWrap: true,
+                    itemCount: widget.variationGroups.length,
+                    itemBuilder: (context, index) {
+                      return _DynamicEntry(
+                        keys: _keys[index],
+                        substitutions: widget.variationGroups[index].members,
+                        initiallyExpanded:
+                            index == _lastSelected ? _lastSelected : null,
+                        visible: widget.visible,
+                        onSelected: (subIndex) =>
+                            widget.onSelected(index, subIndex),
+                        onApply: widget.onApply,
+                        onChangeVisibility: widget.onChangeVisibility,
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -134,9 +177,14 @@ class _ListState extends State<_List> {
                   const Divider(height: 2.0, thickness: 1.5),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    /* TODO: Reformat how the position is displayed in a way that's
+                             consistent with the navigation buttons display when the
+                             drawer is closed.
+                     */
                     child: Text(
-                      ' ${widget.selected + 1} / '
-                      '${widget.substitutions.length}',
+                      ' ${widget.selectedGroup + 1} (${widget.selected + 1}) / '
+                      '${widget.variationGroups.length} '
+                      '${widget.variationGroups[widget.selectedGroup].members.length == 1 ? '' : '(${widget.variationGroups[widget.selectedGroup].members.length})'}',
                       style: const TextStyle(fontSize: 11.0),
                     ),
                   ),
@@ -148,4 +196,113 @@ class _ListState extends State<_List> {
       ),
     );
   }
+}
+
+class _DynamicEntry extends StatelessWidget {
+  const _DynamicEntry({
+    Key? key,
+    required this.keys,
+    required this.substitutions,
+    required this.initiallyExpanded,
+    required this.visible,
+    required this.onSelected,
+    required this.onApply,
+    required this.onChangeVisibility,
+  }) : super(key: key);
+
+  final _ExpansionKeys keys;
+  final List<Substitution> substitutions;
+  final int? initiallyExpanded;
+  final bool visible;
+  final void Function(int index) onSelected;
+  final void Function() onApply;
+  final void Function() onChangeVisibility;
+
+  @override
+  Widget build(BuildContext context) {
+    final firstVariation = _Variation(
+      initiallyExpanded: initiallyExpanded == 0,
+      stateKey: keys.members.first,
+      substitution: substitutions.first,
+      visible: visible,
+      onSelected: () => onSelected(0),
+      onApply: onApply,
+      onChangeVisibility: onChangeVisibility,
+    );
+    if (substitutions.length == 1) return firstVariation;
+    return _VariationGroup(
+      key: keys.groupKey,
+      iconColor: Colors.black,
+      showTrailing: false,
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: _Wrapper.horizontalPadding),
+      color: Colors.black.withAlpha(18),
+      length: substitutions.length,
+      titleVariation: firstVariation,
+      children: [
+        ListView.builder(
+          itemCount: substitutions.length - 1,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemBuilder: (context, subIndex) {
+            subIndex++;
+            return _Variation(
+              initiallyExpanded: initiallyExpanded == subIndex,
+              stateKey: keys.members[subIndex],
+              substitution: substitutions[subIndex],
+              visible: visible,
+              onSelected: () => onSelected(subIndex),
+              onApply: onApply,
+              onChangeVisibility: onChangeVisibility,
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _Variation extends StatelessWidget {
+  const _Variation({
+    Key? key,
+    required this.initiallyExpanded,
+    required this.stateKey,
+    required this.substitution,
+    required this.visible,
+    required this.onSelected,
+    required this.onApply,
+    required this.onChangeVisibility,
+  }) : super(key: key);
+
+  final bool initiallyExpanded;
+  final GlobalKey<_SubstitutionState> stateKey;
+  final Substitution substitution;
+  final bool visible;
+  final void Function() onSelected;
+  final void Function() onApply;
+  final void Function() onChangeVisibility;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExpandableNotifier(
+      initialExpanded: initiallyExpanded,
+      child: _Substitution(
+        key: stateKey,
+        substitution: substitution,
+        visible: visible,
+        onPressed: (context, controller) => onSelected(),
+        onApply: onApply,
+        onChangeVisibility: onChangeVisibility,
+      ),
+    );
+  }
+}
+
+class _ExpansionKeys {
+  final GlobalKey<_VariationGroupState>? groupKey;
+  final List<GlobalKey<_SubstitutionState>> members;
+
+  _ExpansionKeys(int length)
+      : groupKey = length == 1 ? null : GlobalKey(),
+        members = [for (int i = 0; i < length; i++) GlobalKey()];
 }

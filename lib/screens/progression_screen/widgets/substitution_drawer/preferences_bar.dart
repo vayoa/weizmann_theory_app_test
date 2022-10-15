@@ -10,7 +10,7 @@ class _PreferencesBar extends StatefulWidget {
 
   final bool showNav;
   final bool expanded;
-  final void Function(bool forward) onNavigation;
+  final void Function(bool forward, bool longPress) onNavigation;
 
   @override
   State<_PreferencesBar> createState() => _PreferencesBarState();
@@ -41,13 +41,20 @@ class _PreferencesBarState extends State<_PreferencesBar> {
 
   @override
   void didUpdateWidget(covariant _PreferencesBar oldWidget) {
+    /* TODO: We might be updating it twice after pressing the "Go!"
+            button since it directly calls _toggle()...
+     */
     if (oldWidget.expanded != widget.expanded) {
-      Future.delayed(
-        const Duration(milliseconds: 400),
-        () => _controller.toggle(),
-      );
+      _toggle(widget.expanded);
     }
     super.didUpdateWidget(oldWidget);
+  }
+
+  void _toggle(bool expanded) {
+    Future.delayed(
+      const Duration(milliseconds: 400),
+      () => _controller.value = expanded,
+    );
   }
 
   @override
@@ -55,7 +62,7 @@ class _PreferencesBarState extends State<_PreferencesBar> {
     SubstitutionHandlerBloc bloc =
         BlocProvider.of<SubstitutionHandlerBloc>(context);
     bool goDisabled = bloc.state is CalculatingSubstitutions ||
-        (bloc.substitutions != null &&
+        (bloc.variationGroups != null &&
             (bloc.inSetup ||
                 (_keepHarmonicFunction == bloc.keepHarmonicFunction &&
                     _sound == bloc.sound)));
@@ -86,10 +93,15 @@ class _PreferencesBarState extends State<_PreferencesBar> {
                     showNav: widget.showNav,
                     onGo: goDisabled
                         ? null
-                        : () => bloc.add(CalculateSubstitutions(
+                        : () {
+                            // To reset our position to the header...
+                            bloc.add(const ChangeSubstitutionIndex(0, 0));
+                            bloc.add(CalculateSubstitutions(
                               sound: _sound,
                               keepHarmonicFunction: _keepHarmonicFunction,
-                            )),
+                            ));
+                            _toggle(false);
+                          },
                     onNavigation: widget.onNavigation,
                   ),
                 ],

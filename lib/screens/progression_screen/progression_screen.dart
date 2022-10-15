@@ -148,7 +148,7 @@ class ProgressionScreenUI extends StatelessWidget {
                                     BlocProvider.of<SubstitutionHandlerBloc>(
                                         context);
                                 final bool showSubs =
-                                    (subBloc.substitutions?.isNotEmpty ??
+                                    (subBloc.variationGroups?.isNotEmpty ??
                                             false) &&
                                         subBloc.visible;
                                 final Color? color = showSubs
@@ -172,7 +172,7 @@ class ProgressionScreenUI extends StatelessWidget {
                                           bloc.add(const Pause());
                                         } else {
                                           final bool showSubs = (subBloc
-                                                      .substitutions
+                                                      .variationGroups
                                                       ?.isNotEmpty ??
                                                   false) &&
                                               subBloc.visible;
@@ -253,7 +253,6 @@ class ProgressionScreenUI extends StatelessWidget {
                     constraints: const BoxConstraints(
                         minHeight: 24, maxHeight: 24, maxWidth: 600),
                     child: Row(
-                      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         BlocBuilder<ProgressionHandlerBloc,
                             ProgressionHandlerState>(
@@ -287,47 +286,47 @@ class ProgressionScreenUI extends StatelessWidget {
                             final bloc =
                                 BlocProvider.of<SubstitutionHandlerBloc>(
                                     context);
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ScaleChooser(
-                                    enabled: !bloc.currentlyHarmonizing),
-                                const SizedBox(width: 10.0),
-                                SizedBox(
-                                  width: 200,
-                                  child: AnimatedSwitcher(
-                                    duration: const Duration(milliseconds: 300),
-                                    switchInCurve: Curves.easeInOut,
-                                    transitionBuilder: (child, animation) =>
-                                        FadeTransition(
-                                      opacity: animation,
-                                      child: SlideTransition(
-                                        position: Tween(
-                                                begin: const Offset(0, 0.2),
-                                                end: Offset.zero)
-                                            .animate(animation),
-                                        child: child,
-                                      ),
-                                    ),
-                                    child: bloc.currentlyHarmonizing &&
-                                            !bloc.showingDrawer
-                                        ? const SetSubstitutionOverlay()
-                                        : ReharmonizeBar(
+                            return AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              switchInCurve: Curves.easeInOut,
+                              transitionBuilder: (child, animation) =>
+                                  FadeTransition(
+                                opacity: animation,
+                                child: SlideTransition(
+                                  position: Tween(
+                                    begin: const Offset(0, 0.2),
+                                    end: Offset.zero,
+                                  ).animate(animation),
+                                  child: child,
+                                ),
+                              ),
+                              child: bloc.currentlyHarmonizing
+                                  ? bloc.showingDrawer
+                                      ? const SizedBox()
+                                      : const SetSubstitutionOverlay()
+                                  : Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ScaleChooser(
                                             enabled:
                                                 !bloc.currentlyHarmonizing),
-                                  ),
-                                ),
-                                const SizedBox(width: 10.0),
-                                CustomButton(
-                                  label: 'Surprise Me',
-                                  iconData: Icons.lightbulb,
-                                  onPressed: bloc.currentlyHarmonizing
-                                      ? null
-                                      : () => BlocProvider.of<
-                                              ProgressionHandlerBloc>(context)
-                                          .add(const SurpriseMe()),
-                                ),
-                              ],
+                                        const SizedBox(width: 10.0),
+                                        ReharmonizeBar(
+                                            enabled:
+                                                !bloc.currentlyHarmonizing),
+                                        const SizedBox(width: 10.0),
+                                        CustomButton(
+                                          label: 'Surprise Me',
+                                          iconData: Icons.lightbulb,
+                                          onPressed: bloc.currentlyHarmonizing
+                                              ? null
+                                              : () => BlocProvider.of<
+                                                          ProgressionHandlerBloc>(
+                                                      context)
+                                                  .add(const SurpriseMe()),
+                                        ),
+                                      ],
+                                    ),
                             );
                           },
                         ),
@@ -381,7 +380,7 @@ class ProgressionScreenUI extends StatelessWidget {
                     SubstitutionHandlerBloc subBloc =
                         BlocProvider.of<SubstitutionHandlerBloc>(context);
                     final bool hasSubs =
-                        (subBloc.substitutions?.isNotEmpty ?? false);
+                        (subBloc.variationGroups?.isNotEmpty ?? false);
                     final bool showSubs = hasSubs && subBloc.visible;
                     return SelectableProgressionView(
                       progression: showSubs
@@ -394,10 +393,10 @@ class ProgressionScreenUI extends StatelessWidget {
                       rangeDisabled: bloc.rangeDisabled,
                       interactable: !hasSubs,
                       highlightFrom: showSubs
-                          ? subBloc.currentSubstitution!.changedStart
+                          ? subBloc.currentSubstitution!.subContext.insertStart
                           : null,
                       highlightTo: showSubs
-                          ? subBloc.currentSubstitution!.changedEnd
+                          ? subBloc.currentSubstitution!.subContext.insertEnd
                           : null,
                       onChangeRange: (start, end) {
                         if (start == null || end == null) {

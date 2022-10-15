@@ -34,12 +34,14 @@ class CalculatingSubstitutions extends SubstitutionHandlerState {
   final int fromChord;
   final int toChord;
 
-  const CalculatingSubstitutions(
-      {required this.fromChord, required this.toChord});
+  const CalculatingSubstitutions({
+    required this.fromChord,
+    required this.toChord,
+  });
 }
 
 class CalculatedSubstitutions extends SubstitutionHandlerState {
-  final List<Substitution> substitutions;
+  final List<VariationGroup> substitutions;
   final bool surpriseMe;
 
   @override
@@ -75,13 +77,20 @@ class UpdatedShowSubstitutions extends SubstitutionHandlerState {
 }
 
 class ChangedSubstitutionIndex extends SubstitutionHandlerState {
+  final int fromGroup;
   final int fromIndex;
+  final int newGroup;
   final int newIndex;
 
   @override
-  List<Object?> get props => [fromIndex, newIndex];
+  List<Object?> get props => [fromGroup, fromIndex, newGroup, newIndex];
 
-  const ChangedSubstitutionIndex(this.fromIndex, this.newIndex);
+  const ChangedSubstitutionIndex({
+    required this.fromGroup,
+    required this.fromIndex,
+    required this.newGroup,
+    required this.newIndex,
+  });
 }
 
 class ChangedVisibility extends SubstitutionHandlerState {

@@ -38,7 +38,8 @@ class _SubstitutionState extends State<_Substitution> {
         onChangeVisibility: widget.onChangeVisibility,
       ),
       collapsed: Material(
-        color: Colors.transparent,
+        color: Constants.libraryEntryColor,
+        borderRadius: BorderRadius.circular(4.0),
         child: InkWell(
           onTap: () => widget.onPressed(
             context,
@@ -73,7 +74,8 @@ class _Expanded extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DegreeProgression progression = substitution.originalSubstitution;
+    final DegreeProgression progression =
+        substitution.subContext.originalSubstitution;
     final int measuresInLine = progression.measureCount == 1 ? 1 : 2;
     return Card(
       color: Constants.selectedColor,

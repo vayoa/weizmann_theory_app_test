@@ -4,10 +4,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_grid.dart';
 
 import '../../../../blocs/progression_handler_bloc.dart';
 import '../../../../constants.dart';
+import '../../../../screens/progression_screen/widgets/progression/progression_grid.dart';
 
 class SelectableProgressionView<T> extends StatelessWidget {
   const SelectableProgressionView({

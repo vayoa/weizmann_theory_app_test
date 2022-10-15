@@ -27,7 +27,7 @@ class _Wrapper extends StatelessWidget {
   final void Function(bool shouldShow, bool fromHover) onUpdate;
   final void Function() onPin;
   final void Function() onQuit;
-  final void Function(bool forward) onNavigation;
+  final void Function(bool forward, bool longPress) onNavigation;
   final Widget child;
 
   @override

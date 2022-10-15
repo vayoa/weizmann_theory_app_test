@@ -10,6 +10,7 @@ class CustomButton extends StatelessWidget {
     required this.label,
     required this.iconData,
     required this.onPressed,
+    this.onLongPressed,
     this.onHover,
     this.size = 14,
     this.iconSize,
@@ -22,6 +23,7 @@ class CustomButton extends StatelessWidget {
   final String? label;
   final IconData iconData;
   final VoidCallback? onPressed;
+  final VoidCallback? onLongPressed;
   final ValueChanged<bool>? onHover;
   final double size;
   final double? iconSize;
@@ -69,8 +71,9 @@ class CustomButton extends StatelessWidget {
                 color: color,
               ),
             )
-          : Icon(iconData, size: iconSize ?? size),
+          : Icon(iconData, size: iconSize ?? size, color: color),
       onPressed: onPressed,
+      onLongPress: onLongPressed,
       onHover: onHover,
     );
   }

@@ -7,17 +7,18 @@ import 'package:harmony_theory/modals/substitution_match.dart';
 import 'package:harmony_theory/modals/weights/keep_harmonic_function_weight.dart';
 import 'package:harmony_theory/modals/weights/weight.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
-import 'package:weizmann_theory_app_test/blocs/progression_handler_bloc.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/substitution_drawer/navigation_buttons.dart';
-import 'package:weizmann_theory_app_test/utilities.dart';
-import 'package:weizmann_theory_app_test/widgets/custom_button.dart';
-import 'package:weizmann_theory_app_test/widgets/custom_selector.dart';
-import 'package:weizmann_theory_app_test/widgets/text_and_icon.dart';
+import 'package:harmony_theory/state/variation_group.dart';
 
+import '../../../../blocs/progression_handler_bloc.dart';
 import '../../../../blocs/substitution_handler/substitution_handler_bloc.dart';
 import '../../../../constants.dart';
+import '../../../../screens/progression_screen/widgets/substitution_drawer/navigation_buttons.dart';
+import '../../../../screens/progression_screen/widgets/substitution_drawer/weights_preview_button.dart';
+import '../../../../utilities.dart';
+import '../../../../widgets/custom_button.dart';
+import '../../../../widgets/custom_selector.dart';
+import '../../../../widgets/text_and_icon.dart';
 import '../progression/progression_grid.dart';
-import '../substitution_window.dart';
 
 part 'content.dart';
 part 'harmonization_setting.dart';
@@ -27,6 +28,7 @@ part 'middle_bar.dart';
 part 'preferences_bar.dart';
 part 'substitution.dart';
 part 'top_bar.dart';
+part 'variation_group.dart';
 part 'wrapper.dart';
 
 class SubstitutionDrawer extends StatefulWidget {
@@ -46,25 +48,10 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<SubstitutionHandlerBloc, SubstitutionHandlerState>(
-      listener: (_, state) {
-        // if (state is CalculatedSubstitutions) {
-        //   setState(() {
-        //     // TODO: This throws an error but still works...
-        //     WidgetsBinding.instance.addPostFrameCallback((_) {
-        //       if (_controller.hasClients) {
-        //         _controller.jumpToPage(0);
-        //       }
-        //     });
-        //     _currentIndex = 0;
-        //   });
-        // }
-      },
+    return BlocBuilder<SubstitutionHandlerBloc, SubstitutionHandlerState>(
       builder: (context, state) {
         SubstitutionHandlerBloc subBloc =
             BlocProvider.of<SubstitutionHandlerBloc>(context);
-        // ProgressionHandlerBloc progressionBloc =
-        //     BlocProvider.of<ProgressionHandlerBloc>(context);
         if (!subBloc.currentlyHarmonizing) {
           return const SizedBox();
         } else {
@@ -74,7 +61,7 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
             show: subBloc.showingDrawer,
             showNav: !subBloc.inSetup &&
                 state is! CalculatingSubstitutions &&
-                subBloc.substitutions!.isNotEmpty,
+                subBloc.variationGroups!.isNotEmpty,
             expandPreferences:
                 subBloc.inSetup && state is! CalculatingSubstitutions,
             onUpdate: (shouldShow, fromHover) {
@@ -84,20 +71,25 @@ class _SubstitutionDrawerState extends State<SubstitutionDrawer> {
             },
             onPin: () => setState(() => _pinned = !_pinned),
             onQuit: () => subBloc.add(const ClearSubstitutions()),
-            onNavigation: (forward) =>
-                subBloc.add(ChangeSubstitutionIndexInOrder(forward)),
+            onNavigation: (forward, long) => subBloc.add(
+              long
+                  ? ChangeGroupIndexInOrder(forward)
+                  : ChangeSubstitutionIndexInOrder(forward),
+            ),
             child: state is CalculatingSubstitutions
                 ? const _LoadingSubs()
                 : (subBloc.inSetup
                     ? const _InSetup()
-                    : (subBloc.substitutions!.isEmpty
+                    : (subBloc.variationGroups!.isEmpty
                         ? const _NoSubsFound()
                         : _List(
-              substitutions: subBloc.substitutions!,
-                            selected: subBloc.currentIndex,
+              variationGroups: subBloc.variationGroups!,
+                            selectedGroup: subBloc.currentGroupIndex,
+                            selected: subBloc.currentSubIndex,
+                            preferences: subBloc.preferences,
                             visible: subBloc.visible,
-                            onSelected: (index) =>
-                                subBloc.add(ChangeSubstitutionIndex(index)),
+                            onSelected: (group, index) => subBloc
+                                .add(ChangeSubstitutionIndex(group, index)),
                             onApply: () =>
                                 BlocProvider.of<ProgressionHandlerBloc>(context)
                                     .add(ApplySubstitution(

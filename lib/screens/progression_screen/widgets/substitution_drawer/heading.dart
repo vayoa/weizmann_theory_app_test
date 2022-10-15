@@ -10,8 +10,8 @@ class _Heading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    EntryLocation location = substitution.location!;
-    SubstitutionMatchType type = substitution.match.type;
+    EntryLocation location = substitution.subContext.location!;
+    SubstitutionMatchType type = substitution.subContext.match.type;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -47,7 +47,6 @@ class _Heading extends StatelessWidget {
                         substitution: substitution,
                         size: 13.0,
                       ),
-                      // WeightPreviewButton(substitution: substitution),
                     ),
                   ),
                 ],

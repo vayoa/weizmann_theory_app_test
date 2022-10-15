@@ -54,15 +54,6 @@ class ClearSubstitutions extends SubstitutionHandlerEvent {
   const ClearSubstitutions();
 }
 
-class SetKeepHarmonicFunction extends SubstitutionHandlerEvent {
-  final KeepHarmonicFunctionAmount keepHarmonicFunction;
-
-  @override
-  List<Object?> get props => [keepHarmonicFunction];
-
-  const SetKeepHarmonicFunction(this.keepHarmonicFunction);
-}
-
 class UpdateShowSubstitutions extends SubstitutionHandlerEvent {
   final bool show;
 
@@ -74,11 +65,12 @@ class UpdateShowSubstitutions extends SubstitutionHandlerEvent {
 
 class ChangeSubstitutionIndex extends SubstitutionHandlerEvent {
   final int changeTo;
+  final int changeToGroup;
 
   @override
-  List<Object?> get props => [changeTo];
+  List<Object?> get props => [changeToGroup, changeTo];
 
-  const ChangeSubstitutionIndex(this.changeTo);
+  const ChangeSubstitutionIndex(this.changeToGroup, this.changeTo);
 }
 
 class ChangeSubstitutionIndexInOrder extends SubstitutionHandlerEvent {
@@ -88,6 +80,15 @@ class ChangeSubstitutionIndexInOrder extends SubstitutionHandlerEvent {
   List<Object?> get props => [forward];
 
   const ChangeSubstitutionIndexInOrder(this.forward);
+}
+
+class ChangeGroupIndexInOrder extends SubstitutionHandlerEvent {
+  final bool forward;
+
+  @override
+  List<Object?> get props => [forward];
+
+  const ChangeGroupIndexInOrder(this.forward);
 }
 
 class ChangeVisibility extends SubstitutionHandlerEvent {

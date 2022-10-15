@@ -1,0 +1,33 @@
+name: Flutter Release CI
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [ v* ]
+
+jobs:
+  build-and-release-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable'
+      - name: Install project dependencies
+        run: flutter pub get
+      - name: Build artifacts
+        run: flutter build windows --release
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          filename: WeizmannTheory.zip
+          directory: build/windows/runner/Release
+      - name: Windows Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: build/windows/runner/Release/WeizmannTheory.zip
+          tag: ${{ github.ref_name }}
+          token: ${{ secrets.G_TOKEN }}
+          generateReleaseNotes: true
+          prerelease: ${{ contains(github.ref_name, '-b') }}

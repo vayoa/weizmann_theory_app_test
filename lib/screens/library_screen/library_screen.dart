@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:harmony_theory/state/progression_bank_entry.dart';
+import 'package:weizmann_theory_app_test/screens/library_screen/widgets/update_button.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../blocs/bank/bank_bloc.dart';
@@ -260,6 +261,10 @@ class _LibraryScreenState extends State<LibraryScreen> with WindowListener {
                             }
                           },
                         ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 6.0),
+                        child: UpdateButton(),
                       ),
                     ],
                   ),
