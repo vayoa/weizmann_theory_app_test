@@ -158,7 +158,6 @@ class MeasureView<T> extends StatelessWidget {
   const MeasureView({
     Key? key,
     required this.measure,
-    required this.onEdit,
     this.last = false,
     this.editable = true,
     this.cursorPos,
@@ -177,7 +176,6 @@ class MeasureView<T> extends StatelessWidget {
         super(key: key);
 
   final Progression<T> measure;
-  final void Function() onEdit;
   final bool last;
   final bool editable;
   final int? fromChord;

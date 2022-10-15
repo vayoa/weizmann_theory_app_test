@@ -27,11 +27,9 @@ class ProgressionGrid extends StatefulWidget {
     this.editedMeasure,
     this.editedPos,
     this.onDoneEdit,
-    this.onEdit,
     this.highlightFrom,
     this.highlightTo,
-  })  : assert((editedMeasure == null) == (onDoneEdit == null) &&
-            (editedMeasure == null) == (onEdit == null)),
+  })  : assert((editedMeasure == null) == (onDoneEdit == null)),
         super(key: key);
 
   final Progression progression;
@@ -54,7 +52,6 @@ class ProgressionGrid extends StatefulWidget {
   final int? editedMeasure;
   final int? editedPos;
   final void Function(List<String>? values, int index, bool? next)? onDoneEdit;
-  final void Function(int measure)? onEdit;
 
   @override
   State<ProgressionGrid> createState() => _ProgressionGridState();
@@ -209,7 +206,6 @@ class _ProgressionGridState extends State<ProgressionGrid> {
           editedPos: index == widget.editedMeasure ? widget.editedPos : null,
           onSubmitChange: (input, next) =>
               widget.onDoneEdit?.call(input, index, next),
-          onEdit: () => widget.onEdit?.call(index),
         );
       },
     );

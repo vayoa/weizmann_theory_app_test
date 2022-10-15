@@ -177,6 +177,20 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
         onPointerDown: (event) {
           if (widget.interactable) _onPointerDown(event, context);
         },
+        onPointerUp: (event) {
+          /* TODO: We don't really need to recalculate this since it's
+                   supposed to be known to us, figure out how to use it.
+           */
+          final endMeasure = _getIndexFromPosition(event.localPosition);
+          final endPos = _getMeasureDur(event.localPosition);
+          if (hoveredMeasure == endMeasure && hoveredPos == endPos) {
+            setState(() {
+              widget.onChangeRange.call(null, null);
+              editedMeasure = endMeasure;
+              editedPos = endPos;
+            });
+          }
+        },
         child: ProgressionGrid(
           progression: widget.progression,
           measures: widget.measures,
@@ -190,13 +204,6 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
           editedPos: editedPos,
           highlightFrom: widget.highlightFrom,
           highlightTo: widget.highlightTo,
-          onEdit: widget.interactable
-              ? (index) {
-                  setState(() {
-                    editedMeasure = index;
-                  });
-                }
-              : null,
           onDoneEdit: widget.interactable
               ? (List<String>? values, int index, bool? next) {
                   setState(() {
@@ -249,7 +256,13 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
   }
 
   void _onPointerMove(PointerMoveEvent event, BuildContext context) {
-    if (editedMeasure == -1 && event.buttons == kPrimaryButton) {
+    if (editedMeasure != -1 && editedPos != -1) {
+      setState(() {
+        editedMeasure = -1;
+        editedPos = -1;
+      });
+    }
+    if (event.buttons == kPrimaryButton) {
       if (holdMeasure != -1 && holdPos != -1) {
         int measureDur = _getMeasureDur(event.localPosition);
         int measure = _getIndexFromPosition(event.localPosition);
@@ -300,12 +313,6 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
           startHold = hold;
         });
       }
-    } else if (event.buttons == kSecondaryButton) {
-      int index = _getIndexFromPosition(event.localPosition);
-      setState(() {
-        editedMeasure = index;
-        editedPos = hoveredPos;
-      });
     }
   }
 }
