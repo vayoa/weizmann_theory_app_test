@@ -204,6 +204,7 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
                       BlocProvider.of<ProgressionHandlerBloc>(context).add(
                           MeasureEdited(inputs: values, measureIndex: index));
                     }
+                    final double step = widget.progression.timeSignature.step;
                     if (next == null) {
                       editedMeasure = -1;
                     } else {
@@ -225,7 +226,9 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
                         }
                         editedPos =
                             next ? 0 : _measures[editedMeasure].length - 1;
-                      } else if (editedPos >= _measures[editedMeasure].length) {
+                      } else if (editedMeasure == _measures.length - 1 &&
+                          editedPos >=
+                              _measures[editedMeasure].duration ~/ step) {
                         // TODO: Decide what to add on empty
                         var inputs2 = ut.Utilities.progressionEdit(
                             _measures[editedMeasure])
