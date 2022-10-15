@@ -25,6 +25,7 @@ class ProgressionGrid extends StatefulWidget {
     this.hoveredMeasure,
     this.hoveredPos,
     this.editedMeasure,
+    this.editedPos,
     this.onDoneEdit,
     this.onEdit,
     this.highlightFrom,
@@ -51,7 +52,8 @@ class ProgressionGrid extends StatefulWidget {
   final int? hoveredMeasure;
   final int? hoveredPos;
   final int? editedMeasure;
-  final void Function(bool rebuild, List<String> values, int index)? onDoneEdit;
+  final int? editedPos;
+  final void Function(List<String>? values, int index, bool? next)? onDoneEdit;
   final void Function(int measure)? onEdit;
 
   @override
@@ -146,14 +148,14 @@ class _ProgressionGridState extends State<ProgressionGrid> {
       itemBuilder: (context, index) {
         final bool last = (index == _measures.length - 1) ||
             (index + 1) % widget.measuresInLine == 0;
-        if (index == widget.editedMeasure) {
-          return EditedMeasure(
-            measure: _measures[index],
-            last: last,
-            onDone: (rebuild, values) =>
-                widget.onDoneEdit?.call(rebuild, values, index),
-          );
-        }
+        // if (index == widget.editedMeasure) {
+        //   return EditedMeasure(
+        //     measure: _measures[index],
+        //     last: last,
+        //     onDone: (rebuild, values) =>
+        //         widget.onDoneEdit?.call(rebuild, values, index),
+        //   );
+        // }
         bool shouldPaint = !widget.rangeDisabled &&
             _canPaint &&
             index >= startMeasure &&
@@ -212,6 +214,9 @@ class _ProgressionGridState extends State<ProgressionGrid> {
           paintTo: paintTo,
           cursorPos:
               editable && widget.hoveredPos != -1 ? widget.hoveredPos : null,
+          editedPos: index == widget.editedMeasure ? widget.editedPos : null,
+          onSubmitChange: (input, next) =>
+              widget.onDoneEdit?.call(input, index, next),
           onEdit: () => widget.onEdit?.call(index),
         );
       },

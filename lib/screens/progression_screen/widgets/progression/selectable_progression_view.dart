@@ -109,6 +109,7 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
   late double stepW;
   late double minSelectDur;
   int editedMeasure = -1;
+  int editedPos = -1;
   int hoveredMeasure = -1;
   int hoveredPos = -1;
   double startHold = -1;
@@ -185,6 +186,7 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
           hoveredMeasure: widget.interactable ? hoveredMeasure : null,
           hoveredPos: widget.interactable ? hoveredPos : null,
           editedMeasure: widget.interactable ? editedMeasure : null,
+          editedPos: editedPos,
           highlightFrom: widget.highlightFrom,
           highlightTo: widget.highlightTo,
           onEdit: widget.interactable
@@ -195,13 +197,30 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
                 }
               : null,
           onDoneEdit: widget.interactable
-              ? (bool rebuild, List<String> values, index) {
+              ? (List<String>? values, int index, bool? next) {
                   setState(() {
-                    if (rebuild) {
+                    if (values != null) {
                       BlocProvider.of<ProgressionHandlerBloc>(context).add(
                           MeasureEdited(inputs: values, measureIndex: index));
                     }
-                    editedMeasure = -1;
+                    if (next == null) {
+                      editedMeasure = -1;
+                    } else {
+                      int add = next ? 1 : -1;
+                      editedPos += add;
+                      if (editedPos >
+                              widget.progression.timeSignature.numerator ||
+                          editedPos < 0) {
+                        editedMeasure += add;
+                        if (editedMeasure > _measures.length) {
+                          // TODO: Add new Measure...
+                        } else if (editedMeasure < 0) {
+                          editedMeasure = 0;
+                        }
+                        editedPos =
+                            next ? 0 : _measures[editedMeasure].length - 1;
+                      }
+                    }
                   });
                 }
               : null,
@@ -266,6 +285,7 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
       int index = _getIndexFromPosition(event.localPosition);
       setState(() {
         editedMeasure = index;
+        editedPos = hoveredPos;
       });
     }
   }

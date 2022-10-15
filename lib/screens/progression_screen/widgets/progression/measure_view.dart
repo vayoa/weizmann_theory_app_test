@@ -171,6 +171,8 @@ class MeasureView<T> extends StatelessWidget {
     this.disabled = false,
     this.paintFrom,
     this.paintTo,
+    this.editedPos,
+    this.onSubmitChange,
   })  : assert((paintFrom == null) == (paintTo == null)),
         super(key: key);
 
@@ -188,6 +190,8 @@ class MeasureView<T> extends StatelessWidget {
   final bool disabled;
   final int? paintFrom;
   final int? paintTo;
+  final int? editedPos;
+  final void Function(List<String>? input, bool? next)? onSubmitChange;
 
   @override
   Widget build(BuildContext context) {
@@ -247,20 +251,50 @@ class MeasureView<T> extends StatelessWidget {
     List<Widget> widgets = [];
     final double step = measure.timeSignature.step;
     final bool shouldPaint = paintFrom != null && paintTo != null;
+    final editedPos = this.editedPos ?? -1;
+
     for (int i = 0; i < measure.length; i++) {
       final bool highlight = shouldPaint && i >= paintFrom! && i <= paintTo!;
+      final pos = measure.durations.position(i) ~/ step;
+      final absolute = (measure.durations.real(i) ~/ step) - 1;
+      final edited = pos == editedPos;
+      int flex = measure.durations[i] ~/ step;
+      bool addTextBetween = false;
+      if (!edited && pos < editedPos && absolute >= editedPos) {
+        flex -= 1;
+        addTextBetween = true;
+      }
       widgets.add(
         Flexible(
-          flex: measure.durations[i] ~/ step,
+          flex: flex,
           child: SizedBox(
             width: double.infinity,
-            child: ProgressionValueView(
-              value: measure[i],
-              highlight: highlight,
-            ),
+            child: edited
+                ? EditedValueView(
+                    initial: measure[i].toString(),
+                    onSubmitChange: _submittedChange,
+                  )
+                : ProgressionValueView(
+                    value: measure[i],
+                    highlight: highlight,
+                  ),
           ),
         ),
       );
+      if (addTextBetween) {
+        widgets.add(
+          Flexible(
+            flex: 1,
+            child: SizedBox(
+              width: double.infinity,
+              child: EditedValueView(
+                initial: '1',
+                onSubmitChange: _submittedChange,
+              ),
+            ),
+          ),
+        );
+      }
     }
     if (!measure.full && last) {
       widgets.add(Flexible(
@@ -292,6 +326,63 @@ class MeasureView<T> extends StatelessWidget {
       widgets.add(Spacer(flex: max - 1 - cursorPos!));
     }
     return widgets;
+  }
+
+  // TODO: Optimize...
+  void _submittedChange(String? input, bool? next) {
+    if (input == null) return onSubmitChange?.call(null, next);
+
+    List<String> values = [];
+    final double step = measure.timeSignature.step;
+    final editedPos = this.editedPos ?? -1;
+    input = input.trim();
+    int? num = int.tryParse(input);
+    var last = '';
+    int index = 0;
+    for (int p = 0; p < measure.timeSignature.numerator; p++) {
+      bool useIndex = index < measure.length &&
+          p == measure.durations.position(index) ~/ step;
+      last = p == editedPos
+          ? (num == null ? input : '$last $input')
+          : useIndex
+              ? measure[index].toString()
+              : last;
+      values.add(last);
+      if (useIndex) {
+        index++;
+      }
+    }
+
+    // for (int i = 0; i < measure.length; i++) {
+    //   final pos = measure.durations.position(i) ~/ step;
+    //   final absolute = (measure.durations.real(i) ~/ step) - 1;
+    //   final edited = pos == editedPos;
+    //   int flex = measure.durations[i] ~/ step;
+    //   bool addTextBetween = false;
+    //
+    //   if (!edited && pos < editedPos && absolute >= editedPos) {
+    //     flex -= 1;
+    //     addTextBetween = true;
+    //   }
+    //
+    //   InputPart(edited ? input : measure[i].toString(), flex).addTo(values);
+    //
+    //   if (addTextBetween) {
+    //     InputPart(input, 1).addTo(values);
+    //   }
+    // }
+
+    // final List<String> output = [];
+    // var last = values.first!;
+    // for (int i = 0; i > values.length; i++) {
+    //   if (values[i] != null) {
+    //     last = values[i]!;
+    //   }
+    //   output.add(last);
+    // }
+    print(values);
+    // print(output);
+    onSubmitChange?.call(values, next);
   }
 }
 
@@ -404,4 +495,24 @@ class _EditedMeasureState<T> extends State<EditedMeasure<T>> {
       widget.onDone.call(false, const []);
     }
   }
+}
+
+class InputPart {
+  String val;
+  int dur;
+
+  InputPart(this.val, this.dur);
+
+  addTo(List<InputPart> parts) {
+    int? p = int.tryParse(val);
+    if (p != null) {
+      // TDC: If parts is empty and we typed a number (dur) this will crash...
+      parts.last.dur += p;
+    } else {
+      parts.add(this);
+    }
+  }
+
+  @override
+  String toString() => '$val $dur';
 }
