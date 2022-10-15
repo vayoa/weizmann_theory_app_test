@@ -252,20 +252,17 @@ class MeasureView<T> extends StatelessWidget {
       widgets.add(
         Flexible(
           flex: flex,
-          child: ColoredBox(
-            color: Colors.green,
-            child: SizedBox(
-              width: double.infinity,
-              child: edited
-                  ? EditedValueView(
-                      initial: measure[i].toString(),
-                      onSubmitChange: _submittedChange,
-                    )
-                  : ProgressionValueView(
-                      value: measure[i],
-                      highlight: highlight,
-                    ),
-            ),
+          child: SizedBox(
+            width: double.infinity,
+            child: edited
+                ? EditedValueView(
+                    initial: measure[i].toString(),
+                    onSubmitChange: _submittedChange,
+                  )
+                : ProgressionValueView(
+                    value: measure[i],
+                    highlight: highlight,
+                  ),
           ),
         ),
       );
