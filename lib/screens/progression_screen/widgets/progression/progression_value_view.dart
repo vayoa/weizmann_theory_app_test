@@ -73,16 +73,23 @@ class _EditedValueViewState extends State<EditedValueView> {
 
   @override
   void initState() {
-    _controller = TextEditingController(text: widget.initial);
+    _controller = TextEditingController();
+    _setController(widget.initial);
     super.initState();
   }
 
   @override
   void didUpdateWidget(EditedValueView oldWidget) {
     if (oldWidget.initial != widget.initial) {
-      _controller.text = widget.initial;
+      _setController(widget.initial);
     }
     super.didUpdateWidget(oldWidget);
+  }
+
+  void _setController(String text) {
+    _controller.text = text;
+    _controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: _controller.text.length));
   }
 
   @override

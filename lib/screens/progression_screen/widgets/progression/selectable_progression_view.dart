@@ -209,7 +209,7 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
                       int add = next ? 1 : -1;
                       editedPos += add;
                       if (editedPos >
-                              widget.progression.timeSignature.numerator ||
+                              widget.progression.timeSignature.numerator - 1 ||
                           editedPos < 0) {
                         editedMeasure += add;
                         if (editedMeasure > _measures.length) {

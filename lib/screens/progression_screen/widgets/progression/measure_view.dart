@@ -195,55 +195,31 @@ class MeasureView<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Measure(
-          last: last,
-          child: Stack(
-            alignment: Alignment.centerLeft,
-            children: [
-              if (!disabled)
-                Selector(
-                  measure: measure,
-                  fromChord: fromChord,
-                  startDur: startDur,
-                  toChord: toChord,
-                  endDur: endDur,
-                  selectorStart: selectorStart,
-                  selectorEnd: selectorEnd,
-                ),
-              Row(
-                children: buildList(),
-              ),
-              cursorPos == null
-                  ? const SizedBox()
-                  : Row(
-                      children: buildCursor(),
-                    )
-            ],
-          ),
-        ),
-        IgnorePointer(
-          ignoring: !editable,
-          child: AnimatedOpacity(
-            opacity: editable ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 300),
-            child: Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 3, bottom: 3),
-                child: CustomButton(
-                  label: 'Edit',
-                  iconData: Icons.edit_rounded,
-                  onPressed: editable ? onEdit : () {},
-                  tight: true,
-                  size: 12,
-                ),
-              ),
+    return Measure(
+      last: last,
+      child: Stack(
+        alignment: Alignment.centerLeft,
+        children: [
+          if (!disabled)
+            Selector(
+              measure: measure,
+              fromChord: fromChord,
+              startDur: startDur,
+              toChord: toChord,
+              endDur: endDur,
+              selectorStart: selectorStart,
+              selectorEnd: selectorEnd,
             ),
+          Row(
+            children: buildList(),
           ),
-        ),
-      ],
+          cursorPos == null
+              ? const SizedBox()
+              : Row(
+                  children: buildCursor(),
+                )
+        ],
+      ),
     );
   }
 
@@ -258,35 +234,48 @@ class MeasureView<T> extends StatelessWidget {
       final pos = measure.durations.position(i) ~/ step;
       final absolute = (measure.durations.real(i) ~/ step) - 1;
       final edited = pos == editedPos;
+      final numerator = measure.timeSignature.numerator;
       int flex = measure.durations[i] ~/ step;
+
       bool addTextBetween = false;
+      bool addSpacer = false;
+
       if (!edited && pos < editedPos && absolute >= editedPos) {
         flex -= 1;
         addTextBetween = true;
+        // If the measure has only 1 value we won't have a spacer at the end...
+        if (editedPos != numerator - 1 && measure.length == 1) {
+          flex = numerator - (numerator - editedPos);
+          addSpacer = true;
+        }
       }
       widgets.add(
         Flexible(
           flex: flex,
-          child: SizedBox(
-            width: double.infinity,
-            child: edited
-                ? EditedValueView(
-                    initial: measure[i].toString(),
-                    onSubmitChange: _submittedChange,
-                  )
-                : ProgressionValueView(
-                    value: measure[i],
-                    highlight: highlight,
-                  ),
+          child: ColoredBox(
+            color: Colors.green,
+            child: SizedBox(
+              width: double.infinity,
+              child: edited
+                  ? EditedValueView(
+                      initial: measure[i].toString(),
+                      onSubmitChange: _submittedChange,
+                    )
+                  : ProgressionValueView(
+                      value: measure[i],
+                      highlight: highlight,
+                    ),
+            ),
           ),
         ),
       );
       if (addTextBetween) {
         widgets.add(
           Flexible(
-            flex: 1,
+            flex: addSpacer ? numerator - editedPos : 1,
             child: SizedBox(
               width: double.infinity,
+              height: Constants.measureFontSize * 1.6,
               child: EditedValueView(
                 initial: '1',
                 onSubmitChange: _submittedChange,
@@ -352,36 +341,7 @@ class MeasureView<T> extends StatelessWidget {
         index++;
       }
     }
-
-    // for (int i = 0; i < measure.length; i++) {
-    //   final pos = measure.durations.position(i) ~/ step;
-    //   final absolute = (measure.durations.real(i) ~/ step) - 1;
-    //   final edited = pos == editedPos;
-    //   int flex = measure.durations[i] ~/ step;
-    //   bool addTextBetween = false;
-    //
-    //   if (!edited && pos < editedPos && absolute >= editedPos) {
-    //     flex -= 1;
-    //     addTextBetween = true;
-    //   }
-    //
-    //   InputPart(edited ? input : measure[i].toString(), flex).addTo(values);
-    //
-    //   if (addTextBetween) {
-    //     InputPart(input, 1).addTo(values);
-    //   }
-    // }
-
-    // final List<String> output = [];
-    // var last = values.first!;
-    // for (int i = 0; i > values.length; i++) {
-    //   if (values[i] != null) {
-    //     last = values[i]!;
-    //   }
-    //   output.add(last);
-    // }
     print(values);
-    // print(output);
     onSubmitChange?.call(values, next);
   }
 }
@@ -449,6 +409,7 @@ class _EditedMeasureState<T> extends State<EditedMeasure<T>> {
               hintText: initial,
               contentPadding: EdgeInsets.zero,
             ),
+            maxLines: 1,
             style: Constants.valueTextStyle,
             onSubmitted: (input) => _submit(),
           ),
