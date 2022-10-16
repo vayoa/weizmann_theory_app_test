@@ -3,8 +3,9 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart' hide Change;
 import 'package:harmony_theory/modals/progression/progression.dart';
+import 'package:undo/undo.dart';
 import 'package:weizmann_theory_app_test/utilities.dart' as ut;
 
 import '../../../../blocs/progression_handler_bloc.dart';
@@ -119,6 +120,7 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
   int holdMeasure = -1;
   int holdPos = -1;
   late double maxDur;
+  final ChangeStack _changeStack = ChangeStack();
 
   static const double max =
       Constants.measureWidth - 2 * Constants.measurePadding;
@@ -208,10 +210,28 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
           onKeyEvent: (event) {
             if (event is KeyDownEvent) {
               final key = event.logicalKey;
+              bool ctrl = RawKeyboard.instance.keysPressed
+                  .contains(LogicalKeyboardKey.controlLeft);
               if (key == LogicalKeyboardKey.backspace) {
                 if (!widget.rangeDisabled) {
-                  BlocProvider.of<ProgressionHandlerBloc>(context)
-                      .add(const DeleteRange());
+                  final bloc = BlocProvider.of<ProgressionHandlerBloc>(context);
+                  final rangeStart = bloc.fromDur, rangeEnd = bloc.toDur;
+                  _changeStack.add(Change<Progression>(
+                    bloc.currentlyViewedProgression,
+                    () {
+                      bloc.add(DeleteRange(rangeStart, rangeEnd));
+                    },
+                    (oldValue) {
+                      bloc.add(OverrideProgression(oldValue));
+                    },
+                    description: "Deleted Range $rangeStart - $rangeEnd.",
+                  ));
+                }
+              } else if (ctrl) {
+                if (key == LogicalKeyboardKey.keyZ) {
+                  _changeStack.undo();
+                } else if (key == LogicalKeyboardKey.keyR) {
+                  _changeStack.redo();
                 }
               }
             }
@@ -239,8 +259,12 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
   void _onDoneEdit(List<String>? values, int index, bool? next, bool stick) {
     setState(() {
       if (values != null) {
-        BlocProvider.of<ProgressionHandlerBloc>(context)
-            .add(MeasureEdited(inputs: values, measureIndex: index));
+        final bloc = BlocProvider.of<ProgressionHandlerBloc>(context);
+        _changeStack.add(Change<Progression>(
+            bloc.currentlyViewedProgression,
+            () => bloc.add(MeasureEdited(inputs: values, measureIndex: index)),
+            (oldValue) => bloc.add(OverrideProgression(oldValue)),
+            description: "Edited $index measure ti $values."));
       }
       final double step = widget.progression.timeSignature.step;
       if (next == null) {
@@ -273,15 +297,20 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
 
   void _addNewMeasure() {
     // TODO: Decide what to add on empty
+    final bloc = BlocProvider.of<ProgressionHandlerBloc>(context);
     final full = _measures[editedMeasure - 1].full;
-    BlocProvider.of<ProgressionHandlerBloc>(context).add(
-      MeasureEdited(
-        inputs: full
-            ? const ['// 1']
-            : ['// ${_measures.last.timeSignature.numerator + 1}'],
-        measureIndex: full ? editedMeasure : editedMeasure - 1,
-      ),
-    );
+    _changeStack.add(Change<Progression>(
+        bloc.currentlyViewedProgression,
+        () => bloc.add(
+              MeasureEdited(
+                inputs: full
+                    ? const ['// 1']
+                    : ['// ${_measures.last.timeSignature.numerator + 1}'],
+                measureIndex: full ? editedMeasure : editedMeasure - 1,
+              ),
+            ),
+        (oldValue) => bloc.add(OverrideProgression(oldValue)),
+        description: "Added a new empty measure at $editedMeasure."));
   }
 
   void _addNewVal(List<String>? values) {
@@ -291,10 +320,17 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
     final inputs = values ?? ut.Utilities.progressionEdit(m);
     final val = _isValidAdd(m, m.durations.last + step) ? inputs.last : null;
     inputs.add('$val ,');
-    BlocProvider.of<ProgressionHandlerBloc>(context).add(MeasureEdited(
-      inputs: inputs,
-      measureIndex: editedMeasure,
-    ));
+
+    final bloc = BlocProvider.of<ProgressionHandlerBloc>(context);
+    _changeStack.add(
+      Change<Progression>(
+          bloc.currentlyViewedProgression,
+          () => bloc.add(
+                MeasureEdited(inputs: inputs, measureIndex: editedMeasure),
+              ),
+          (oldValue) => bloc.add(OverrideProgression(oldValue)),
+          description: "Added $val at measure $editedMeasure."),
+    );
   }
 
   void _handleStickPos(bool next) {

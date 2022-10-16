@@ -72,7 +72,13 @@ class MeasureEdited extends ProgressionHandlerEvent {
 }
 
 class DeleteRange extends ProgressionHandlerEvent {
-  const DeleteRange();
+  final double start;
+  final double end;
+
+  @override
+  List<Object?> get props => [start, end];
+
+  const DeleteRange(this.start, this.end);
 }
 
 class ApplySubstitution extends ProgressionHandlerEvent {

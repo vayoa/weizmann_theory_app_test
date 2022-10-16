@@ -245,7 +245,8 @@ class ProgressionHandlerBloc
     on<DeleteRange>((event, emit) {
       Progression progression;
       try {
-        progression = currentlyViewedProgression.deleteRange(fromDur, toDur);
+        progression =
+            currentlyViewedProgression.deleteRange(event.start, event.end);
       } on NonValidDuration catch (e) {
         return emit(InvalidInputReceived(
             progression: currentlyViewedProgression, exception: e));

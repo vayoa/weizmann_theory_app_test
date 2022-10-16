@@ -246,11 +246,6 @@ class _ProgressionViewState<T> extends State<ProgressionView<T>> {
                 cursorPos: editable && hoveredPos != -1 ? hoveredPos : null,
                 selectorStart: index == startMeasure,
                 selectorEnd: index == endMeasure,
-                onEdit: () {
-                  setState(() {
-                    editedMeasure = index;
-                  });
-                },
               );
             }),
       ),
@@ -427,7 +422,6 @@ class _HorizontalProgressionViewState extends State<HorizontalProgressionView> {
                   selectorStart: start,
                   selectorEnd: end,
                   editable: widget.editable,
-                  onEdit: () {},
                 );
               }),
         ),
