@@ -273,10 +273,15 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
 
   void _addNewMeasure() {
     // TODO: Decide what to add on empty
-    BlocProvider.of<ProgressionHandlerBloc>(context).add(MeasureEdited(
-      inputs: const ['// 1'],
-      measureIndex: editedMeasure,
-    ));
+    final full = _measures[editedMeasure - 1].full;
+    BlocProvider.of<ProgressionHandlerBloc>(context).add(
+      MeasureEdited(
+        inputs: full
+            ? const ['// 1']
+            : ['// ${_measures.last.timeSignature.numerator + 1}'],
+        measureIndex: full ? editedMeasure : editedMeasure - 1,
+      ),
+    );
   }
 
   void _addNewVal(List<String>? values) {
@@ -309,6 +314,8 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
     closest += next ? 1 : -1;
 
     if (closest >= m.length) {
+      // While sticking, if we're at the last value on the last measure
+      // and going next, we'll always create a new measure.
       closest = 0;
       newM++;
       if (newM >= _measures.length) {
