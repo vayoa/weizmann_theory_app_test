@@ -122,8 +122,8 @@ class _EditedValueViewState extends State<EditedValueView> {
           bool ctrl = RawKeyboard.instance.keysPressed
               .contains(LogicalKeyboardKey.controlLeft);
           if (key == LogicalKeyboardKey.backspace) {
-            if (text.isEmpty) {
-              widget.onSubmitChange('', false);
+            if (ctrl || text.isEmpty) {
+              widget.onSubmitChange('', false, ctrl);
             }
           } else if (key == LogicalKeyboardKey.arrowRight) {
             if (ctrl || _controller.selection.baseOffset == text.length) {

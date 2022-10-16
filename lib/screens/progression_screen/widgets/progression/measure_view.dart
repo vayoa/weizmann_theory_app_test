@@ -329,24 +329,50 @@ class MeasureView<T> extends StatelessWidget {
     int index = 0;
     final maxPos =
         min(measure.duration ~/ step, measure.timeSignature.numerator);
-    for (int p = 0; p < maxPos; p++) {
-      bool useIndex = index < measure.length &&
-          p == measure.durations.position(index) ~/ step;
-      if (p == editedPos) {
-        if (num == null) {
-          values.add(input);
-          last = input;
-        } else {
-          values.add('$last $input');
+
+    // When deleting with ctrl pressed.
+    /* TODO: The same effect happens when deleting the a chord
+             with a duration bigger than 1. Think if it should instead
+             just delete a step instead of the whole chord (because ctrl-delete
+             deletes the whole chord...).
+     */
+    if (input.isEmpty && stick) {
+      final closest = measure.getPlayingIndex(step * editedPos);
+      for (int i = 0; i < measure.length; i++) {
+        if (i != closest) {
+          values.add('${measure[i]} ${measure.durations[i] ~/ step}');
         }
-      } else {
-        last = useIndex ? measure[index].toString() : last;
-        values.add(last);
       }
-      if (useIndex) {
-        index++;
+    } else {
+      for (int p = 0; p < maxPos; p++) {
+        bool useIndex = index < measure.length &&
+            p == measure.durations.position(index) ~/ step;
+        if (p == editedPos) {
+          if (num == null) {
+            values.add(input);
+            last = input;
+          } else {
+            values.add('$last $input');
+          }
+        } else {
+          last = useIndex ? measure[index].toString() : last;
+          values.add(last);
+        }
+        if (useIndex) {
+          index++;
+        }
+      }
+      if (input.isEmpty && stick) {
+        int i = values.length - 2;
+        final last = values[i];
+        while (i >= 0 && values[i] == last) {
+          values[i] = '';
+          i--;
+          print('$measure - $values');
+        }
       }
     }
+
     print('$measure - $values');
     onSubmitChange?.call(values, next, stick);
   }
