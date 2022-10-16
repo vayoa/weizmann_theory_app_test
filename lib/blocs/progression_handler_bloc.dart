@@ -42,17 +42,21 @@ class ProgressionHandlerBloc
   static final PitchScale defaultScale =
       PitchScale.common(tonic: Pitch.parse('C'));
 
-  double get fromDur => currentlyViewedProgression.isEmpty
-      ? 0.0
-      : currentlyViewedProgression.durations.real(fromChord) -
-          currentlyViewedProgression.durations[fromChord] +
-          startDur;
+  double get fromDur => rangeDisabled
+      ? -1.0
+      : currentlyViewedProgression.isEmpty
+          ? 0.0
+          : currentlyViewedProgression.durations.real(fromChord) -
+              currentlyViewedProgression.durations[fromChord] +
+              startDur;
 
-  double get toDur => currentlyViewedProgression.isEmpty
-      ? 0.0
-      : currentlyViewedProgression.durations.real(toChord) -
-          currentlyViewedProgression.durations[toChord] +
-          endDur;
+  double get toDur => rangeDisabled
+      ? -1.0
+      : currentlyViewedProgression.isEmpty
+          ? 0.0
+          : currentlyViewedProgression.durations.real(toChord) -
+              currentlyViewedProgression.durations[toChord] +
+              endDur;
 
   ProgressionHandlerBloc({
     required SubstitutionHandlerBloc substitutionHandlerBloc,

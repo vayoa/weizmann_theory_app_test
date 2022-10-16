@@ -51,7 +51,8 @@ class ProgressionGrid extends StatefulWidget {
   final int? hoveredPos;
   final int? editedMeasure;
   final int? editedPos;
-  final void Function(List<String>? values, int index, bool? next)? onDoneEdit;
+  final void Function(List<String>? values, int index, bool? next, bool stick)?
+      onDoneEdit;
 
   @override
   State<ProgressionGrid> createState() => _ProgressionGridState();
@@ -205,8 +206,8 @@ class _ProgressionGridState extends State<ProgressionGrid> {
           cursorPos:
               editable && widget.hoveredPos != -1 ? widget.hoveredPos : null,
           editedPos: edited ? widget.editedPos : null,
-          onSubmitChange: (input, next) =>
-              widget.onDoneEdit?.call(input, index, next),
+          onSubmitChange: (input, next, stick) =>
+              widget.onDoneEdit?.call(input, index, next, stick),
         );
       },
     );

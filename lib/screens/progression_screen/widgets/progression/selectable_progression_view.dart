@@ -229,60 +229,109 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
             editedPos: editedPos,
             highlightFrom: widget.highlightFrom,
             highlightTo: widget.highlightTo,
-            onDoneEdit: widget.interactable
-                ? (List<String>? values, int index, bool? next) {
-                    setState(() {
-                      if (values != null) {
-                        BlocProvider.of<ProgressionHandlerBloc>(context).add(
-                            MeasureEdited(inputs: values, measureIndex: index));
-                      }
-                      final double step = widget.progression.timeSignature.step;
-                      if (next == null) {
-                        editedMeasure = -1;
-                        editedPos = -1;
-                        _focusNode.requestFocus();
-                      } else {
-                        int add = next ? 1 : -1;
-                        editedPos += add;
-                        if (editedPos >
-                                widget.progression.timeSignature.numerator -
-                                    1 ||
-                            editedPos < 0) {
-                          editedMeasure += add;
-                          if (editedMeasure == _measures.length) {
-                            // TODO: Decide what to add on empty
-                            BlocProvider.of<ProgressionHandlerBloc>(context)
-                                .add(MeasureEdited(
-                              inputs: const ['// 1'],
-                              measureIndex: editedMeasure,
-                            ));
-                          } else if (editedMeasure < 0) {
-                            editedMeasure = 0;
-                          }
-                          editedPos =
-                              next ? 0 : _measures[editedMeasure].length - 1;
-                        } else if (editedMeasure == _measures.length - 1 &&
-                            editedPos >=
-                                _measures[editedMeasure].duration ~/ step) {
-                          // TODO: Decide what to add on empty
-                          var inputs2 = ut.Utilities.progressionEdit(
-                              _measures[editedMeasure])
-                            ..add('// ,');
-                          BlocProvider.of<ProgressionHandlerBloc>(context)
-                              .add(MeasureEdited(
-                            inputs: inputs2,
-                            measureIndex: editedMeasure,
-                          ));
-                        }
-                      }
-                    });
-                  }
-                : null,
+            onDoneEdit: widget.interactable ? _onDoneEdit : null,
           ),
         ),
       ),
     );
   }
+
+  void _onDoneEdit(List<String>? values, int index, bool? next, bool stick) {
+    setState(() {
+      if (values != null) {
+        BlocProvider.of<ProgressionHandlerBloc>(context)
+            .add(MeasureEdited(inputs: values, measureIndex: index));
+      }
+      final double step = widget.progression.timeSignature.step;
+      if (next == null) {
+        editedMeasure = -1;
+        editedPos = -1;
+        _focusNode.requestFocus();
+      } else {
+        if (stick) {
+          _handleStickPos(next);
+        } else {
+          int add = next ? 1 : -1;
+          editedPos += add;
+          final numeratorIndex = widget.progression.timeSignature.numerator - 1;
+          if (editedPos > numeratorIndex || editedPos < 0) {
+            editedMeasure += add;
+            if (editedMeasure == _measures.length) {
+              _addNewMeasure();
+            } else if (editedMeasure < 0) {
+              editedMeasure = 0;
+            }
+            editedPos = next ? 0 : numeratorIndex;
+          } else if (editedMeasure == _measures.length - 1 &&
+              editedPos >= _measures[editedMeasure].duration ~/ step) {
+            _addNewVal(values);
+          }
+        }
+      }
+    });
+  }
+
+  void _addNewMeasure() {
+    // TODO: Decide what to add on empty
+    BlocProvider.of<ProgressionHandlerBloc>(context).add(MeasureEdited(
+      inputs: const ['// 1'],
+      measureIndex: editedMeasure,
+    ));
+  }
+
+  void _addNewVal(List<String>? values) {
+    // TODO: Decide what to add on empty
+    final step = _measures.first.timeSignature.step;
+    final m = _measures[editedMeasure];
+    final inputs = values ?? ut.Utilities.progressionEdit(m);
+    final val = _isValidAdd(m, m.durations.last + step) ? inputs.last : null;
+    inputs.add('$val ,');
+    BlocProvider.of<ProgressionHandlerBloc>(context).add(MeasureEdited(
+      inputs: inputs,
+      measureIndex: editedMeasure,
+    ));
+  }
+
+  void _handleStickPos(bool next) {
+    int newM = editedMeasure;
+    final m = _measures[newM];
+    final step = m.timeSignature.step;
+    final cursor = step * editedPos;
+
+    // Find the closest value to the current pos
+    int closest = m.getPlayingIndex(cursor);
+
+    // If the cursor isn't on a chord...
+    if (m.durations.position(closest) != cursor) {
+      closest++;
+    }
+
+    closest += next ? 1 : -1;
+
+    if (closest >= m.length) {
+      closest = 0;
+      newM++;
+      if (newM >= _measures.length) {
+        editedMeasure = _measures.length;
+        editedPos = 0;
+        return _addNewMeasure();
+      }
+    } else if (closest < 0) {
+      newM--;
+      if (newM < 0) {
+        editedMeasure = 0;
+        editedPos = 0;
+        return;
+      }
+      closest = _measures[newM].length - 1;
+    }
+
+    editedMeasure = newM;
+    editedPos = _measures[newM].durations.position(closest) ~/ step;
+  }
+
+  bool _isValidAdd<T>(Progression<T> measure, double dur) =>
+      measure.timeSignature.validDuration(dur);
 
   void _onPointerMove(PointerMoveEvent event, BuildContext context) {
     if (editedMeasure != -1 && editedPos != -1) {

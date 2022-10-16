@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
@@ -189,7 +191,8 @@ class MeasureView<T> extends StatelessWidget {
   final int? paintFrom;
   final int? paintTo;
   final int? editedPos;
-  final void Function(List<String>? input, bool? next)? onSubmitChange;
+  final void Function(List<String>? input, bool? next, bool stick)?
+      onSubmitChange;
 
   @override
   Widget build(BuildContext context) {
@@ -314,8 +317,8 @@ class MeasureView<T> extends StatelessWidget {
   }
 
   // TODO: Optimize...
-  void _submittedChange(String? input, bool? next) {
-    if (input == null) return onSubmitChange?.call(null, next);
+  void _submittedChange(String? input, bool? next, [bool stick = false]) {
+    if (input == null) return onSubmitChange?.call(null, next, stick);
 
     List<String> values = [];
     final double step = measure.timeSignature.step;
@@ -324,7 +327,9 @@ class MeasureView<T> extends StatelessWidget {
     int? num = int.tryParse(input);
     var last = '';
     int index = 0;
-    for (int p = 0; p < measure.timeSignature.numerator; p++) {
+    final maxPos =
+        min(measure.duration ~/ step, measure.timeSignature.numerator);
+    for (int p = 0; p < maxPos; p++) {
       bool useIndex = index < measure.length &&
           p == measure.durations.position(index) ~/ step;
       if (p == editedPos) {
@@ -342,8 +347,8 @@ class MeasureView<T> extends StatelessWidget {
         index++;
       }
     }
-    print(values);
-    onSubmitChange?.call(values, next);
+    print('$measure - $values');
+    onSubmitChange?.call(values, next, stick);
   }
 }
 

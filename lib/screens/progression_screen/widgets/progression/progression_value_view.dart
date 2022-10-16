@@ -67,7 +67,7 @@ class EditedValueView<T> extends StatefulWidget {
   // Used for equality purposes
   final int position;
 
-  final void Function(String? input, bool? next) onSubmitChange;
+  final void Function(String? input, bool? next, [bool stick]) onSubmitChange;
 
   @override
   State<EditedValueView> createState() => _EditedValueViewState();
@@ -119,17 +119,19 @@ class _EditedValueViewState extends State<EditedValueView> {
         if (event is KeyDownEvent) {
           final key = event.logicalKey;
           final text = _controller.text;
+          bool ctrl = RawKeyboard.instance.keysPressed
+              .contains(LogicalKeyboardKey.controlLeft);
           if (key == LogicalKeyboardKey.backspace) {
             if (text.isEmpty) {
               widget.onSubmitChange('', false);
             }
           } else if (key == LogicalKeyboardKey.arrowRight) {
-            if (_controller.selection.baseOffset == text.length) {
-              widget.onSubmitChange(null, true);
+            if (ctrl || _controller.selection.baseOffset == text.length) {
+              widget.onSubmitChange(null, true, ctrl);
             }
           } else if (key == LogicalKeyboardKey.arrowLeft) {
-            if (_controller.selection.baseOffset == 0) {
-              widget.onSubmitChange(null, false);
+            if (ctrl || _controller.selection.baseOffset == 0) {
+              widget.onSubmitChange(null, false, ctrl);
             }
           }
         }
@@ -156,10 +158,7 @@ class _EditedValueViewState extends State<EditedValueView> {
         onChanged: (input) {
           if (input.isNotEmpty && input[input.length - 1] == ' ') {
             input = input.trim();
-            widget.onSubmitChange(
-              input != _initial ? input : null,
-              true,
-            );
+            widget.onSubmitChange(input != _initial ? input : null, true);
           }
         },
       ),
