@@ -274,7 +274,7 @@ class ProgressionHandlerBloc
       )),
     );
     on<ApplySubstitution>(
-          (event, emit) =>
+      (event, emit) =>
           add(OverrideProgression(event.substitution.substitutedBase)),
     );
     on<ChangeTimeSignature>((event, emit) {

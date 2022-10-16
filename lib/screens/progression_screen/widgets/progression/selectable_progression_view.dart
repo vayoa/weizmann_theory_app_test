@@ -191,12 +191,14 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
            */
           final endMeasure = _getIndexFromPosition(event.localPosition);
           final endPos = _getMeasureDur(event.localPosition);
-          if (hoveredMeasure == endMeasure && hoveredPos == endPos) {
+          if ((editedMeasure != endMeasure || editedPos != endPos) &&
+              hoveredMeasure == endMeasure &&
+              hoveredPos == endPos) {
             setState(() {
+              _focusNode.unfocus();
               widget.onChangeRange.call(null, null);
               editedMeasure = endMeasure;
               editedPos = endPos;
-              _focusNode.unfocus();
             });
           }
         },
@@ -237,6 +239,8 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
                       final double step = widget.progression.timeSignature.step;
                       if (next == null) {
                         editedMeasure = -1;
+                        editedPos = -1;
+                        _focusNode.requestFocus();
                       } else {
                         int add = next ? 1 : -1;
                         editedPos += add;
@@ -272,8 +276,6 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
                         }
                       }
                     });
-
-                    _focusNode.requestFocus();
                   }
                 : null,
           ),

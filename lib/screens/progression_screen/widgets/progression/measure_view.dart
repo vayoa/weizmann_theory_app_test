@@ -255,8 +255,8 @@ class MeasureView<T> extends StatelessWidget {
             child: edited
                 ? EditedValueView(
                     value: measure[i],
-                    onSubmitChange: _submittedChange,
                     position: editedPos,
+                    onSubmitChange: _submittedChange,
                   )
                 : ProgressionValueView(
                     value: measure[i],
