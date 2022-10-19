@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:harmony_theory/modals/pitch_chord.dart';
-import 'package:harmony_theory/modals/progression/absolute_durations.dart';
 import 'package:harmony_theory/modals/progression/chord_progression.dart';
 import 'package:harmony_theory/modals/progression/degree_progression.dart';
 import 'package:harmony_theory/modals/progression/exceptions.dart';
@@ -398,12 +397,6 @@ class ProgressionHandlerBloc
     }
   }
 
-  bool _valueIsNull(String value) =>
-      value == '/' || value == '//' || value == 'null';
-
-  bool _adjacentValuesEqual(String val, String next) =>
-      val == next || (_valueIsNull(val) && _valueIsNull(next));
-
   Progression<T> _parseInputsAndReplace<T>({
     required List<String> inputs,
     required T Function(String input) parse,
@@ -419,50 +412,17 @@ class ProgressionHandlerBloc
         measures: measures,
       );
     }
-    List<double> durations = [];
-    final double step = ts.step;
-    double duration = 0.0;
-    bool hasNull = false;
-    List<T?> newValues = [];
-    for (int i = 0; i < inputs.length; i++) {
-      if (inputs[i].isNotEmpty) {
-        List<String> parts = inputs[i].split(' ');
-        String value = parts[0];
-        int addTimes = 1;
-        if (parts.length == 2) {
-          addTimes = max(addTimes, int.tryParse(parts[1]) ?? addTimes);
-        }
-        duration += step + ((addTimes - 1) * step);
-        if (i >= inputs.length - 1 ||
-            !_adjacentValuesEqual(value, inputs[i + 1].split(' ')[0])) {
-          if (value == '/' || value == '//' || value == 'null') {
-            newValues.add(null);
-            hasNull = true;
-          } else {
-            newValues.add(parse.call(value));
-          }
-          double dur = duration;
-          if (durations.isNotEmpty) {
-            dur = duration - durations.last;
-          }
-          if (dur <= 0) {
-            throw NonPositiveDuration(value, dur);
-          }
-          durations.add(duration);
-        }
-      }
-    }
+
+    /* TDC: Either give it inputs or give this method a string
+            so we don't loop through it more than once...
+     */
+    String input = inputs.join(',');
 
     // Since the names can be different, we pass through again to conjoin
     // adjacent elements...
     return progression.replaceMeasure(
       index,
-      Progression.raw(
-        values: newValues,
-        durations: AbsoluteDurations(durations),
-        hasNull: hasNull,
-        timeSignature: ts,
-      ),
+      Progression<T>.parse(input: input, parser: parse),
       measures: measures,
     );
   }

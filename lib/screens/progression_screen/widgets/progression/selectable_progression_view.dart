@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' hide Change;
 import 'package:harmony_theory/modals/progression/progression.dart';
 import 'package:undo/undo.dart';
+import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_value_view.dart';
 import 'package:weizmann_theory_app_test/utilities.dart' as ut;
 
 import '../../../../blocs/progression_handler_bloc.dart';
@@ -256,7 +257,7 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
     );
   }
 
-  void _onDoneEdit(List<String>? values, int index, bool? next, bool stick) {
+  void _onDoneEdit(List<String>? values, int index, Cursor cursor, bool stick) {
     setState(() {
       if (values != null) {
         final bloc = BlocProvider.of<ProgressionHandlerBloc>(context);
@@ -267,15 +268,15 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
             description: "Edited $index measure ti $values."));
       }
       final double step = widget.progression.timeSignature.step;
-      if (next == null) {
+      if (cursor == Cursor.done) {
         editedMeasure = -1;
         editedPos = -1;
         _focusNode.requestFocus();
       } else {
         if (stick) {
-          _handleStickPos(next);
+          _handleStickPos(cursor);
         } else {
-          int add = next ? 1 : -1;
+          int add = cursor.value!;
           editedPos += add;
           final numeratorIndex = widget.progression.timeSignature.numerator - 1;
           if (editedPos > numeratorIndex || editedPos < 0) {
@@ -285,7 +286,7 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
             } else if (editedMeasure < 0) {
               editedMeasure = 0;
             }
-            editedPos = next ? 0 : numeratorIndex;
+            editedPos = cursor == Cursor.next ? 0 : numeratorIndex;
           } else if (editedMeasure == _measures.length - 1 &&
               editedPos >= _measures[editedMeasure].duration ~/ step) {
             _addNewVal(values);
@@ -333,21 +334,21 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
     );
   }
 
-  void _handleStickPos(bool next) {
+  void _handleStickPos(Cursor cursor) {
     int newM = editedMeasure;
     final m = _measures[newM];
     final step = m.timeSignature.step;
-    final cursor = step * editedPos;
+    final cursorPos = step * editedPos;
 
     // Find the closest value to the current pos
-    int closest = m.getPlayingIndex(cursor);
+    int closest = m.getPlayingIndex(cursorPos);
 
-    // If the cursor isn't on a chord...
-    if (m.durations.position(closest) != cursor) {
+    // If the cursorPos isn't on a chord...
+    if (m.durations.position(closest) != cursorPos) {
       closest++;
     }
 
-    closest += next ? 1 : -1;
+    closest += cursor.value ?? 0;
 
     if (closest >= m.length) {
       // While sticking, if we're at the last value on the last measure

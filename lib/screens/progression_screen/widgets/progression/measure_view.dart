@@ -191,7 +191,7 @@ class MeasureView<T> extends StatelessWidget {
   final int? paintFrom;
   final int? paintTo;
   final int? editedPos;
-  final void Function(List<String>? input, bool? next, bool stick)?
+  final void Function(List<String>? input, Cursor cursor, bool stick)?
       onSubmitChange;
 
   @override
@@ -317,25 +317,26 @@ class MeasureView<T> extends StatelessWidget {
   }
 
   // TODO: Optimize...
-  void _submittedChange(String? input, bool? next, [bool stick = false]) {
-    if (input == null) return onSubmitChange?.call(null, next, stick);
+  void _submittedChange(EditAction action) {
+    String? input = action.input;
+    final cursor = action.cursor;
+    final stick = action.stick;
+    final position = action.position;
+    if (input == null) return onSubmitChange?.call(null, cursor, stick);
+
+    final diffPos = position != Position.override;
 
     List<String> values = [];
     final double step = measure.timeSignature.step;
     final editedPos = this.editedPos ?? -1;
     input = input.trim();
-    int? num = int.tryParse(input);
-    var last = '';
-    int index = 0;
-    final maxPos =
-        min(measure.duration ~/ step, measure.timeSignature.numerator);
 
-    // When deleting with ctrl pressed.
     /* TODO: The same effect happens when deleting the a chord
              with a duration bigger than 1. Think if it should instead
              just delete a step instead of the whole chord (because ctrl-delete
              deletes the whole chord...).
      */
+    // When deleting with ctrl pressed.
     if (input.isEmpty && stick) {
       final closest = measure.getPlayingIndex(step * editedPos);
       for (int i = 0; i < measure.length; i++) {
@@ -344,10 +345,16 @@ class MeasureView<T> extends StatelessWidget {
         }
       }
     } else {
+      int? num = int.tryParse(input);
+      var last = '';
+      int index = 0;
+      final maxPos =
+          min(measure.duration ~/ step, measure.timeSignature.numerator);
+
       for (int p = 0; p < maxPos; p++) {
         bool useIndex = index < measure.length &&
             p == measure.durations.position(index) ~/ step;
-        if (p == editedPos) {
+        if (!diffPos && p == editedPos) {
           if (num == null) {
             values.add(input);
             last = input;
@@ -362,19 +369,14 @@ class MeasureView<T> extends StatelessWidget {
           index++;
         }
       }
-      if (input.isEmpty && stick) {
-        int i = values.length - 2;
-        final last = values[i];
-        while (i >= 0 && values[i] == last) {
-          values[i] = '';
-          i--;
-          print('$measure - $values');
-        }
+
+      if (diffPos) {
+        position.insert(values, input, editedPos);
       }
     }
 
     print('$measure - $values');
-    onSubmitChange?.call(values, next, stick);
+    onSubmitChange?.call(values, cursor, stick);
   }
 }
 

@@ -67,7 +67,7 @@ class EditedValueView<T> extends StatefulWidget {
   // Used for equality purposes
   final int position;
 
-  final void Function(String? input, bool? next, [bool stick]) onSubmitChange;
+  final void Function(EditAction) onSubmitChange;
 
   @override
   State<EditedValueView> createState() => _EditedValueViewState();
@@ -123,15 +123,24 @@ class _EditedValueViewState extends State<EditedValueView> {
               .contains(LogicalKeyboardKey.controlLeft);
           if (key == LogicalKeyboardKey.backspace) {
             if (ctrl || text.isEmpty) {
-              widget.onSubmitChange('', false, ctrl);
+              widget.onSubmitChange(EditAction('', Cursor.previous, ctrl));
             }
           } else if (key == LogicalKeyboardKey.arrowRight) {
             if (ctrl || _controller.selection.baseOffset == text.length) {
-              widget.onSubmitChange(null, true, ctrl);
+              widget.onSubmitChange(EditAction(null, Cursor.next, ctrl));
             }
           } else if (key == LogicalKeyboardKey.arrowLeft) {
             if (ctrl || _controller.selection.baseOffset == 0) {
-              widget.onSubmitChange(null, false, ctrl);
+              widget.onSubmitChange(EditAction(null, Cursor.previous, ctrl));
+            }
+          } else if (key == LogicalKeyboardKey.space) {
+            if (ctrl) {
+              widget.onSubmitChange(const EditAction(
+                'm',
+                Cursor.stay,
+                true,
+                Position.appendMeasure,
+              ));
             }
           }
         }
@@ -150,18 +159,77 @@ class _EditedValueViewState extends State<EditedValueView> {
         style: Constants.valueTextStyle,
         onSubmitted: (input) {
           input = input.trim();
-          widget.onSubmitChange(
+          widget.onSubmitChange(EditAction(
             input != _initial ? input : null,
-            null,
-          );
+            Cursor.done,
+          ));
         },
         onChanged: (input) {
-          if (input.isNotEmpty && input[input.length - 1] == ' ') {
-            input = input.trim();
-            widget.onSubmitChange(input != _initial ? input : null, true);
+          if (input.isNotEmpty) {
+            if (input[input.length - 1] == ' ') {
+              input = input.trim();
+              widget.onSubmitChange(
+                  EditAction(input != _initial ? input : null, Cursor.next));
+            } else if (input[0] == ' ') {
+              widget.onSubmitChange(
+                  const EditAction('', Cursor.stay, false, Position.prepend));
+            }
           }
         },
       ),
     );
+  }
+}
+
+class EditAction {
+  final String? input;
+  final Cursor cursor;
+  final bool stick;
+  final Position position;
+
+  const EditAction(
+    this.input,
+    this.cursor, [
+    this.stick = false,
+    this.position = Position.override,
+  ]);
+}
+
+enum Cursor { done, previous, stay, next }
+
+extension CursorMethods on Cursor {
+  int? get value {
+    switch (this) {
+      case Cursor.done:
+        return null;
+      case Cursor.previous:
+        return -1;
+      case Cursor.stay:
+        return 0;
+      case Cursor.next:
+        return 1;
+    }
+  }
+}
+
+enum Position {
+  prepend,
+  override,
+  append,
+  appendMeasure,
+}
+
+extension PositionMethods on Position {
+  insert(List<String> values, String input, int editedPos) {
+    switch (this) {
+      case Position.prepend:
+        return values.insert(editedPos, input);
+      case Position.append:
+        return values.insert(editedPos + 1, input);
+      case Position.appendMeasure:
+        return values.add(input);
+      default:
+        return;
+    }
   }
 }
