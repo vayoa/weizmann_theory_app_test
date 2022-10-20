@@ -48,12 +48,6 @@ jobs:
         env:
           B_V: ${{ needs.check-release.outputs.version }}
       - uses: actions/checkout@v2
-      - name: Tag commit
-        uses: tvdias/github-tagger@v0.0.1
-        with:
-          repo-token: ${{ secrets.G_TOKEN }}
-          tag: '${{ needs.check-release.outputs.version }}'
-          commit-sha: '${{ github.sha }}'
       - uses: subosito/flutter-action@v1
         with:
           channel: 'stable'
@@ -67,11 +61,16 @@ jobs:
           type: 'zip'
           filename: WeizmannTheory.zip
           directory: build/windows/runner/Release
+      - name: Tag commit
+        uses: tvdias/github-tagger@v0.0.1
+        with:
+          repo-token: ${{ secrets.G_TOKEN }}
+          tag: '${{ needs.check-release.outputs.version }}'
+          commit-sha: '${{ github.sha }}'
       - name: Windows Release
         uses: ncipollo/release-action@v1
         with:
           artifacts: build/windows/runner/Release/WeizmannTheory.zip
-          tag: ${{ env.B_V }}
           token: ${{ secrets.G_TOKEN }}
           generateReleaseNotes: true
           prerelease: ${{ contains(env.B_V, '-b') }}
