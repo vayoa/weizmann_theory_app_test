@@ -25,13 +25,13 @@ jobs:
           repository: ${{ github.repository }}
           excludes: draft
       - name: "Echo Variables"
-        run: echo "Current version $BUILD_VERSION, latest release $RELEASE. Create a new build? $RUN_BUILD."
+        run: echo "Current version $BUILD_VERSION, latest release $RELEASE. Create a new build - $RUN_BUILD."
         env:
           RELEASE: ${{ steps.keydb.outputs.release }}
           # output the version with a v prefixed.
           BUILD_VERSION: v${{ steps.read-version.outputs.version-number }}
           # notice, the tags contain a v in them while the version from the pubspec does not...
-          RUN_BUILD: ${{ env.RELEASE == env.BUILD_VERSION }}
+          RUN_BUILD: ${{ env.RELEASE != env.BUILD_VERSION }}
 
   build-and-release-windows:
     runs-on: windows-latest
