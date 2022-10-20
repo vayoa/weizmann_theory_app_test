@@ -35,7 +35,7 @@ jobs:
 
 
   echo-outputs:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: check-release
     steps:
       - name: "Echo Outputs"
