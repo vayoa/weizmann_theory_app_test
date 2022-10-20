@@ -36,13 +36,6 @@ jobs:
           BUILD_VERSION: 'v${{ steps.read-version.outputs.version-number }}'
           # notice, the tags contain a v in them while the version from the pubspec does not...
           RUN_BUILD: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
-      - name: Tag commit
-        uses: tvdias/github-tagger@v0.0.1
-        if: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
-        with:
-          repo-token: ${{ secrets.G_TOKEN }}
-          tag: 'v${{ steps.read-version.outputs.version-number }}'
-          commit-sha: '${{ github.sha }}'
 
   build-and-release-windows:
     runs-on: windows-latest
@@ -55,6 +48,12 @@ jobs:
         env:
           B_V: ${{ needs.check-release.outputs.version }}
       - uses: actions/checkout@v2
+      - name: Tag commit
+        uses: tvdias/github-tagger@v0.0.1
+        with:
+          repo-token: ${{ secrets.G_TOKEN }}
+          tag: '${{ needs.check-release.outputs.version }}'
+          commit-sha: '${{ github.sha }}'
       - uses: subosito/flutter-action@v1
         with:
           channel: 'stable'
