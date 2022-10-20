@@ -3,12 +3,44 @@ name: Flutter Release CI
 on:
   workflow_dispatch:
   push:
-    tags: [ v* ]
 
 jobs:
+  check-release:
+    runs-on: ubuntu-latest
+    outputs:
+      run-build: ${{ env.RUN_BUILD }}
+      version: v${{ env.BUILD_VERSION }}
+    steps:
+      # read the pubspec version.
+      - id: read-version
+        uses: NiklasLehnfeld/flutter-version-number-action@main
+        with:
+          file-path: pubspec.yaml
+      # read the latest release tag.
+      - id: keydb
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: ${{ github.repository }}
+          excludes: draft
+      - name: "Check Version Update"
+        # notice, the tags contain a v in them while the version from the pubspec does not...
+        if: contains(steps.keydb.outputs.release, steps.read-version.outputs.version-number)
+        run: echo "New version $BUILD_VERSION found, creating a new release."
+        env:
+          RUN_BUILD: true
+          # output the version with a v prefixed.
+          BUILD_VERSION: v${{ steps.read-version.outputs.version-number }}
+
+
   build-and-release-windows:
     runs-on: windows-latest
+    needs: check-release
+    # runs only if the release was found to be higher.
+    if: needs.check-release.outputs.run-build == 'true'
     steps:
+      - name: "Set Version Env"
+        env:
+          B_V: needs.check-release.outputs.version
       - uses: actions/checkout@v2
       - uses: subosito/flutter-action@v1
         with:
@@ -27,7 +59,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: build/windows/runner/Release/WeizmannTheory.zip
-          tag: ${{ github.ref_name }}
+          tag: ${{ env.B_V }}
           token: ${{ secrets.G_TOKEN }}
           generateReleaseNotes: true
-          prerelease: ${{ contains(github.ref_name, '-b') }}
+          prerelease: ${{ contains(env.B_V, '-b') }}
