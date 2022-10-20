@@ -16,6 +16,7 @@ class AppVersion extends Comparable<AppVersion> with Compared<AppVersion> {
     }
   }
 
+  /// Creates a temporary empty version.
   AppVersion.empty() {
     version = Version.none;
     releaseNotes = null;
