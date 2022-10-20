@@ -3,6 +3,9 @@ name: Flutter Release CI
 on:
   workflow_dispatch:
   push:
+    branches:
+      - 'master'
+      - 'pre-releases'
 
 jobs:
   check-release:
@@ -34,25 +37,14 @@ jobs:
           # notice, the tags contain a v in them while the version from the pubspec does not...
           RUN_BUILD: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
 
-
-  echo-outputs:
-    runs-on: windows-latest
-    needs: check-release
-    steps:
-      - name: "Echo Outputs"
-        run: echo "New Build - ${env:N_B}, Build Version - ${env:B_V}."
-        env:
-          N_B: ${{  needs.check-release.outputs.build  }}
-          B_V: ${{  needs.check-release.outputs.version  }}
-
   build-and-release-windows:
     runs-on: windows-latest
     needs: check-release
     # runs only if the release was found to be higher.
-    if: needs.check-release.outputs.new-build == 'true'
+    if: needs.check-release.outputs.build == 'true'
     steps:
       - name: "Set Version Env"
-        run: echo "Building $B_V."
+        run: echo "Building ${env:B_V}."
         env:
           B_V: needs.check-release.outputs.version
       - uses: actions/checkout@v2
