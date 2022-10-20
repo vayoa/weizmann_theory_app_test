@@ -6,7 +6,7 @@ on:
 
 jobs:
   check-release:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     outputs:
       # For some reason using env variables doesn't work
       build: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
@@ -40,7 +40,7 @@ jobs:
     needs: check-release
     steps:
       - name: "Echo Outputs"
-        run: echo "New Build - $N_B, Build Version - $B_V, t - ${{ needs.check-release.outputs.t }}"
+        run: echo "New Build - ${env:N_B}, Build Version - ${env:B_V}."
         env:
           N_B: ${{  needs.check-release.outputs.build  }}
           B_V: ${{  needs.check-release.outputs.version  }}
