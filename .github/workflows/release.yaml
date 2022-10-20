@@ -36,6 +36,13 @@ jobs:
           BUILD_VERSION: 'v${{ steps.read-version.outputs.version-number }}'
           # notice, the tags contain a v in them while the version from the pubspec does not...
           RUN_BUILD: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
+      - uses: rickstaa/action-create-tag@v1
+        if: ${{ env.RUN_BUILD }}
+        with:
+          tag: ${{ env.BUILD_VERSION }}
+          token: ${{ secrets.G_TOKEN }}
+          commit_sha: ${{ github.sha }}
+
 
   build-and-release-windows:
     runs-on: windows-latest
@@ -48,10 +55,6 @@ jobs:
         env:
           B_V: ${{ needs.check-release.outputs.version }}
       - uses: actions/checkout@v2
-      - uses: rickstaa/action-create-tag@v1
-        with:
-          tag: ${{ env.B_V }}
-          github_token: ${{ secrets.G_TOKEN }}
       - uses: subosito/flutter-action@v1
         with:
           channel: 'stable'
@@ -71,7 +74,5 @@ jobs:
           artifacts: build/windows/runner/Release/WeizmannTheory.zip
           tag: ${{ env.B_V }}
           token: ${{ secrets.G_TOKEN }}
-          # We need to supply the action a branch to create a tag.
-          commit: ${{ github.ref_name }}
           generateReleaseNotes: true
           prerelease: ${{ contains(env.B_V, '-b') }}
