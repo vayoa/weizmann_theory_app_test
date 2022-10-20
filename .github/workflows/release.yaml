@@ -8,8 +8,8 @@ jobs:
   check-release:
     runs-on: ubuntu-latest
     outputs:
-      new_build: ${{ env.RUN_BUILD }}
-      version: v${{ env.BUILD_VERSION }}
+      build: '${{ env.RUN_BUILD }}'
+      version: '${{ env.BUILD_VERSION }}'
     steps:
       # required for checking out a repo.
       - uses: actions/checkout@v2
@@ -41,7 +41,7 @@ jobs:
       - name: "Echo Outputs"
         run: echo "New Build - $N_B, Build Version - $B_V."
         env:
-          N_B: ${{  needs.check-release.outputs.new-build  }}
+          N_B: ${{  needs.check-release.outputs.build  }}
           B_V: ${{  needs.check-release.outputs.version  }}
 
   build-and-release-windows:
