@@ -72,5 +72,7 @@ jobs:
         with:
           artifacts: build/windows/runner/Release/WeizmannTheory.zip
           token: ${{ secrets.G_TOKEN }}
+          tag: '${{ needs.check-release.outputs.version }}'
+          commit-sha: '${{ github.sha }}'
           generateReleaseNotes: true
           prerelease: ${{ contains(env.B_V, '-b') }}
