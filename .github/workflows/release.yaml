@@ -10,7 +10,7 @@ jobs:
     outputs:
       t: 123
       build: '${{ env.RUN_BUILD }}'
-      version: '${{ env.BUILD_VERSION }}'
+      version: 'v${{ steps.read-version.outputs.version-number }}'
     steps:
       # required for checking out a repo.
       - uses: actions/checkout@v2
