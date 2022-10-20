@@ -8,7 +8,7 @@ jobs:
   check-release:
     runs-on: ubuntu-latest
     outputs:
-      run-build: ${{ env.RUN_BUILD }}
+      new_build: ${{ env.RUN_BUILD }}
       version: v${{ env.BUILD_VERSION }}
     steps:
       # required for checking out a repo.
@@ -37,7 +37,7 @@ jobs:
     runs-on: windows-latest
     needs: check-release
     # runs only if the release was found to be higher.
-    if: needs.check-release.outputs.run-build == 'true'
+    if: needs.check-release.outputs.new-build == 'true'
     steps:
       - name: "Set Version Env"
         run: echo "Building $B_V."
