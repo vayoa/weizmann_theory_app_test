@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       # For some reason using env variables doesn't work
-      build: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
+      build: ${{ !contains(steps.keydb.outputs.release, steps.read-version.outputs.version-number) }}
       version: 'v${{ steps.read-version.outputs.version-number }}'
     steps:
       # required for checking out a repo.
