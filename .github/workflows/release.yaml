@@ -33,6 +33,17 @@ jobs:
           # notice, the tags contain a v in them while the version from the pubspec does not...
           RUN_BUILD: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
 
+
+  echo-outputs:
+    runs-on: windows-latest
+    needs: check-release
+    steps:
+      - name: "Echo Outputs"
+        run: echo "New Build - $N_B, Build Version - $B_V."
+        env:
+          N_B: ${{  needs.check-release.outputs.new-build  }}
+          B_V: ${{  needs.check-release.outputs.version  }}
+
   build-and-release-windows:
     runs-on: windows-latest
     needs: check-release
