@@ -36,13 +36,13 @@ jobs:
           BUILD_VERSION: 'v${{ steps.read-version.outputs.version-number }}'
           # notice, the tags contain a v in them while the version from the pubspec does not...
           RUN_BUILD: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
-      - uses: rickstaa/action-create-tag@v1
+      - name: Tag commit
+        uses: tvdias/github-tagger@v0.0.1
         if: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
         with:
-          tag: ${{ env.BUILD_VERSION }}
-          github_token: ${{ secrets.G_TOKEN }}
-          commit_sha: ${{ github.sha }}
-
+          repo-token: ${{ secrets.G_TOKEN }}
+          tag: '${{ env.BUILD_VERSION }}'
+          commit-sha: '${{ github.sha }}'
 
   build-and-release-windows:
     runs-on: windows-latest
