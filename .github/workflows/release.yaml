@@ -11,6 +11,8 @@ jobs:
       run-build: ${{ env.RUN_BUILD }}
       version: v${{ env.BUILD_VERSION }}
     steps:
+      # required for checking out a repo.
+      - uses: actions/checkout@v2
       # read the pubspec version.
       - id: read-version
         uses: NiklasLehnfeld/flutter-version-number-action@main
