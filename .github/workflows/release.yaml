@@ -32,7 +32,7 @@ jobs:
           BUILD_VERSION: v${{ steps.read-version.outputs.version-number }}
       - name: "Check Version Update"
         # notice, the tags contain a v in them while the version from the pubspec does not...
-        if: !contains(env.RELEASE, env.BUILD_VERSION)
+        if: ${{ !contains(env.RELEASE, env.BUILD_VERSION) }}
         run: echo "New version $BUILD_VERSION found, creating a new release."
         env:
           RUN_BUILD: true
