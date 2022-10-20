@@ -48,6 +48,10 @@ jobs:
         env:
           B_V: ${{ needs.check-release.outputs.version }}
       - uses: actions/checkout@v2
+      - uses: rickstaa/action-create-tag@v1
+        with:
+          tag: ${{ env.B_V }}
+          github_token: ${{ secrets.G_TOKEN }}
       - uses: subosito/flutter-action@v1
         with:
           channel: 'stable'
