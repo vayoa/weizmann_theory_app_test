@@ -35,7 +35,7 @@ jobs:
           # output the version with a v prefixed.
           BUILD_VERSION: 'v${{ steps.read-version.outputs.version-number }}'
           # notice, the tags contain a v in them while the version from the pubspec does not...
-          RUN_BUILD: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
+          RUN_BUILD: ${{ '${{ steps.keydb.outputs.release }}' != 'v${{ steps.read-version.outputs.version-number }}' }}
 
   build-and-release-windows:
     runs-on: windows-latest
