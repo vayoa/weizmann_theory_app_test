@@ -34,11 +34,8 @@ class UpdateCubit extends Cubit<UpdateState> {
   Future loadCurrentVersion() async {
     emit(UpdateLoading(AppVersion.empty()));
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    print(packageInfo.version);
-    print(packageInfo.appName);
-    print(packageInfo.buildNumber);
-    print(packageInfo.buildSignature);
-    currentVersion = AppVersion.parse(packageInfo.version);
+    final ver = '${packageInfo.version}+${packageInfo.buildNumber}';
+    currentVersion = AppVersion.parse(ver);
     return emit(UpdateInitial(currentVersion));
   }
 
