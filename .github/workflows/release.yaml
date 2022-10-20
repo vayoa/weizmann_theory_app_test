@@ -75,4 +75,4 @@ jobs:
           tag: '${{ needs.check-release.outputs.version }}'
           commit-sha: '${{ github.sha }}'
           generateReleaseNotes: true
-          prerelease: ${{ contains('${{ needs.check-release.outputs.version }}', '-b') }}
+          prerelease: ${{ contains(needs.check-release.outputs.version, '-b') }}
