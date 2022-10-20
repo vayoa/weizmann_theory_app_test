@@ -67,5 +67,7 @@ jobs:
           artifacts: build/windows/runner/Release/WeizmannTheory.zip
           tag: ${{ env.B_V }}
           token: ${{ secrets.G_TOKEN }}
+          # We need to supply the action a branch to create a tag.
+          commit: ${{ github.ref_name }}
           generateReleaseNotes: true
           prerelease: ${{ contains(env.B_V, '-b') }}
