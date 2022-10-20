@@ -8,6 +8,7 @@ jobs:
   check-release:
     runs-on: ubuntu-latest
     outputs:
+      t: 123
       build: '${{ env.RUN_BUILD }}'
       version: '${{ env.BUILD_VERSION }}'
     steps:
@@ -39,7 +40,7 @@ jobs:
     needs: check-release
     steps:
       - name: "Echo Outputs"
-        run: echo "New Build - $N_B, Build Version - $B_V."
+        run: echo "New Build - $N_B, Build Version - $B_V, t - ${{ needs.check-release.outputs.t }}"
         env:
           N_B: ${{  needs.check-release.outputs.build  }}
           B_V: ${{  needs.check-release.outputs.version  }}
