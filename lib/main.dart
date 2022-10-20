@@ -110,7 +110,7 @@ class MyHomePage extends StatelessWidget {
       // Instantiate the bloc and call the initial event.
       providers: [
         BlocProvider(create: (_) => BankBloc()..add(LoadInitialBank())),
-        BlocProvider(create: (_) => UpdateCubit()..checkForUpdates()),
+        BlocProvider(create: (_) => UpdateCubit()..init()),
       ],
       child: const LibraryScreen(),
     );

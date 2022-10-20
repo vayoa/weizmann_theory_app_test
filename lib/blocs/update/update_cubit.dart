@@ -6,15 +6,17 @@ import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:weizmann_theory_app_test/blocs/update/version.dart';
+
+import 'app_version.dart';
 
 part 'update_state.dart';
 
 class UpdateCubit extends Cubit<UpdateState> {
-  UpdateCubit() : super(UpdateInitial(currentVersion));
+  UpdateCubit() : super(UpdateInitial(AppVersion.empty()));
 
-  static final Version currentVersion = Version("0.8.0.10", true);
+  static late final AppVersion currentVersion;
 
   static final String appPath = Directory.current.path;
 
@@ -22,10 +24,26 @@ class UpdateCubit extends Cubit<UpdateState> {
       "https://api.github.com/repos/vayoa/weizmann_theory_app_test/releases");
 
   CancelToken? downloadCancel;
-  Version? newestVersion;
+  AppVersion? newestVersion;
 
-  Future<Version> _loadLatestGithubVersion() async =>
-      Version.fromJson(jsonDecode(await http.read(githubVersionUri))[0]);
+  Future init() async {
+    await loadCurrentVersion();
+    await checkForUpdates();
+  }
+
+  Future loadCurrentVersion() async {
+    emit(UpdateLoading(AppVersion.empty()));
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    print(packageInfo.version);
+    print(packageInfo.appName);
+    print(packageInfo.buildNumber);
+    print(packageInfo.buildSignature);
+    currentVersion = AppVersion.parse(packageInfo.version);
+    return emit(UpdateInitial(currentVersion));
+  }
+
+  Future<AppVersion> _loadLatestGithubVersion() async =>
+      AppVersion.fromJson(jsonDecode(await http.read(githubVersionUri))[0]);
 
   Future checkForUpdates() async {
     emit(UpdateLoading(currentVersion));
@@ -38,7 +56,7 @@ class UpdateCubit extends Cubit<UpdateState> {
     }
   }
 
-  Future downloadNewVersion(Version update) async {
+  Future downloadNewVersion(AppVersion update) async {
     final dio = Dio();
     final temp = (await getApplicationSupportDirectory()).path;
     final documents = (await getApplicationDocumentsDirectory()).path;

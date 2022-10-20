@@ -1,7 +1,7 @@
 part of 'update_cubit.dart';
 
 abstract class UpdateState extends Equatable {
-  final Version version;
+  final AppVersion version;
 
   @override
   List<Object?> get props => [version];
@@ -10,25 +10,25 @@ abstract class UpdateState extends Equatable {
 }
 
 class UpdateInitial extends UpdateState {
-  const UpdateInitial(Version version) : super(version);
+  const UpdateInitial(AppVersion version) : super(version);
 }
 
 class UpdateLoading extends UpdateState {
-  const UpdateLoading(Version version) : super(version);
+  const UpdateLoading(AppVersion version) : super(version);
 }
 
 class UpdateAvailable extends UpdateState {
-  final Version update;
+  final AppVersion update;
 
   @override
   List<Object?> get props => [version, update];
 
-  const UpdateAvailable({required Version version, required this.update})
+  const UpdateAvailable({required AppVersion version, required this.update})
       : super(version);
 }
 
 class FullyUpdated extends UpdateState {
-  const FullyUpdated(Version version) : super(version);
+  const FullyUpdated(AppVersion version) : super(version);
 }
 
 // Step In Progress
@@ -40,21 +40,27 @@ class StepInProgress extends UpdateAvailable {
   List<Object?> get props => [version, update, progress, message];
 
   const StepInProgress(this.message,
-      {required Version version, required Version update, double? progress})
+      {required AppVersion version,
+      required AppVersion update,
+      double? progress})
       : progress = progress ?? 0,
         super(version: version, update: update);
 }
 
 class DownloadingUpdate extends StepInProgress {
   const DownloadingUpdate(
-      {required Version version, required Version update, double? progress})
+      {required AppVersion version,
+      required AppVersion update,
+      double? progress})
       : super("Downloading Update",
             version: version, update: update, progress: progress);
 }
 
 class ExtractingUpdate extends StepInProgress {
   const ExtractingUpdate(
-      {required Version version, required Version update, double? progress})
+      {required AppVersion version,
+      required AppVersion update,
+      double? progress})
       : super("Extracting Update",
             version: version, update: update, progress: progress);
 }
@@ -70,13 +76,14 @@ class StepFinished extends UpdateAvailable {
   const StepFinished(
       {required this.finished,
       required this.message,
-      required Version version,
-      required Version update})
+      required AppVersion version,
+      required AppVersion update})
       : super(version: version, update: update);
 }
 
 class UpdateDownloaded extends StepFinished {
-  const UpdateDownloaded({required Version version, required Version update})
+  const UpdateDownloaded(
+      {required AppVersion version, required AppVersion update})
       : super(
             finished: "Update Downloaded.",
             message: "We'll now unzip the file.",
@@ -92,8 +99,8 @@ class UpdateExtracted extends StepFinished {
 
   const UpdateExtracted(
       {required this.location,
-      required Version version,
-      required Version update})
+      required AppVersion version,
+      required AppVersion update})
       : super(
             finished: "Zip Extracted.",
             message: "Close this app and open the new one\n"
