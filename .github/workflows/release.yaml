@@ -6,7 +6,7 @@ on:
 
 jobs:
   check-release:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     outputs:
       # For some reason using env variables doesn't work
       build: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
