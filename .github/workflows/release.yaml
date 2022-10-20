@@ -31,7 +31,7 @@ jobs:
           # output the version with a v prefixed.
           BUILD_VERSION: b
           # notice, the tags contain a v in them while the version from the pubspec does not...
-          RUN_BUILD: ${{ 'b' != 'a' }}
+          RUN_BUILD: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
 
   build-and-release-windows:
     runs-on: windows-latest
