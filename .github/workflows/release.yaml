@@ -39,6 +39,7 @@ jobs:
     if: needs.check-release.outputs.run-build == 'true'
     steps:
       - name: "Set Version Env"
+        run: echo "Building $B_V."
         env:
           B_V: needs.check-release.outputs.version
       - uses: actions/checkout@v2
