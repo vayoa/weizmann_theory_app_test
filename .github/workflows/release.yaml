@@ -41,7 +41,7 @@ jobs:
         if: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
         with:
           repo-token: ${{ secrets.G_TOKEN }}
-          tag: '${{ env.BUILD_VERSION }}'
+          tag: 'v${{ steps.read-version.outputs.version-number }}'
           commit-sha: '${{ github.sha }}'
 
   build-and-release-windows:
