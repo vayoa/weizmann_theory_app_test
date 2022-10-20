@@ -27,11 +27,11 @@ jobs:
       - name: "Echo Variables"
         run: echo "Current version $BUILD_VERSION, latest release $RELEASE. Create a new build - $RUN_BUILD."
         env:
-          RELEASE: v0.8.0.10-b
+          RELEASE: a
           # output the version with a v prefixed.
-          BUILD_VERSION: v0.8.0-b+11
+          BUILD_VERSION: b
           # notice, the tags contain a v in them while the version from the pubspec does not...
-          RUN_BUILD: env.RELEASE != env.BUILD_VERSION
+          RUN_BUILD: ${{ env.RELEASE != env.BUILD_VERSION }}
 
   build-and-release-windows:
     runs-on: windows-latest
