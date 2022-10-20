@@ -46,7 +46,7 @@ jobs:
       - name: "Set Version Env"
         run: echo "Building ${env:B_V}."
         env:
-          B_V: $${{ needs.check-release.outputs.version }}
+          B_V: ${{ needs.check-release.outputs.version }}
       - uses: actions/checkout@v2
       - uses: subosito/flutter-action@v1
         with:
