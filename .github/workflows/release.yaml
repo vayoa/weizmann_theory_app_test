@@ -40,7 +40,7 @@ jobs:
         if: ${{ '${{ env.RELEASE }}' != '${{ env.BUILD_VERSION }}' }}
         with:
           tag: ${{ env.BUILD_VERSION }}
-          token: ${{ secrets.G_TOKEN }}
+          github_token: ${{ secrets.G_TOKEN }}
           commit_sha: ${{ github.sha }}
 
 
