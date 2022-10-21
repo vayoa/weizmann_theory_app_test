@@ -1,9 +1,8 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
 
+import '../../../../blocs/input/input_cubit.dart';
 import '../../../../constants.dart';
 import '../../../../utilities.dart';
 import '../../../../widgets/custom_button.dart';
@@ -191,8 +190,7 @@ class MeasureView<T> extends StatelessWidget {
   final int? paintFrom;
   final int? paintTo;
   final int? editedPos;
-  final void Function(List<String>? input, Cursor cursor, bool stick)?
-      onSubmitChange;
+  final void Function(EditAction action)? onSubmitChange;
 
   @override
   Widget build(BuildContext context) {
@@ -317,67 +315,7 @@ class MeasureView<T> extends StatelessWidget {
   }
 
   // TODO: Optimize...
-  void _submittedChange(EditAction action) {
-    String? input = action.input;
-    final cursor = action.cursor;
-    final stick = action.stick;
-    final position = action.position;
-    if (input == null) return onSubmitChange?.call(null, cursor, stick);
-
-    final diffPos = position != Position.override;
-
-    List<String> values = [];
-    final double step = measure.timeSignature.step;
-    final editedPos = this.editedPos ?? -1;
-    input = input.trim();
-
-    /* TODO: The same effect happens when deleting the a chord
-             with a duration bigger than 1. Think if it should instead
-             just delete a step instead of the whole chord (because ctrl-delete
-             deletes the whole chord...).
-     */
-    // When deleting with ctrl pressed.
-    if (input.isEmpty && stick) {
-      final closest = measure.getPlayingIndex(step * editedPos);
-      for (int i = 0; i < measure.length; i++) {
-        if (i != closest) {
-          values.add('${measure[i]} ${measure.durations[i] ~/ step}');
-        }
-      }
-    } else {
-      int? num = int.tryParse(input);
-      var last = '';
-      int index = 0;
-      final maxPos =
-          min(measure.duration ~/ step, measure.timeSignature.numerator);
-
-      for (int p = 0; p < maxPos; p++) {
-        bool useIndex = index < measure.length &&
-            p == measure.durations.position(index) ~/ step;
-        if (!diffPos && p == editedPos) {
-          if (num == null) {
-            values.add(input);
-            last = input;
-          } else {
-            values.add('$last $input');
-          }
-        } else {
-          last = useIndex ? measure[index].toString() : last;
-          values.add(last);
-        }
-        if (useIndex) {
-          index++;
-        }
-      }
-
-      if (diffPos) {
-        position.insert(values, input, editedPos);
-      }
-    }
-
-    print('$measure - $values');
-    onSubmitChange?.call(values, cursor, stick);
-  }
+  void _submittedChange(EditAction action) => onSubmitChange?.call(action);
 }
 
 class EmptyMeasure extends StatelessWidget {

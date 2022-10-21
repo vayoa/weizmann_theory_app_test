@@ -5,11 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' hide Change;
 import 'package:harmony_theory/modals/progression/progression.dart';
-import 'package:undo/undo.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_value_view.dart';
-import 'package:weizmann_theory_app_test/utilities.dart' as ut;
 
-import '../../../../blocs/progression_handler_bloc.dart';
+import '../../../../blocs/input/input_cubit.dart';
 import '../../../../constants.dart';
 import '../../../../screens/progression_screen/widgets/progression/progression_grid.dart';
 
@@ -113,15 +110,12 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
   final FocusNode _focusNode = FocusNode();
   late double stepW;
   late double minSelectDur;
-  int editedMeasure = -1;
-  int editedPos = -1;
   int hoveredMeasure = -1;
   int hoveredPos = -1;
   double startHold = -1;
   int holdMeasure = -1;
   int holdPos = -1;
   late double maxDur;
-  final ChangeStack _changeStack = ChangeStack();
 
   static const double max =
       Constants.measureWidth - 2 * Constants.measurePadding;
@@ -194,196 +188,79 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
            */
           final endMeasure = _getIndexFromPosition(event.localPosition);
           final endPos = _getMeasureDur(event.localPosition);
-          if ((editedMeasure != endMeasure || editedPos != endPos) &&
+          final bloc = BlocProvider.of<InputCubit>(context);
+          if ((bloc.editedMeasure != endMeasure || bloc.editedPos != endPos) &&
               hoveredMeasure == endMeasure &&
               hoveredPos == endPos) {
-            setState(() {
-              _focusNode.unfocus();
-              widget.onChangeRange.call(null, null);
-              editedMeasure = endMeasure;
-              editedPos = endPos;
-            });
+            bloc.unfocus();
+            widget.onChangeRange.call(null, null);
+            bloc.changePos(endPos, endMeasure);
           }
         },
         child: KeyboardListener(
           autofocus: true,
           focusNode: _focusNode,
           onKeyEvent: (event) {
+            final inputBloc = BlocProvider.of<InputCubit>(context);
             if (event is KeyDownEvent) {
               final key = event.logicalKey;
               bool ctrl = RawKeyboard.instance.keysPressed
                   .contains(LogicalKeyboardKey.controlLeft);
               if (key == LogicalKeyboardKey.backspace) {
                 if (!widget.rangeDisabled) {
-                  final bloc = BlocProvider.of<ProgressionHandlerBloc>(context);
-                  final rangeStart = bloc.fromDur, rangeEnd = bloc.toDur;
-                  _changeStack.add(Change<Progression>(
-                    bloc.currentlyViewedProgression,
-                    () {
-                      bloc.add(DeleteRange(rangeStart, rangeEnd));
-                    },
-                    (oldValue) {
-                      bloc.add(OverrideProgression(oldValue));
-                    },
-                    description: "Deleted Range $rangeStart - $rangeEnd.",
-                  ));
+                  inputBloc.deleteRange();
                 }
               } else if (ctrl) {
                 if (key == LogicalKeyboardKey.keyZ) {
-                  _changeStack.undo();
+                  inputBloc.undo();
                 } else if (key == LogicalKeyboardKey.keyR) {
-                  _changeStack.redo();
+                  inputBloc.redo();
                 }
               }
             }
           },
-          child: ProgressionGrid(
-            progression: widget.progression,
-            measures: widget.measures,
-            measuresInLine: widget.measuresInLine,
-            startRange: widget.startRange,
-            endRange: widget.endRange,
-            rangeDisabled: widget.rangeDisabled,
-            hoveredMeasure: widget.interactable ? hoveredMeasure : null,
-            hoveredPos: widget.interactable ? hoveredPos : null,
-            editedMeasure: widget.interactable ? editedMeasure : null,
-            editedPos: editedPos,
-            highlightFrom: widget.highlightFrom,
-            highlightTo: widget.highlightTo,
-            onDoneEdit: widget.interactable ? _onDoneEdit : null,
+          child: BlocConsumer<InputCubit, InputState>(
+            listener: (context, state) {
+              if (state is FocusedKeys) {
+                _focusNode.requestFocus();
+              } else if (state is Unfocused) {
+                _focusNode.unfocus();
+              }
+            },
+            builder: (context, state) {
+              int editedPos = -1, editedMeasure = -1;
+              if (state is InputActive) {
+                editedPos = state.editedPos;
+                editedMeasure = state.editedMeasure;
+              }
+              return ProgressionGrid(
+                progression: widget.progression,
+                measures: widget.measures,
+                measuresInLine: widget.measuresInLine,
+                startRange: widget.startRange,
+                endRange: widget.endRange,
+                rangeDisabled: widget.rangeDisabled,
+                hoveredMeasure: widget.interactable ? hoveredMeasure : null,
+                hoveredPos: widget.interactable ? hoveredPos : null,
+                editedMeasure: widget.interactable ? editedMeasure : null,
+                editedPos: editedPos,
+                highlightFrom: widget.highlightFrom,
+                highlightTo: widget.highlightTo,
+                onDoneEdit: widget.interactable ? _onDoneEdit : null,
+              );
+            },
           ),
         ),
       ),
     );
   }
 
-  void _onDoneEdit(List<String>? values, int index, Cursor cursor, bool stick) {
-    setState(() {
-      if (values != null) {
-        final bloc = BlocProvider.of<ProgressionHandlerBloc>(context);
-        _changeStack.add(Change<Progression>(
-            bloc.currentlyViewedProgression,
-            () => bloc.add(MeasureEdited(inputs: values, measureIndex: index)),
-            (oldValue) => bloc.add(OverrideProgression(oldValue)),
-            description: "Edited $index measure ti $values."));
-      }
-      final double step = widget.progression.timeSignature.step;
-      if (cursor == Cursor.done) {
-        editedMeasure = -1;
-        editedPos = -1;
-        _focusNode.requestFocus();
-      } else {
-        if (stick) {
-          _handleStickPos(cursor);
-        } else {
-          int add = cursor.value!;
-          editedPos += add;
-          final numeratorIndex = widget.progression.timeSignature.numerator - 1;
-          if (editedPos > numeratorIndex || editedPos < 0) {
-            editedMeasure += add;
-            if (editedMeasure == _measures.length) {
-              _addNewMeasure();
-            } else if (editedMeasure < 0) {
-              editedMeasure = 0;
-            }
-            editedPos = cursor == Cursor.next ? 0 : numeratorIndex;
-          } else if (editedMeasure == _measures.length - 1 &&
-              editedPos >= _measures[editedMeasure].duration ~/ step) {
-            _addNewVal(values);
-          }
-        }
-      }
-    });
-  }
-
-  void _addNewMeasure() {
-    // TODO: Decide what to add on empty
-    final bloc = BlocProvider.of<ProgressionHandlerBloc>(context);
-    final full = _measures[editedMeasure - 1].full;
-    _changeStack.add(Change<Progression>(
-        bloc.currentlyViewedProgression,
-        () => bloc.add(
-              MeasureEdited(
-                inputs: full
-                    ? const ['// 1']
-                    : ['// ${_measures.last.timeSignature.numerator + 1}'],
-                measureIndex: full ? editedMeasure : editedMeasure - 1,
-              ),
-            ),
-        (oldValue) => bloc.add(OverrideProgression(oldValue)),
-        description: "Added a new empty measure at $editedMeasure."));
-  }
-
-  void _addNewVal(List<String>? values) {
-    // TODO: Decide what to add on empty
-    final step = _measures.first.timeSignature.step;
-    final m = _measures[editedMeasure];
-    final inputs = values ?? ut.Utilities.progressionEdit(m);
-    final val = _isValidAdd(m, m.durations.last + step) ? inputs.last : null;
-    inputs.add('$val ,');
-
-    final bloc = BlocProvider.of<ProgressionHandlerBloc>(context);
-    _changeStack.add(
-      Change<Progression>(
-          bloc.currentlyViewedProgression,
-          () => bloc.add(
-                MeasureEdited(inputs: inputs, measureIndex: editedMeasure),
-              ),
-          (oldValue) => bloc.add(OverrideProgression(oldValue)),
-          description: "Added $val at measure $editedMeasure."),
-    );
-  }
-
-  void _handleStickPos(Cursor cursor) {
-    int newM = editedMeasure;
-    final m = _measures[newM];
-    final step = m.timeSignature.step;
-    final cursorPos = step * editedPos;
-
-    // Find the closest value to the current pos
-    int closest = m.getPlayingIndex(cursorPos);
-
-    // If the cursorPos isn't on a chord...
-    if (m.durations.position(closest) != cursorPos) {
-      closest++;
-    }
-
-    closest += cursor.value ?? 0;
-
-    if (closest >= m.length) {
-      // While sticking, if we're at the last value on the last measure
-      // and going next, we'll always create a new measure.
-      closest = 0;
-      newM++;
-      if (newM >= _measures.length) {
-        editedMeasure = _measures.length;
-        editedPos = 0;
-        return _addNewMeasure();
-      }
-    } else if (closest < 0) {
-      newM--;
-      if (newM < 0) {
-        editedMeasure = 0;
-        editedPos = 0;
-        return;
-      }
-      closest = _measures[newM].length - 1;
-    }
-
-    editedMeasure = newM;
-    editedPos = _measures[newM].durations.position(closest) ~/ step;
-  }
-
-  bool _isValidAdd<T>(Progression<T> measure, double dur) =>
-      measure.timeSignature.validDuration(dur);
+  void _onDoneEdit(EditAction action, int measureIndex) =>
+      BlocProvider.of<InputCubit>(context).submitAction(action, measureIndex);
 
   void _onPointerMove(PointerMoveEvent event, BuildContext context) {
-    if (editedMeasure != -1 && editedPos != -1) {
-      setState(() {
-        editedMeasure = -1;
-        editedPos = -1;
-      });
-    }
+    BlocProvider.of<InputCubit>(context).disable();
+
     if (event.buttons == kPrimaryButton) {
       if (holdMeasure != -1 && holdPos != -1) {
         _focusNode.requestFocus();

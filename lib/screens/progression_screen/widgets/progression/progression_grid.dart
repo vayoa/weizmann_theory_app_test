@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
-import 'package:weizmann_theory_app_test/screens/progression_screen/widgets/progression/progression_value_view.dart';
 
+import '../../../../blocs/input/input_cubit.dart';
 import '../../../../constants.dart';
 import '../../../../utilities.dart';
 import 'measure_view.dart';
@@ -52,8 +52,7 @@ class ProgressionGrid extends StatefulWidget {
   final int? hoveredPos;
   final int? editedMeasure;
   final int? editedPos;
-  final void Function(List<String>? values, int index, Cursor next, bool stick)?
-      onDoneEdit;
+  final void Function(EditAction action, int measureIndex)? onDoneEdit;
 
   @override
   State<ProgressionGrid> createState() => _ProgressionGridState();
@@ -207,8 +206,7 @@ class _ProgressionGridState extends State<ProgressionGrid> {
           cursorPos:
               editable && widget.hoveredPos != -1 ? widget.hoveredPos : null,
           editedPos: edited ? widget.editedPos : null,
-          onSubmitChange: (input, cursor, stick) =>
-              widget.onDoneEdit?.call(input, index, cursor, stick),
+          onSubmitChange: (action) => widget.onDoneEdit?.call(action, index),
         );
       },
     );

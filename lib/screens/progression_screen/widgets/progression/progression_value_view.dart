@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../blocs/input/input_cubit.dart';
 import '../../../../constants.dart';
 import '../../../../utilities.dart';
 
@@ -178,58 +179,5 @@ class _EditedValueViewState extends State<EditedValueView> {
         },
       ),
     );
-  }
-}
-
-class EditAction {
-  final String? input;
-  final Cursor cursor;
-  final bool stick;
-  final Position position;
-
-  const EditAction(
-    this.input,
-    this.cursor, [
-    this.stick = false,
-    this.position = Position.override,
-  ]);
-}
-
-enum Cursor { done, previous, stay, next }
-
-extension CursorMethods on Cursor {
-  int? get value {
-    switch (this) {
-      case Cursor.done:
-        return null;
-      case Cursor.previous:
-        return -1;
-      case Cursor.stay:
-        return 0;
-      case Cursor.next:
-        return 1;
-    }
-  }
-}
-
-enum Position {
-  prepend,
-  override,
-  append,
-  appendMeasure,
-}
-
-extension PositionMethods on Position {
-  insert(List<String> values, String input, int editedPos) {
-    switch (this) {
-      case Position.prepend:
-        return values.insert(editedPos, input);
-      case Position.append:
-        return values.insert(editedPos + 1, input);
-      case Position.appendMeasure:
-        return values.add(input);
-      default:
-        return;
-    }
   }
 }

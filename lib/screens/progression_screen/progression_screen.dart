@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:harmony_theory/modals/progression/exceptions.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:harmony_theory/state/progression_bank_entry.dart';
+import 'package:weizmann_theory_app_test/blocs/input/input_cubit.dart';
 
 import '../../blocs/audio_player/audio_player_bloc.dart';
 import '../../blocs/bank/bank_bloc.dart';
@@ -53,6 +54,9 @@ class ProgressionScreen extends StatelessWidget {
           ),
         ),
         BlocProvider(create: (_) => AudioPlayerBloc()),
+        BlocProvider(
+            create: (context) =>
+                InputCubit(BlocProvider.of<ProgressionHandlerBloc>(context)))
       ],
       child: Scaffold(
         body: LayoutBuilder(builder: (context, constraints) {
