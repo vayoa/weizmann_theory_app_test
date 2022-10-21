@@ -9,6 +9,7 @@ class AppVersion extends Comparable<AppVersion> with Compared<AppVersion> {
 
   /// Parse [v] to a [Version], supports [OldVersion]...
   static Version parseWithOld(String v) {
+    if (v.startsWith('v')) v = v.substring(1);
     try {
       return Version.parse(v);
     } catch (e) {
@@ -30,7 +31,9 @@ class AppVersion extends Comparable<AppVersion> with Compared<AppVersion> {
   }
 
   AppVersion.fromJson(Map<String, dynamic> json) {
+    print(json["tag_name"]);
     version = parseWithOld(json["tag_name"]);
+    print(version);
     releaseNotes = json["body"];
     downloadUrl = json["assets"][0]["browser_download_url"];
   }
