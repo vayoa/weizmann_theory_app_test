@@ -47,11 +47,14 @@ class WeightsPreview extends StatelessWidget {
                       fontSize: 13, fontStyle: FontStyle.italic),
                 ),
                 expandedAlignment: Alignment.topLeft,
-                childrenPadding: const EdgeInsets.only(left: 22.0),
+                childrenPadding: const EdgeInsets.only(left: 16.0),
                 children: [
-                  Text(
-                    detail.value.details,
-                    style: const TextStyle(fontSize: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    child: Text(
+                      detail.value.details.trim(),
+                      style: const TextStyle(fontSize: 14),
+                    ),
                   )
                 ],
               );
@@ -81,6 +84,10 @@ class _WeightTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color color = ColorTween(
+      begin: Colors.redAccent.shade400,
+      end: Colors.blueGrey.withBlue(150),
+    ).lerp(score / importance)!;
     return Row(
       children: [
         Text(
@@ -89,9 +96,11 @@ class _WeightTitle extends StatelessWidget {
         ),
         Flexible(
           child: SliderTheme(
-            data: const SliderThemeData(
+            data: SliderThemeData(
               trackHeight: 3.0,
-              thumbShape: RoundSliderThumbShape(
+              disabledThumbColor: color,
+              disabledActiveTrackColor: color,
+              thumbShape: const RoundSliderThumbShape(
                 disabledThumbRadius: 6,
                 enabledThumbRadius: 6,
                 elevation: 0.0,
@@ -107,7 +116,7 @@ class _WeightTitle extends StatelessWidget {
         ),
         Text(
           '${score.toStringAsFixed(roundDigits)} / $importance',
-          style: style,
+          style: style.copyWith(color: color),
         ),
       ],
     );
