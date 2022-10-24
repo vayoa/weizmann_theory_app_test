@@ -110,6 +110,10 @@ class InputCubit extends Cubit<InputState> {
     );
   }
 
+  select(int pos, int measure) {
+    print('hey');
+  }
+
   _changeCurr(ProgressionHandlerEvent event, {String description = ''}) =>
       _changeStack.add(
         Change<Progression>(
@@ -146,10 +150,12 @@ class InputCubit extends Cubit<InputState> {
         editedMeasure += add;
         if (editedMeasure == measures.length) {
           _addNewMeasure();
-        } else if (editedMeasure < 0) {
-          editedMeasure = 0;
         }
-        editedPos = cursor == Cursor.next ? 0 : numeratorIndex;
+
+        editedPos =
+            cursor == Cursor.next || editedMeasure < 0 ? 0 : numeratorIndex;
+
+        if (editedMeasure < 0) editedMeasure = 0;
       } else if (editedMeasure == measures.length - 1 &&
           editedPos >= measures[editedMeasure].duration ~/ step) {
         _addNewVal(values);
@@ -177,10 +183,9 @@ class InputCubit extends Cubit<InputState> {
   void _addNewVal(List<String>? values) {
     // TODO: Decide what to add on empty
     final measures = bloc.currentlyViewedMeasures;
-    final step = measures.first.timeSignature.step;
     final m = measures[editedMeasure];
     final inputs = values ?? Utilities.progressionEdit(m);
-    final val = _isValidAdd(m, m.durations.last + step) ? inputs.last : null;
+    final val = inputs.last;
     inputs.add('$val ,');
 
     _changeCurr(
@@ -229,9 +234,6 @@ class InputCubit extends Cubit<InputState> {
     editedMeasure = newM;
     editedPos = measures[newM].durations.position(closest) ~/ step;
   }
-
-  bool _isValidAdd<T>(Progression<T> measure, double dur) =>
-      measure.timeSignature.validDuration(dur);
 }
 
 class EditAction {

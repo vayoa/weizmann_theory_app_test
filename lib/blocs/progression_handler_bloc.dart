@@ -5,7 +5,6 @@ import 'package:equatable/equatable.dart';
 import 'package:harmony_theory/modals/pitch_chord.dart';
 import 'package:harmony_theory/modals/progression/chord_progression.dart';
 import 'package:harmony_theory/modals/progression/degree_progression.dart';
-import 'package:harmony_theory/modals/progression/exceptions.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
 import 'package:harmony_theory/modals/progression/time_signature.dart';
 import 'package:harmony_theory/modals/substitution.dart';
@@ -203,9 +202,6 @@ class ProgressionHandlerBloc
         progression = chords
             ? _parseChordInputs(event.inputs, event.measureIndex)
             : _parseDegreeInputs(event.inputs, event.measureIndex);
-      } on NonValidDuration catch (e) {
-        return emit(InvalidInputReceived(
-            progression: currentlyViewedProgression, exception: e));
       } on Exception catch (firstError) {
         try {
           progression = chords
@@ -243,13 +239,8 @@ class ProgressionHandlerBloc
     });
     on<DeleteRange>((event, emit) {
       Progression progression;
-      try {
-        progression =
-            currentlyViewedProgression.deleteRange(event.start, event.end);
-      } on NonValidDuration catch (e) {
-        return emit(InvalidInputReceived(
-            progression: currentlyViewedProgression, exception: e));
-      }
+      progression =
+          currentlyViewedProgression.deleteRange(event.start, event.end);
       add(const DisableRange(disable: true));
       if (type == ProgressionType.romanNumerals) {
         return add(OverrideProgression(DegreeProgression.fromProgression(
