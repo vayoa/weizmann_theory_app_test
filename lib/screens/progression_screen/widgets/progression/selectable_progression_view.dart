@@ -108,6 +108,7 @@ class _SelectableProgression extends StatefulWidget {
 class _SelectableProgressionState extends State<_SelectableProgression> {
   late List<Progression> _measures;
   final FocusNode _focusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   late double stepW;
   late double minSelectDur;
   int hoveredMeasure = -1;
@@ -122,11 +123,12 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
 
   int _getIndexFromPosition(Offset localPosition) {
     const height = Constants.measureHeight + Constants.measureSpacing;
-    if (localPosition.dy % height > Constants.measureHeight) {
+    final dy = localPosition.dy + _scrollController.offset;
+    if (dy % height > Constants.measureHeight) {
       return -1;
     }
     return (localPosition.dx ~/ Constants.measureWidth) +
-        (widget.measuresInLine * (localPosition.dy ~/ height));
+        (widget.measuresInLine * (dy ~/ height));
   }
 
   int _getMeasureDur(Offset localPosition) {
@@ -165,6 +167,7 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
   @override
   void dispose() {
     _focusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -234,6 +237,7 @@ class _SelectableProgressionState extends State<_SelectableProgression> {
                 editedMeasure = state.editedMeasure;
               }
               return ProgressionGrid(
+                scrollController: _scrollController,
                 progression: widget.progression,
                 measures: widget.measures,
                 measuresInLine: widget.measuresInLine,

@@ -12,6 +12,7 @@ class ProgressionGrid extends StatefulWidget {
     Key? key,
     required this.progression,
     this.measures,
+    this.scrollController,
     this.rangeSelectPadding = 8.0,
     this.measuresInLine = 4,
     this.startRange,
@@ -35,6 +36,7 @@ class ProgressionGrid extends StatefulWidget {
 
   final Progression progression;
   final List<Progression>? measures;
+  final ScrollController? scrollController;
   final double rangeSelectPadding;
   final int measuresInLine;
   final double? startRange;
@@ -133,6 +135,7 @@ class _ProgressionGridState extends State<ProgressionGrid> {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
+      controller: widget.scrollController,
       itemCount: _measures.length,
       shrinkWrap: true,
       padding: widget.padding,
@@ -204,7 +207,7 @@ class _ProgressionGridState extends State<ProgressionGrid> {
           paintFrom: paintFrom,
           paintTo: paintTo,
           cursorPos:
-              editable && widget.hoveredPos != -1 ? widget.hoveredPos : null,
+          editable && widget.hoveredPos != -1 ? widget.hoveredPos : null,
           editedPos: edited ? widget.editedPos : null,
           onSubmitChange: (action) => widget.onDoneEdit?.call(action, index),
         );
