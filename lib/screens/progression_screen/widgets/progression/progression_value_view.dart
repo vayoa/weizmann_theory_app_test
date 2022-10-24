@@ -175,7 +175,7 @@ class _EditedValueViewState extends State<EditedValueView> {
                   EditAction(input != _initial ? input : null, Cursor.next));
             } else if (input[0] == ' ') {
               widget.onSubmitChange(
-                  const EditAction('', Cursor.stay, false, Position.prepend));
+                  const EditAction('//', Cursor.stay, false, Position.prepend));
             }
           }
         },

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:harmony_theory/modals/progression/exceptions.dart';
 import 'package:harmony_theory/state/progression_bank.dart';
 import 'package:harmony_theory/state/progression_bank_entry.dart';
 import 'package:weizmann_theory_app_test/blocs/input/input_cubit.dart';
@@ -354,18 +353,6 @@ class ProgressionScreenUI extends StatelessWidget {
                   Duration duration = const Duration(seconds: 4);
                   String message = 'An invalid value was inputted:'
                       '\n${state.exception}';
-                  if (state.exception is NonValidDuration) {
-                    NonValidDuration e = state.exception as NonValidDuration;
-                    String value = e.value is String
-                        ? e.value
-                        : (e.value == null ? '//' : e.value.toString());
-                    message = 'An invalid duration was inputted:'
-                        '\nA value of $value in a duration of '
-                        '${(e.duration * e.timeSignature.denominator).toInt()}'
-                        '/${e.timeSignature.denominator} is not a valid '
-                        'duration in a ${e.timeSignature} time signature.';
-                    duration = const Duration(seconds: 12);
-                  }
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       behavior: SnackBarBehavior.floating,
