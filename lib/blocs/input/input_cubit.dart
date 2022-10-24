@@ -110,9 +110,6 @@ class InputCubit extends Cubit<InputState> {
     );
   }
 
-  select(int pos, int measure) {
-    print('hey');
-  }
 
   _changeCurr(ProgressionHandlerEvent event, {String description = ''}) =>
       _changeStack.add(
