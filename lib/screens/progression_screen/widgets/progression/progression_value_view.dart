@@ -143,6 +143,8 @@ class _EditedValueViewState extends State<EditedValueView> {
                 Position.appendMeasure,
               ));
             }
+          } else if (key == LogicalKeyboardKey.keyV) {
+            if (ctrl) print('hey');
           }
         }
       },

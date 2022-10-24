@@ -248,31 +248,23 @@ class EditAction {
   ]);
 }
 
-enum Cursor { done, previous, stay, next }
+enum Cursor {
+  done,
+  previous(-1),
+  stay(0),
+  next(1);
 
-extension CursorMethods on Cursor {
-  int? get value {
-    switch (this) {
-      case Cursor.done:
-        return null;
-      case Cursor.previous:
-        return -1;
-      case Cursor.stay:
-        return 0;
-      case Cursor.next:
-        return 1;
-    }
-  }
+  final int? value;
+
+  const Cursor([this.value]);
 }
 
 enum Position {
   prepend,
   override,
   append,
-  appendMeasure,
-}
+  appendMeasure;
 
-extension PositionMethods on Position {
   insert(List<String> values, String input, int editedPos) {
     switch (this) {
       case Position.prepend:
