@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide SelectAction;
 import 'package:flutter/services.dart';
 
 import '../../../../blocs/input/input_cubit.dart';
@@ -67,7 +67,6 @@ class EditedValueView<T> extends StatefulWidget {
 
   // Used for equality purposes
   final int position;
-
   final void Function(EditAction) onSubmitChange;
 
   @override
@@ -120,19 +119,28 @@ class _EditedValueViewState extends State<EditedValueView> {
         if (event is KeyDownEvent) {
           final key = event.logicalKey;
           final text = _controller.text;
-          bool ctrl = RawKeyboard.instance.keysPressed
+          final bool ctrl = RawKeyboard.instance.keysPressed
               .contains(LogicalKeyboardKey.controlLeft);
+          final bool shift = RawKeyboard.instance.keysPressed
+              .contains(LogicalKeyboardKey.shiftLeft);
+          final bool selected = _controller.selection.extentOffset -
+                  _controller.selection.baseOffset ==
+              text.length;
           if (key == LogicalKeyboardKey.backspace) {
             if (ctrl || text.isEmpty) {
               widget.onSubmitChange(EditAction('', Cursor.previous, ctrl));
             }
-          } else if (key == LogicalKeyboardKey.arrowRight) {
-            if (ctrl || _controller.selection.baseOffset == text.length) {
-              widget.onSubmitChange(EditAction(null, Cursor.next, ctrl));
-            }
-          } else if (key == LogicalKeyboardKey.arrowLeft) {
-            if (ctrl || _controller.selection.baseOffset == 0) {
-              widget.onSubmitChange(EditAction(null, Cursor.previous, ctrl));
+          } else if (key == LogicalKeyboardKey.arrowRight ||
+              key == LogicalKeyboardKey.arrowLeft) {
+            final cursor = key == LogicalKeyboardKey.arrowRight
+                ? Cursor.next
+                : Cursor.previous;
+            final atPos = _controller.selection.baseOffset ==
+                (cursor == Cursor.next ? text.length : 0);
+            if (selected || shift && atPos) {
+              widget.onSubmitChange(SelectAction(cursor, widget.position));
+            } else if (ctrl || atPos) {
+              widget.onSubmitChange(EditAction(null, cursor, ctrl));
             }
           } else if (key == LogicalKeyboardKey.space) {
             if (ctrl) {

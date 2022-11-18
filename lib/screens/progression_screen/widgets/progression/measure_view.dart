@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide SelectAction;
 import 'package:flutter/services.dart';
 import 'package:harmony_theory/modals/progression/progression.dart';
 

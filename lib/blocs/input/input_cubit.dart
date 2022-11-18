@@ -37,7 +37,24 @@ class InputCubit extends Cubit<InputState> {
     final cursor = action.cursor;
     final stick = action.stick;
     final position = action.position;
-    if (input == null) return _onDoneEdit(null, measureIndex, cursor, stick);
+    if (action is SelectAction) {
+      final val = cursor.value ?? 0;
+      final step = measure.timeSignature.step;
+      final dur =
+          action.pos * step + measureIndex * measure.timeSignature.decimal;
+      final sec = dur + val * step;
+      double start = min(dur, sec), end = max(dur, sec) + step;
+      if (sec == bloc.toDur) {
+        start = bloc.fromDur;
+      } else if (dur == bloc.fromDur) {
+        end = bloc.toDur;
+      }
+      print('$start - $end (${bloc.fromDur} - ${bloc.toDur})');
+      bloc.add(ChangeRangeDuration(start: start, end: end));
+    }
+    if (input == null) {
+      return _onDoneEdit(null, measureIndex, cursor, stick);
+    }
 
     final diffPos = position != Position.override;
 
@@ -109,7 +126,6 @@ class InputCubit extends Cubit<InputState> {
       description: "Deleted Range $rangeStart - $rangeEnd.",
     );
   }
-
 
   _changeCurr(ProgressionHandlerEvent event, {String description = ''}) =>
       _changeStack.add(
@@ -245,6 +261,13 @@ class EditAction {
     this.stick = false,
     this.position = Position.override,
   ]);
+}
+
+class SelectAction extends EditAction {
+  final int pos;
+
+  SelectAction(Cursor cursor, this.pos, {bool stick = false})
+      : super(null, cursor, stick);
 }
 
 enum Cursor {
