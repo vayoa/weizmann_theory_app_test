@@ -13,13 +13,15 @@ import '../../../../blocs/progression_handler_bloc.dart';
 import '../../../../blocs/substitution_handler/substitution_handler_bloc.dart';
 import '../../../../constants.dart';
 import '../../../../screens/progression_screen/widgets/substitution_drawer/navigation_buttons.dart';
-import '../../../../screens/progression_screen/widgets/substitution_drawer/weights_preview_button.dart';
 import '../../../../utilities.dart';
 import '../../../../widgets/custom_button.dart';
 import '../../../../widgets/custom_selector.dart';
+import '../../../../widgets/dialogs.dart';
 import '../../../../widgets/text_and_icon.dart';
 import '../progression/progression_grid.dart';
+import '../weights_view.dart';
 
+part 'buttons.dart';
 part 'content.dart';
 part 'harmonization_setting.dart';
 part 'heading.dart';

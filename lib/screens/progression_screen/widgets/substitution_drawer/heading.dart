@@ -4,9 +4,17 @@ class _Heading extends StatelessWidget {
   const _Heading({
     Key? key,
     required this.substitution,
-  }) : super(key: key);
+    this.onApply,
+    this.onChangeVisibility,
+    this.visible,
+  })  : assert((onApply == null) == (onChangeVisibility == null) &&
+            (onApply == null) == (visible == null)),
+        super(key: key);
 
   final Substitution substitution;
+  final void Function()? onApply;
+  final void Function()? onChangeVisibility;
+  final bool? visible;
 
   @override
   Widget build(BuildContext context) {
@@ -15,44 +23,57 @@ class _Heading extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextAndIcon(
-          icon: Constants.packageIcon,
-          text: location.package,
-          style: const TextStyle(fontSize: 12.0),
-          iconSize: 12.0,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            TextAndIcon(
+              icon: Constants.packageIcon,
+              text: location.package,
+              style: const TextStyle(fontSize: 12.0),
+              iconSize: 12.0,
+            ),
+            if (onApply != null)
+              _Buttons(
+                visible: visible!,
+                onApply: onApply!,
+                onChangeVisibility: onChangeVisibility!,
+                onInspect: () {
+                  showGeneralDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    barrierLabel: 'Details',
+                    pageBuilder: (context, _, __) => GeneralDialogPage(
+                      title: 'Details',
+                      child: Expanded(
+                          child: WeightsPreview(score: substitution.score)),
+                    ),
+                  );
+                },
+              ),
+          ],
         ),
         OverflowBar(
           children: [
-            Text(
-              '${location.title} ',
-              maxLines: 2,
-              style: const TextStyle(
-                fontSize: 18.0,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
             Text.rich(
               TextSpan(
+                text: '${location.title} ',
+                style: const TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w500,
+                ),
                 children: [
                   TextSpan(
-                      text: type.name,
-                      style: const TextStyle(
-                          fontStyle: FontStyle.italic, fontSize: 13.0)),
-                  WidgetSpan(
-                    baseline: TextBaseline.ideographic,
-                    alignment: PlaceholderAlignment.aboveBaseline,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 4.0),
-                      child: WeightPreviewButton(
-                        substitution: substitution,
-                        size: 13.0,
-                      ),
+                    text: type.name,
+                    style: const TextStyle(
+                      fontSize: 13.0,
+                      fontWeight: FontWeight.normal,
+                      fontStyle: FontStyle.italic,
                     ),
                   ),
                 ],
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
             ),
           ],
         ),

@@ -89,36 +89,11 @@ class _Expanded extends StatelessWidget {
                 horizontal: _Wrapper.horizontalPadding),
             child: Stack(
               children: [
-                _Heading(substitution: substitution),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      CustomButton(
-                        label: null,
-                        tight: true,
-                        small: true,
-                        size: 12.0,
-                        iconSize: 16.0,
-                        color: Constants.substitutionColor,
-                        iconData: Icons.check_rounded,
-                        onPressed: onApply,
-                      ),
-                      const SizedBox(width: 5.0),
-                      CustomButton(
-                        label: null,
-                        tight: true,
-                        small: true,
-                        size: 12.0,
-                        iconSize: 16.0,
-                        iconData: visible
-                            ? Icons.visibility_rounded
-                            : Icons.visibility_off_rounded,
-                        onPressed: onChangeVisibility,
-                      ),
-                    ],
-                  ),
+                _Heading(
+                  substitution: substitution,
+                  visible: visible,
+                  onApply: onApply,
+                  onChangeVisibility: onChangeVisibility,
                 ),
               ],
             ),
